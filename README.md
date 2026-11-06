@@ -37,11 +37,11 @@
 
 | 平台 | 文件 | 说明 |
 |---|---|---|
-| Windows 10/11 | [moxi-studio-exp-0.1.0-exp.5.zip](releases/v0.1.0-exp.5/moxi-studio-exp-0.1.0-exp.5.zip) | 推荐，系统自带解压 |
-| macOS（Intel / Apple Silicon） | [moxi-studio-exp-0.1.0-exp.5.tar.gz](releases/v0.1.0-exp.5/moxi-studio-exp-0.1.0-exp.5.tar.gz) | 也可用 zip，内容一致 |
+| Windows 10/11 | [moxi-studio-exp-0.1.0-exp.5.zip](https://github.com/w1251788888-web/moxi-drama-studio/releases/download/v0.1.0-exp.5/moxi-studio-exp-0.1.0-exp.5.zip) | 推荐，系统自带解压 |
+| macOS（Intel / Apple Silicon） | [moxi-studio-exp-0.1.0-exp.5.tar.gz](https://github.com/w1251788888-web/moxi-drama-studio/releases/download/v0.1.0-exp.5/moxi-studio-exp-0.1.0-exp.5.tar.gz) | 也可用 zip，内容一致 |
 | Linux | 同上 tar.gz | 未正式验证，逻辑与 macOS 一致 |
 
-> 版本：`0.1.0-exp.5`（实验版）
+> 版本：`0.1.0-exp.5`（实验版）· 全部版本见 [Releases](https://github.com/w1251788888-web/moxi-drama-studio/releases)
 
 ---
 
