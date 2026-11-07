@@ -1,0 +1,312 @@
+[pipeline]
+name = "openmoss_short_drama_pipeline"
+
+# ============================================================
+# 项目类型（project_type 变量的合法值，影响流水线分支）
+# ============================================================
+# project_type 合法值（传入时必须使用以下之一，不得自造）：
+#   "漫剧-男频"       → 激活 male_core + male_style 规则，漫剧字数约束
+#   "漫剧-女频"       → 激活 female_core + female_style 规则，漫剧字数约束
+#   "漫剧-混合"       → 激活 hybrid_genre 规则，漫剧字数约束
+#   "真人短剧-男频"   → 激活 male_core + male_style 规则，无字数约束
+#   "真人短剧-女频"   → 激活 female_core + female_style 规则，无字数约束
+#   "真人短剧-混合"   → 激活 hybrid_genre 规则，无字数约束
+#   "小说IP改编"      → 强制 novel_analysis → character_lock → 验证模式 concept
+#   "精品短剧"        → script_draft 切换为 executor-script-premium.md Agent
+#   "长剧/系列剧"     → 激活 long_series 规则，付费墙节点重新计算
+#
+# project_type 中同时含"漫剧"则自动激活 manga_constraints
+# project_type 中含"小说IP改编"则 novel_analysis 步骤变为强制且非可跳过
+
+# ============================================================
+# 知识库引用（注入到所有相关步骤）
+# ============================================================
+[knowledge]
+opening_formulas      = "knowledge/opening_formulas.md"
+satisfaction_matrix   = "knowledge/satisfaction_matrix.md"
+shot_timing_rules     = "knowledge/shot_timing_rules.md"
+structure_imitation   = "knowledge/structure_imitation.md"
+
+# ============================================================
+# 规则文件注入（按 project_type 和 audience_axis 自动选择）
+# ============================================================
+# 注入语法：{{rules:rule_name}} → 被替换为对应规则文件全文
+# pipeline 在执行每个步骤前，根据 project_type + audience_axis 解析占位符。
+# 运行时优先读取项目显式分类字段：
+#   config.subgenre_track
+#   config.sample_track
+# 若显式字段缺失，再退回到 genre_main / genre_sub / brief 等文本信号做推荐推断。
+#
+# audience_axis 映射：
+#   "男频"  → 注入 male_core + male_style
+#   "女频"  → 注入 female_core + female_style
+#   "混合"  → 注入 hybrid_genre
+#
+# project_type 额外映射：
+#   含"小说IP改编" → 注入 novel_adaptation
+#   含"长剧/系列剧" 或 episode_count ≥ 30 → 注入 long_series
+#
+# 通用规则（所有项目注入）：
+#   short_drama_core, short_drama_quality, conflict_design, character_arc
+[rules]
+male_core              = "core-rules/male_core.md"
+male_style             = "core-rules/male_style.md"
+female_core            = "core-rules/female_core.md"
+female_style           = "core-rules/female_style.md"
+hybrid_genre           = "core-rules/hybrid_genre.md"
+novel_adaptation       = "core-rules/novel_adaptation.md"
+long_series            = "core-rules/long_series.md"
+short_drama_core       = "core-rules/short_drama_core.md"
+duration_char_count    = "core-rules/duration_char_count.md"
+manga_production_2026  = "core-rules/manga_production_2026.md"
+satisfaction_taxonomy  = "core-rules/satisfaction_taxonomy.md"
+head_hit_scene_engine  = "core-rules/head_hit_scene_engine.md"
+short_drama_quality    = "core-rules/short_drama_quality.md"
+conflict_design        = "core-rules/conflict_design.md"
+character_arc          = "core-rules/character_arc.md"
+content_compliance     = "core-rules/content_compliance.md"
+platform_compliance_2026 = "core-rules/platform_compliance_2026.md"
+format_adaptation      = "core-rules/format_adaptation.md"
+commercial_viability   = "core-rules/commercial_viability.md"   # v1.2 新增
+
+[rules.injection_policy]
+# 每个步骤注入哪些规则（always=所有项目都注入，conditional=按条件注入）
+# audience_rules → 根据 audience_axis 自动选择 male_core/female_core/hybrid_genre
+# subgenre_rules → 优先读取 subgenre_track，缺失时才根据主类型/副类型推断
+# sample_track_rules → 优先读取 sample_track，缺失时才根据案例信号推断
+# v1.2：修复 character_arc 未注入 beat_sheet / format_adaptation 未注入 scene_list / content_compliance 未注入 compliance_check
+market_check  = { always = ["commercial_viability"] }
+concept       = { always = ["commercial_viability"],               conditional = ["audience_rules", "novel_adaptation"] }
+beat_sheet    = { always = ["short_drama_core", "duration_char_count", "manga_production_2026", "satisfaction_taxonomy", "conflict_design", "character_arc", "content_compliance"], conditional = ["audience_rules", "long_series", "novel_adaptation"] }
+scene_list    = { always = ["short_drama_core", "duration_char_count", "manga_production_2026", "conflict_design", "format_adaptation"], conditional = ["audience_rules", "long_series"] }
+script_draft  = { always = ["short_drama_core", "duration_char_count", "manga_production_2026", "satisfaction_taxonomy", "head_hit_scene_engine", "conflict_design", "character_arc", "commercial_viability", "content_compliance"], conditional = ["audience_rules", "long_series", "novel_adaptation"] }
+quality_check = { always = ["duration_char_count", "manga_production_2026", "satisfaction_taxonomy", "commercial_viability"] }
+compliance_check = { always = ["content_compliance", "platform_compliance_2026"] }
+
+# ============================================================
+# 项目格式档案（按项目在此处配置，不得硬编码到 prompt 文件里）
+# ============================================================
+[project_format]
+# scene_header_style 控制场次标头格式，两种合法值：
+#   "bracket" → 【场X-X：时间  内/外  地点】  （甲方验收稿常用）
+#   "plain"   → X-X  时间  内/外  地点        （平台投稿稿常用）
+scene_header_style = "bracket"
+
+# ============================================================
+# 精品模式配置（基于山音编剧方法论）
+# ─── 注意：精品模式是"写作方法论"的切换，不是内容类型 ───
+# 它与男频/女频/混合/小说IP/长剧是正交关系，可叠加使用。
+# 例：一个精品女频漫剧 = premium_mode.enabled=true + project_type="漫剧-女频"
+# ============================================================
+[premium_mode]
+enabled = false                              # 默认关闭，按项目需要开启
+agent = "agents/executor-script-premium.md"
+applies_to_steps = ["script_draft"]
+description = "精品剧本模式：戏剧动作驱动，潜台词写法，适用于精品/参展/高质量改稿场景。与内容类型正交，可与任意 project_type 叠加。"
+
+# 沙雕漫专属模式
+[comic_mode]
+enabled = false
+agent = "agents/executor-script-comic.md"
+applies_to_steps = ["script_draft"]
+description = "沙雕漫模式：夸张反差，表情包时刻，三段式完整剧本包输出"
+
+# ============================================================
+# 漫剧硬约束配置
+# ============================================================
+[manga_constraints]
+enabled = true                    # project_type 含"漫剧"时自动激活
+target_word_count = 1200          # 90秒基准目标字数；实际按 episode_minutes 等比例换算
+word_count_min = 1000             # 90秒基准下限；实际区间按单集时长等比例换算
+word_count_max = 1550             # 90秒基准上限；实际区间按单集时长等比例换算
+word_count_tolerance = 350        # 旧兼容字段；当前科研链路以 word_count_min/max 为准
+episode_duration_seconds = 90     # 基准单集时长秒数；不是固定项目时长
+auto_reject_out_of_range = true   # 字数不达标自动打回
+
+# AI仿真人漫剧扩展（v1.1新增）
+[manga_constraints.ai_realistic]
+enabled = true                    # project_subtype 含"AI仿真人"时激活
+require_sound_annotation = true   # 爽感爆发场必须有【音效】标注行
+opening_formula_group = "AI"      # 强制从 AI1/AI2/AI3 公式组选择开场
+
+# ============================================================
+# 批量生产配置
+# ============================================================
+[batch]
+enabled = true
+max_concurrent_episodes = 5       # 最大并发生产集数（beat_sheet完成后自动拆分）
+quality_gate_min_score = 35       # 质检总分低于此值自动重跑（满分50）
+max_retries_per_episode = 2       # 每集最多重跑次数，超出后人工介入
+auto_compliance_check = true      # 剧本完成后自动触发合规审查
+auto_quality_check = true         # 剧本完成后自动触发质检评分
+
+# 双付费墙节点配置（v1.1新增，数据来源：平台实验数据）
+[batch.paywall]
+node_a_episode_range = [8, 12]    # 首次付费钩子固定区间（不随集数变化）
+node_b_episode_range = [26, 30]   # 充值高峰墙固定区间
+node_b_short_series_ratio = 0.8   # 集数<30时节点B改用此比例计算
+bridge_density = 2                # 节点A-B过渡期每集最低爽感爆发数
+
+# ============================================================
+# 状态持久化（跨集一致性）
+# ============================================================
+[state]
+character_voice_state    = "workspace/{project_id}/character_voices.json"
+paywall_position_state   = "workspace/{project_id}/paywall_plan.json"
+emotion_curve_progress   = "workspace/{project_id}/emotion_curve.json"
+satisfaction_debt_tracker = "workspace/{project_id}/satisfaction_debt.json"
+episode_progress         = "workspace/{project_id}/episode_progress.json"
+# 历史打回记录（自动追加，quality_check 每次打回后写入）
+issue_feedback_history   = "workspace/{project_id}/issue_feedback_history.json"
+# 已锁定角色表（character_lock 步骤人工确认后写入，后续步骤只读）
+locked_characters        = "workspace/{project_id}/locked_characters.json"
+
+# ============================================================
+# 流水线步骤定义
+# ============================================================
+
+[[step]]
+id = "project_init_check"
+prompt_path = "steps/00_project_init_check.md"
+output_key = "project_init"
+description = "项目初始化检查单：锁定项目类型/格式档案/改编方案版本，所有项目必须首先执行"
+optional = false
+type = "human_review"
+
+[[step]]
+id = "novel_analysis"
+prompt_path = "steps/00_novel_analysis.md"
+output_key = "novel_analysis"
+description = "小说改编分析（project_type 含'小说IP改编'时强制执行，原创项目跳过）"
+# optional 由 project_type 决定：含"小说IP改编"则 optional=false，否则 optional=true
+optional = true
+required_when_project_type_contains = "小说IP改编"
+
+[[step]]
+id = "character_lock"
+prompt_path = "steps/00_character_lock.md"
+output_key = "locked_characters"
+description = "角色表人工确认锁定（project_type 含'小说IP改编'时强制执行）：确认角色名/首次出场集数/合并拆分决策，写入 locked_characters.json，后续步骤只读不改"
+optional = true
+required_when_project_type_contains = "小说IP改编"
+type = "human_review"
+blocks_until_approved = true
+persist_to_state = "locked_characters"
+
+[[step]]
+id = "market_check"
+prompt_path = "steps/00_market_check.md"
+output_key = "market_check"
+description = "市场可行性门控：在概念规划前执行，4项二元检查（题材热度/对标验证/差异化/传播力）；≤1项通过则硬阻断，2项通过则软警告，≥3项通过则放行"
+optional = false
+type = "gate"
+gate_field = "market_check_result.verdict"
+gate_reject_value = "reject"
+gate_warn_value = "warn"
+
+[[step]]
+id = "concept"
+prompt_path = "steps/01_concept.md"
+system_prompt_path = "agents/planner-script-concept.md"
+output_key = "concept"
+description = "概念规划：原创项目→创作模式（Logline+卖点+冲突+主线策略+商业性预判）；小说IP改编→验证模式；输出含 commercial_score，低于6分触发软警告"
+inject_knowledge = ["opening_formulas"]
+
+[[step]]
+id = "characters"
+prompt_path = "steps/02_characters.md"
+system_prompt_path = "agents/executor-script-characters.md"
+output_key = "characters"
+description = "角色设计：角色卡 + 声纹卡（含漫剧夸张派标注）"
+
+[[step]]
+id = "beat_sheet"
+prompt_path = "steps/03_beat_sheet.md"
+output_key = "beat_sheet"
+description = "分集节拍表：4段情绪曲线 + 爽感密度 + 钩子类型 + 漫剧字数分布"
+inject_knowledge = ["opening_formulas", "satisfaction_matrix"]
+
+[[step]]
+id = "scene_list"
+prompt_path = "steps/04_scene_list.md"
+output_key = "scene_list"
+description = "分场表：每集场次 + 可视化动作 + 围观场设计"
+
+[[step]]
+id = "script_draft"
+prompt_path = "steps/05_script_draft.md"
+system_prompt_path = "agents/executor-script-draft.md"
+output_key = "script_draft"
+description = "剧本初稿：声纹卡对齐 + 爽感落地 + 漫剧按时长换算字数约束"
+
+[[step]]
+id = "quality_check"
+prompt_path = "steps/07_quality_check.md"
+system_prompt_path = "agents/reviewer-quality-score.md"
+output_key = "quality_report"
+description = "质检评分：节奏/爽感密度/对白/格式/连贯性/商业性 6维度（满分60，原创）/ + 原著保真度 7维度（满分70，小说改编）；任意维度<6或总分<42则打回"
+
+[[step]]
+id = "compliance_check"
+prompt_path = "steps/08_compliance_check.md"
+system_prompt_path = "agents/compliance-checker.md"
+output_key = "compliance_report"
+description = "合规审查：红线检测 + 高风险标记 + 分平台合规建议"
+
+[[step]]
+id = "storyboard"
+prompt_path = "steps/06_storyboard_prompts.md"
+output_key = "storyboard"
+description = "分镜提示词：可用于漫剧AI绘图或真人短剧拍摄指导"
+optional = true
+
+# ============================================================
+# 短剧写作会话步骤映射（WebUI short_drama_writing 路由使用）
+# ============================================================
+# ============================================================
+# 短剧写作会话步骤映射（WebUI short_drama_writing 路由使用）
+# ============================================================
+[short_drama_writing_steps]
+# 原创项目（男频/女频/混合/精品）标准流程（v1.2：新增 market_check 前置门控）
+ordered_original = [
+    "project_init_check",
+    "market_check",          # 新增：商业性门控，≤1项通过则硬阻断
+    "concept",               # 输出含 commercial_score，<6 触发软警告
+    "characters",
+    "beat_sheet",
+    "scene_list",
+    "script_draft",
+    "quality_check",         # 新增维度6：商业性，满分60，通过线42
+    "compliance_check",
+    "storyboard",
+]
+
+# 小说IP改编专用流程
+ordered_novel_adaptation = [
+    "project_init_check",
+    "novel_analysis",        # 强制：读原著生成集-章节对照表
+    "character_lock",        # 强制：人工确认锁定角色表（已修复 prompt_path）
+    "market_check",          # 新增：改编项目同样需要商业性门控
+    "concept",               # 验证模式：不重新创作，只结构化 novel_analysis 输出
+    "characters",
+    "beat_sheet",
+    "scene_list",
+    "script_draft",
+    "quality_check",         # 满分70（原著保真度+商业性），通过线49
+    "compliance_check",
+    "storyboard",
+]
+
+# 长剧/系列剧流程
+ordered_long_series = [
+    "project_init_check",
+    "market_check",          # 新增
+    "concept",
+    "characters",
+    "beat_sheet",            # 长剧模式：按 long_series.md 规则生成分季节拍
+    "scene_list",
+    "script_draft",
+    "quality_check",
+    "compliance_check",
+    "storyboard",
+]

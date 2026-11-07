@@ -1,0 +1,5 @@
+# moxi profile 覆盖层（可选）：把下面内容并入 ~/.dsh/profiles/moxi/cordis.patch.yml
+# 注意：install.sh 用 `dsh plugin add` 装 bundle，通常不需要手改 profile。
+- id: moxi-core
+  config:
+    projectsRoot: ""          # 留空 = ~/Documents/Moxi/projects；也可写绝对路径

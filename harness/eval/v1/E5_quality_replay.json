@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "id": "E5",
+  "slug": "quality-replay",
+  "title": "E5 质检回放：喂已知违规样例，必须被打回且命中全部检查码",
+  "goal": "对已知违规剧本产出质检报告：verdict=fail，6 个确定性检查码全部命中且证据逐字可查，误报不超过 1 条。",
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "input": {
+    "prompt": "任务：你是质检节点。对 episode-draft.md 跑一遍 v2 确定性检查，产出 quality_report.json。\n输入：episode-draft.md（待检剧本）、E5-rules.md（检查口径与输出格式）、E5-config.json（机器可读阈值）。\n\n## 要求\n- 只报 E5-rules.md 第 1 节 v1DetectorScope 里的 6 个码；codebook 里标“v1 不检查”的码不要报（报了算误报）。\n- verdict 只能是 fail / warn / pass；本样例存在问题，必须打回。\n- 每个命中码一条 finding（可放 mustFix 或 shouldFix），severity 必须与规则表一致；evidence 必须逐字摘自剧本（≥6 字）。\n- 输出 JSON 格式见 E5-rules.md 第 2 节；只输出 quality_report.json，不要解释。\n",
+    "workspaceFiles": [
+      {
+        "from": "eval/v1/fixtures/E5-episode-draft.md",
+        "to": "episode-draft.md"
+      },
+      {
+        "from": "eval/v1/fixtures/E5-rules.md",
+        "to": "E5-rules.md"
+      },
+      {
+        "from": "eval/v1/fixtures/E5-config.json",
+        "to": "E5-config.json"
+      }
+    ],
+    "output": {
+      "path": "quality_report.json",
+      "kind": "json"
+    }
+  },
+  "expected": {
+    "fixtureDraft": "eval/v1/fixtures/E5-episode-draft.md",
+    "fixtureConfig": "eval/v1/fixtures/E5-config.json",
+    "requiredVerdict": "fail",
+    "plantedCodes": [
+      "C002",
+      "C006",
+      "Q_SCENE_HEADER_MIXED",
+      "Q_HOOK_ABSTRACT",
+      "Q_OS_FORMAT",
+      "Q_NAME_VARIANT"
+    ],
+    "maxFalsePositive": 1,
+    "requiredSeverityMatch": true,
+    "findingEvidenceMinChars": 6
+  },
+  "grader": {
+    "function": "grade_E5",
+    "entry": "graders/grade.py",
+    "cli": "python3 harness/graders/grade.py --task E5 --output <file> --json",
+    "passRule": "全部 checks 通过（blocking=all）"
+  },
+  "selftest": {
+    "positive": "graders/tests/E5/positive/quality_report.json",
+    "negative": "graders/tests/E5/negative/quality_report.json"
+  },
+  "budget": {
+    "k": 3,
+    "maxTurns": 10,
+    "maxToolCalls": 30,
+    "maxWallClockSeconds": 300,
+    "usd": null,
+    "note": "DSH 不提供按会话美元成本；ledger 只记 turns/toolCalls/wallClock 与预算是否打满，禁止编造 usd"
+  }
+}

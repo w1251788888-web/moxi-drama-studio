@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "id": "E1",
+  "slug": "project-init",
+  "title": "E1 项目初始化：产出符合数据契约 §2 的 project.json",
+  "goal": "把用户立项简报落成 schema 合法的项目卡：必填字段齐全、值域正确、wordRange 按 D-06 公式折算。",
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "input": {
+    "prompt": "你是墨戏生花 v2 的创作内核 Agent。任务：根据 brief.md 的立项简报，产出项目卡 project.json（数据契约 v1 §2）。\n\n## 输入\n- brief.md：用户立项简报（只读）\n\n## 输出\n- 只在工作区根目录写 project.json（UTF-8 JSON）；不要写其他文件，不要输出解释。\n\n## project.json 字段（一个不能少，也不能多；多出未定义字段判失败）\n- schemaVersion: 1\n- id: 字符串，格式 proj_ + 26 位 Crockford Base32（字符集 0-9 A-H J K M N P-T V-Z，不含 I L O U）\n- title: 简报里的剧名，不要带书名号\n- logline: 字符串，≥20 字，必须出现“林小满”\n- genre: {\"main\": \"家庭\", \"sub\": \"女性成长\"}\n- audience: \"女频\"\n- format: \"真人短剧\"\n- episodeCount: 12\n- episodeSeconds: 90\n- wordRange: {min, max}，按 D-06 字数折算公式：seconds = clamp(episodeSeconds, 30, 600)；min = max(100, round(seconds/90*1000))；max = max(min, round(seconds/90*1550))\n- sceneHeaderStyle: \"bracket\"\n- status: \"active\"\n- rulesPack: \"rules/v2\"\n- createdAt / updatedAt: ISO 8601 带时区（例 2026-11-06T02:00:00+08:00），updatedAt 不早于 createdAt\n",
+    "workspaceFiles": [
+      {
+        "from": "eval/v1/fixtures/E1-brief.md",
+        "to": "brief.md"
+      }
+    ],
+    "output": {
+      "path": "project.json",
+      "kind": "json"
+    }
+  },
+  "expected": {
+    "requiredKeys": [
+      "schemaVersion",
+      "id",
+      "title",
+      "logline",
+      "genre",
+      "audience",
+      "format",
+      "episodeCount",
+      "episodeSeconds",
+      "wordRange",
+      "sceneHeaderStyle",
+      "status",
+      "rulesPack",
+      "createdAt",
+      "updatedAt"
+    ],
+    "title": "外婆的民宿谁来接",
+    "logline": {
+      "minCJK": 20,
+      "mustContain": [
+        "林小满"
+      ]
+    },
+    "idPattern": "^proj_[0-9A-HJKMNP-TV-Z]{26}$",
+    "wordRange": {
+      "min": 1000,
+      "max": 1550
+    },
+    "timestampPattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$",
+    "values": {
+      "schemaVersion": 1,
+      "audience": "女频",
+      "format": "真人短剧",
+      "episodeCount": 12,
+      "episodeSeconds": 90,
+      "sceneHeaderStyle": "bracket",
+      "status": "active",
+      "rulesPack": "rules/v2"
+    },
+    "genre": {
+      "main": "家庭",
+      "sub": "女性成长"
+    }
+  },
+  "grader": {
+    "function": "grade_E1",
+    "entry": "graders/grade.py",
+    "cli": "python3 harness/graders/grade.py --task E1 --output <file> --json",
+    "passRule": "全部 checks 通过（blocking=all）"
+  },
+  "selftest": {
+    "positive": "graders/tests/E1/positive/project.json",
+    "negative": "graders/tests/E1/negative/project.json"
+  },
+  "budget": {
+    "k": 3,
+    "maxTurns": 8,
+    "maxToolCalls": 20,
+    "maxWallClockSeconds": 240,
+    "usd": null,
+    "note": "DSH 不提供按会话美元成本；ledger 只记 turns/toolCalls/wallClock 与预算是否打满，禁止编造 usd"
+  }
+}

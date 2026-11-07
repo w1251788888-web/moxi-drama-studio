@@ -1,0 +1,18 @@
+{
+  "name": "moxi-core-bundle",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "墨戏生花 · 业务内核（DSH Host 插件）：项目工作区读写、状态机、审计、确定性检查、导出",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": ["index.js", "lib/*.js", "cordis.patch.yml"],
+  "engines": { "node": "^22.19.0 || >=24.0.0" },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "compatibility": { "dshReleases": { "0.2.1-rc.5+": "compatible" } }
+  }
+}

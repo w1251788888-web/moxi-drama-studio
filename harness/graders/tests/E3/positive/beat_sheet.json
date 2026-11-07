@@ -1,0 +1,1169 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "project": {
+    "title": "外婆的民宿谁来接",
+    "episodeCount": 12
+  },
+  "seasonCurve": {
+    "setup": [
+      1,
+      2
+    ],
+    "climb": [
+      3,
+      6
+    ],
+    "storm": [
+      7,
+      10
+    ],
+    "climax": [
+      11,
+      12
+    ]
+  },
+  "paywall": {
+    "a": 9,
+    "b": 10
+  },
+  "episodes": [
+    {
+      "episode": 1,
+      "title": "退租单",
+      "mainline": "关系线：林小满与周曼从多年不见的客气寒暄转为正面交锋",
+      "infoChain": "信息链：林小满在门口捡到退租通知单，落款是周曼，民宿限期十五天清空",
+      "powerShift": "权力变化：民宿经营权从周曼一人独掌，变成谁留下谁说了算的争议",
+      "openPromise": "未完成承诺：外婆遗嘱里一年期限的条件还没有被揭开",
+      "callbacks": [],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "门口铁门上贴着一张被风掀起的退租通知单"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满与周曼从多年不见的客气寒暄转为正面交锋"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "周曼当众承认通知单是她贴的，林小满被赶出民宿的处境被看见"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满当场揭下通知单折进口袋，宣布民宿她留下"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "林小满在门口捡到退租通知单，落款是周曼，民宿限期十五天清空"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "民宿经营权从周曼一人独掌，变成谁留下谁说了算的争议"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "周曼拿出账本，说民宿早就欠着钱"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "周曼把退租通知单按在铁门上，说十五天内必须清空"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "悬念钩子",
+          "subtag": "H2",
+          "reason": "门口铁门上贴着一张被风掀起的退租通知单"
+        },
+        "close": {
+          "type": "危机钩子",
+          "subtag": "H4",
+          "concrete": {
+            "scene": "潮汐民宿门口",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "退租通知单",
+            "action": "周曼把退租通知单按在铁门上，说十五天内必须清空"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.2,
+          "type": "伤害被看见",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "周曼当众承认通知单是她贴的，林小满被赶出民宿的处境被看见"
+        },
+        {
+          "position": 0.65,
+          "type": "反击得偿",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "林小满当场揭下通知单折进口袋，宣布民宿她留下"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 2,
+      "title": "台风夜",
+      "mainline": "关系线：林小满与周曼在台风夜翻林阿婆的旧账本，从对峙转成暂时合作",
+      "infoChain": "信息链：旧账本夹层里藏着外婆手写的遗嘱条件",
+      "powerShift": "权力变化：林小满拿到遗嘱线索，第一次握住谈判筹码",
+      "openPromise": "未完成承诺：遗嘱全文还没找到，周曼的债主是谁也没露头",
+      "callbacks": [
+        {
+          "episode": 1,
+          "event": "承接上一集：周曼把退租通知单按在铁门上，说十五天内必须清空"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "旧账本里掉出一张写着字的纸条"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满与周曼在台风夜翻林阿婆的旧账本，从对峙转成暂时合作"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "台风漏水两人一起搬沙袋，周曼第一次递毛巾给林小满"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满亮出纸条，老周认出那是外婆的字"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "旧账本夹层里藏着外婆手写的遗嘱条件"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "林小满拿到遗嘱线索，第一次握住谈判筹码"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "周曼说债已经转到开发商名下"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "林小满从账本夹层抽出一张写着满一年的纸条，周曼在门口看得脸色发白"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "信息钩子",
+          "subtag": "H8",
+          "reason": "旧账本里掉出一张写着字的纸条"
+        },
+        "close": {
+          "type": "反转钩子",
+          "subtag": "H6",
+          "concrete": {
+            "scene": "潮汐民宿库房",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "旧账本",
+            "action": "林小满从账本夹层抽出一张写着满一年的纸条，周曼在门口看得脸色发白"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.28,
+          "type": "关系反转",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "台风漏水两人一起搬沙袋，周曼第一次递毛巾给林小满"
+        },
+        {
+          "position": 0.62,
+          "type": "身份暴露",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "林小满亮出纸条，老周认出那是外婆的字"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 3,
+      "title": "转债真相",
+      "mainline": "关系线：林小满与周曼从合作回到对立，争夺转让意向书的处置权",
+      "infoChain": "信息链：周曼承认已签转让意向书，开发商下周一签正式合同",
+      "powerShift": "权力变化：民宿去留有了明确倒计时，主动权似乎回到周曼手里",
+      "openPromise": "未完成承诺：转让合同能不能在签约前被推翻",
+      "callbacks": [
+        {
+          "episode": 2,
+          "event": "承接上一集：林小满从账本夹层抽出一张写着满一年的纸条，周曼在门口看得脸色发白"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "开发商的车停在民宿门口，下来两个陌生人"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满与周曼从合作回到对立，争夺转让意向书的处置权"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "周曼当面承认签字的人是她，林小满被排除在决定之外"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满指出意向书日期在遗嘱之前，周曼一时语塞"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "周曼承认已签转让意向书，开发商下周一签正式合同"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "民宿去留有了明确倒计时，主动权似乎回到周曼手里"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "意向书上的日期早于外婆去世的日子"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "周曼把转让意向书推过柜台，林小满盯着签字页上没有外婆的名字"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "危机钩子",
+          "subtag": "H1",
+          "reason": "开发商的车停在民宿门口，下来两个陌生人"
+        },
+        "close": {
+          "type": "悬念钩子",
+          "subtag": "H2",
+          "concrete": {
+            "scene": "潮汐民宿前台",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "转让意向书",
+            "action": "周曼把转让意向书推过柜台，林小满盯着签字页上没有外婆的名字"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.24,
+          "type": "伤害被看见",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "周曼当面承认签字的人是她，林小满被排除在决定之外"
+        },
+        {
+          "position": 0.6,
+          "type": "规则兑现",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "林小满指出意向书日期在遗嘱之前，周曼一时语塞"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 4,
+      "title": "第一位客人",
+      "mainline": "关系线：林小满用经营证明自己，周曼从冷眼旁观变成暗中配合",
+      "infoChain": "信息链：林小满改造的海景房被客人拍成短视频传上网",
+      "powerShift": "权力变化：客人带来的现金流让民宿第一次有了留下来的可能",
+      "openPromise": "未完成承诺：第一位客人退房前留下一句关于外婆的旧事",
+      "callbacks": [
+        {
+          "episode": 3,
+          "event": "承接上一集：周曼把转让意向书推过柜台，林小满盯着签字页上没有外婆的名字"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "第一位客人站在门口说，这间房她小时候住过"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满用经营证明自己，周曼从冷眼旁观变成暗中配合"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "客人当众夸林小满改得好，周曼第一次没有反驳"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满用第一笔房费补上欠款，把收据拍在柜台上"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "林小满改造的海景房被客人拍成短视频传上网"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "客人带来的现金流让民宿第一次有了留下来的可能"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "客人的母亲和外婆是旧识"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "客人发的短视频冲上本地热榜，评论区有人问这间民宿是不是还在营业"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "情感钩子",
+          "subtag": "H5",
+          "reason": "第一位客人站在门口说，这间房她小时候住过"
+        },
+        "close": {
+          "type": "信息钩子",
+          "subtag": "H9",
+          "concrete": {
+            "scene": "潮汐民宿院子",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "短视频",
+            "action": "客人发的短视频冲上本地热榜，评论区有人问这间民宿是不是还在营业"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.22,
+          "type": "伤害被看见",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "客人当众夸林小满改得好，周曼第一次没有反驳"
+        },
+        {
+          "position": 0.68,
+          "type": "反击得偿",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "林小满用第一笔房费补上欠款，把收据拍在柜台上"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 5,
+      "title": "房费之争",
+      "mainline": "关系线：林小满与周曼为房费归属第一次真正翻脸",
+      "infoChain": "信息链：周曼把客人房费直接划走还债，账上没有留下成本",
+      "powerShift": "权力变化：林小满发现自己没有对账权限，决定夺回账本",
+      "openPromise": "未完成承诺：那笔房费到底补了哪一笔债",
+      "callbacks": [
+        {
+          "episode": 4,
+          "event": "承接上一集：客人发的短视频冲上本地热榜，评论区有人问这间民宿是不是还在营业"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "客人说房费已经付给柜台另一个人"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满与周曼为房费归属第一次真正翻脸"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "老周撞见姐妹吵架，第一次对周曼说你别再瞒了"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满当众说清民宿成本，客人表示愿意等整改"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "周曼把客人房费直接划走还债，账上没有留下成本"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "林小满发现自己没有对账权限，决定夺回账本"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "周曼划走房费的那笔债写着老周的名字"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "林小满把账本翻到缺口那一页，周曼沉默着把钢笔盖合上"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "反转钩子",
+          "subtag": "H6",
+          "reason": "客人说房费已经付给柜台另一个人"
+        },
+        "close": {
+          "type": "情感钩子",
+          "subtag": "H3",
+          "concrete": {
+            "scene": "潮汐民宿前台",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "账本",
+            "action": "林小满把账本翻到缺口那一页，周曼沉默着把钢笔盖合上"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.26,
+          "type": "伤害被看见",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "老周撞见姐妹吵架，第一次对周曼说你别再瞒了"
+        },
+        {
+          "position": 0.7,
+          "type": "现实代价",
+          "witnesses": [
+            "林小满"
+          ],
+          "description": "林小满当众说清民宿成本，客人表示愿意等整改"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 6,
+      "title": "铜钥匙",
+      "mainline": "关系线：周曼把库房铜钥匙交给林小满，两人第一次并肩",
+      "infoChain": "信息链：库房里锁着外婆生前没寄出的信和一份旧遗嘱草稿",
+      "powerShift": "权力变化：账目与库房第一次对林小满同时打开",
+      "openPromise": "未完成承诺：旧遗嘱草稿和正式遗嘱是不是同一份",
+      "callbacks": [
+        {
+          "episode": 5,
+          "event": "承接上一集：林小满把账本翻到缺口那一页，周曼沉默着把钢笔盖合上"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "库房门锁着，周曼在门口犹豫了半分钟"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "周曼把库房铜钥匙交给林小满，两人第一次并肩"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "周曼第一次承认这店她一个人撑不住"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "信里写着外婆早就知道开发商要买地"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "库房里锁着外婆生前没寄出的信和一份旧遗嘱草稿"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "账目与库房第一次对林小满同时打开"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "信上的日期是外婆去世前三天"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "周曼把铜钥匙放进林小满掌心，说里面有一封写着你名字的信"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "信息钩子",
+          "subtag": "H8",
+          "reason": "库房门锁着，周曼在门口犹豫了半分钟"
+        },
+        "close": {
+          "type": "悬念钩子",
+          "subtag": "H2",
+          "concrete": {
+            "scene": "潮汐民宿库房",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "铜钥匙",
+            "action": "周曼把铜钥匙放进林小满掌心，说里面有一封写着你名字的信"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.18,
+          "type": "关系反转",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "周曼第一次承认这店她一个人撑不住"
+        },
+        {
+          "position": 0.66,
+          "type": "身份暴露",
+          "witnesses": [
+            "林小满"
+          ],
+          "description": "信里写着外婆早就知道开发商要买地"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 7,
+      "title": "账目缺口",
+      "mainline": "关系线：林小满对账发现三年账目缺口，同盟出现第一道裂痕",
+      "infoChain": "信息链：缺口总额正好等于老周的手术费",
+      "powerShift": "权力变化：林小满握着账目证据，第一次掌握周曼的把柄",
+      "openPromise": "未完成承诺：周曼为什么不解释缺口的去向",
+      "callbacks": [
+        {
+          "episode": 6,
+          "event": "承接上一集：周曼把铜钥匙放进林小满掌心，说里面有一封写着你名字的信"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "银行的催款短信半夜发到了民宿的公号上"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满对账发现三年账目缺口，同盟出现第一道裂痕"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "老周当众承认手术费是他借的，和女儿无关"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满在渔市把缺口账目念给所有商户听，周曼弯腰去捡掉在地上的单据"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "缺口总额正好等于老周的手术费"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "林小满握着账目证据，第一次掌握周曼的把柄"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "医院缴费单上的日期跨了整整三年"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "林小满把缺口明细推到周曼面前，周曼把手机倒扣在桌上，屏幕还亮着医院缴费单"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "危机钩子",
+          "subtag": "H4",
+          "reason": "银行的催款短信半夜发到了民宿的公号上"
+        },
+        "close": {
+          "type": "反转钩子",
+          "subtag": "H11",
+          "concrete": {
+            "scene": "潮汐民宿前台",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "账目明细",
+            "action": "林小满把缺口明细推到周曼面前，周曼把手机倒扣在桌上，屏幕还亮着医院缴费单"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.25,
+          "type": "伤害被看见",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "老周当众承认手术费是他借的，和女儿无关"
+        },
+        {
+          "position": 0.72,
+          "type": "围观打脸",
+          "witnesses": [
+            "陈砚"
+          ],
+          "description": "林小满在渔市把缺口账目念给所有商户听，周曼弯腰去捡掉在地上的单据"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 8,
+      "title": "台风又近",
+      "mainline": "关系线：林小满与周曼在抢修屋顶时被迫重新站到一边",
+      "infoChain": "信息链：第二轮台风预警来了，民宿屋顶必须马上修",
+      "powerShift": "权力变化：修缮资金决定谁能撑到签约日",
+      "openPromise": "未完成承诺：修缮款从哪来，陈砚的方案里藏着什么条件",
+      "callbacks": [
+        {
+          "episode": 7,
+          "event": "承接上一集：林小满把缺口明细推到周曼面前，周曼把手机倒扣在桌上，屏幕还亮着医院缴费单"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "台风预警广播响起时，周曼第一个爬上屋顶"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满与周曼在抢修屋顶时被迫重新站到一边"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "周曼把最后一次现金交给林小满买材料，两人第一次对账对到深夜"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "老周看到女儿手上的瓦片划伤，第一次在饭桌上沉默"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "第二轮台风预警来了，民宿屋顶必须马上修"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "修缮资金决定谁能撑到签约日"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "方案里藏着一条整栋转让条款"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "陈砚把图纸摊在屋顶上，说要修可以，但得按开发商的方案改"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "情感钩子",
+          "subtag": "H5",
+          "reason": "台风预警广播响起时，周曼第一个爬上屋顶"
+        },
+        "close": {
+          "type": "危机钩子",
+          "subtag": "H1",
+          "concrete": {
+            "scene": "潮汐民宿屋顶",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "设计图纸",
+            "action": "陈砚把图纸摊在屋顶上，说要修可以，但得按开发商的方案改"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.3,
+          "type": "关系反转",
+          "witnesses": [
+            "陈砚"
+          ],
+          "description": "周曼把最后一次现金交给林小满买材料，两人第一次对账对到深夜"
+        },
+        {
+          "position": 0.64,
+          "type": "伤害被看见",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "老周看到女儿手上的瓦片划伤，第一次在饭桌上沉默"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 9,
+      "title": "设计图纸",
+      "mainline": "关系线：林小满发现陈砚受聘开发商，当众撕掉设计图纸",
+      "infoChain": "信息链：陈砚的委托合同写着开发商的名字，图纸是整栋改造方案",
+      "powerShift": "权力变化：林小满失去唯一的技术外援，但拿回了不妥协的资格",
+      "openPromise": "未完成承诺：陈砚到底是帮谁，他为什么隐瞒委托方",
+      "callbacks": [
+        {
+          "episode": 8,
+          "event": "承接上一集：陈砚把图纸摊在屋顶上，说要修可以，但得按开发商的方案改"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "林小满在陈砚的包里翻出一份盖着开发商公章的委托合同"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "林小满发现陈砚受聘开发商，当众撕掉设计图纸"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "林小满把委托合同念给周曼听，陈砚站在原地没有辩白"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满宣布不用开发商一分钱，用外婆的旧图纸自己修"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "陈砚的委托合同写着开发商的名字，图纸是整栋改造方案"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "林小满失去唯一的技术外援，但拿回了不妥协的资格"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "陈砚在图纸背面留了一行字：模板可以拆，主体不能动"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "林小满当众撕掉设计图纸，纸屑落在陈砚脚边，陈砚没有解释"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "悬念钩子",
+          "subtag": "H3",
+          "reason": "林小满在陈砚的包里翻出一份盖着开发商公章的委托合同"
+        },
+        "close": {
+          "type": "反转钩子",
+          "subtag": "H6",
+          "concrete": {
+            "scene": "潮汐民宿院子",
+            "characters": [
+              "林小满",
+              "陈砚"
+            ],
+            "prop": "设计图纸",
+            "action": "林小满当众撕掉设计图纸，纸屑落在陈砚脚边，陈砚没有解释"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.24,
+          "type": "伤害被看见",
+          "witnesses": [
+            "陈砚"
+          ],
+          "description": "林小满把委托合同念给周曼听，陈砚站在原地没有辩白"
+        },
+        {
+          "position": 0.7,
+          "type": "亮牌逆袭",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "林小满宣布不用开发商一分钱，用外婆的旧图纸自己修"
+        }
+      ],
+      "paywall": "A"
+    },
+    {
+      "episode": 10,
+      "title": "收房",
+      "mainline": "关系线：开发商上门收房，林小满与周曼第一次站在同一侧",
+      "infoChain": "信息链：开发商带人上门收房，林小满拿出外婆遗嘱复印件",
+      "powerShift": "权力变化：民宿去留进入正面摊牌，合同与遗嘱正面对撞",
+      "openPromise": "未完成承诺：遗嘱能不能拦住已经签好的合同",
+      "callbacks": [
+        {
+          "episode": 9,
+          "event": "承接上一集：林小满当众撕掉设计图纸，纸屑落在陈砚脚边，陈砚没有解释"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "开发商的人把收房通知钉在民宿大门上"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "开发商上门收房，林小满与周曼第一次站在同一侧"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "周曼挡在林小满前面，说合同要签先过她这一关"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "林小满当众读出一年条件，围观的岛民开始附和"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "开发商带人上门收房，林小满拿出外婆遗嘱复印件"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "民宿去留进入正面摊牌，合同与遗嘱正面对撞"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "电话那头的人知道外婆的名字"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "林小满把遗嘱复印件拍在收房通知上，开发商的人当场打电话请示"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "信息钩子",
+          "subtag": "H9",
+          "reason": "开发商的人把收房通知钉在民宿大门上"
+        },
+        "close": {
+          "type": "危机钩子",
+          "subtag": "H4",
+          "concrete": {
+            "scene": "潮汐民宿门口",
+            "characters": [
+              "林小满",
+              "周曼"
+            ],
+            "prop": "遗嘱复印件",
+            "action": "林小满把遗嘱复印件拍在收房通知上，开发商的人当场打电话请示"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.22,
+          "type": "关系反转",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "周曼挡在林小满前面，说合同要签先过她这一关"
+        },
+        {
+          "position": 0.66,
+          "type": "反击得偿",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "林小满当众读出一年条件，围观的岛民开始附和"
+        }
+      ],
+      "paywall": "B"
+    },
+    {
+      "episode": 11,
+      "title": "挪用真相",
+      "mainline": "关系线：周曼承认挪用房费给父亲治病，姐妹当众对峙",
+      "infoChain": "信息链：账目缺口全部流向医院，周曼没有拿过一分钱",
+      "powerShift": "权力变化：林小满掌握真相，周曼交出账本与经营权",
+      "openPromise": "未完成承诺：林小满会不会报警，姐妹还能不能收场",
+      "callbacks": [
+        {
+          "episode": 10,
+          "event": "承接上一集：林小满把遗嘱复印件拍在收房通知上，开发商的人当场打电话请示"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "医院缴费单和账目缺口对上了同一笔钱"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "周曼承认挪用房费给父亲治病，姐妹当众对峙"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "老周第一次在众人面前给女儿鞠躬认错"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "陈砚说出外婆生前也替他还过学费，民宿不能卖"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "账目缺口全部流向医院，周曼没有拿过一分钱"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "林小满掌握真相，周曼交出账本与经营权"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "老周当众承认手术费是他求女儿挪的"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "周曼把医院缴费单和账本并排放在柜台上，说钱是她挪的，店她不要了"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "情感钩子",
+          "subtag": "H5",
+          "reason": "医院缴费单和账目缺口对上了同一笔钱"
+        },
+        "close": {
+          "type": "信息钩子",
+          "subtag": "H8",
+          "concrete": {
+            "scene": "潮汐民宿前台",
+            "characters": [
+              "林小满",
+              "周曼",
+              "老周"
+            ],
+            "prop": "医院缴费单",
+            "action": "周曼把医院缴费单和账本并排放在柜台上，说钱是她挪的，店她不要了"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.26,
+          "type": "伤害被看见",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "老周第一次在众人面前给女儿鞠躬认错"
+        },
+        {
+          "position": 0.68,
+          "type": "身份暴露",
+          "witnesses": [
+            "陈砚"
+          ],
+          "description": "陈砚说出外婆生前也替他还过学费，民宿不能卖"
+        }
+      ],
+      "paywall": null
+    },
+    {
+      "episode": 12,
+      "title": "外婆的厨房",
+      "mainline": "关系线：签约日林小满与周曼和解，关系落地为共同经营",
+      "infoChain": "信息链：林小满宣布民宿改做外婆的厨房，周曼留下当店长",
+      "powerShift": "权力变化：民宿继承权落定，经营权回到两姐妹手里",
+      "openPromise": "未完成承诺：全剧收束，最后留一个外婆旧信的下文",
+      "callbacks": [
+        {
+          "episode": 11,
+          "event": "承接上一集：周曼把医院缴费单和账本并排放在柜台上，说钱是她挪的，店她不要了"
+        }
+      ],
+      "beats": [
+        {
+          "no": 1,
+          "kind": "open_hook",
+          "text": "签约日上午十点，开发商的车准时停在门口"
+        },
+        {
+          "no": 2,
+          "kind": "conflict",
+          "text": "签约日林小满与周曼和解，关系落地为共同经营"
+        },
+        {
+          "no": 3,
+          "kind": "satisfaction",
+          "text": "林小满当众拒绝开发商最后一笔钱，岛民在院子里鼓掌"
+        },
+        {
+          "no": 4,
+          "kind": "satisfaction",
+          "text": "周曼接过店长围裙，第一次叫林小满一声妹"
+        },
+        {
+          "no": 5,
+          "kind": "reveal",
+          "text": "林小满宣布民宿改做外婆的厨房，周曼留下当店长"
+        },
+        {
+          "no": 6,
+          "kind": "escalation",
+          "text": "民宿继承权落定，经营权回到两姐妹手里"
+        },
+        {
+          "no": 7,
+          "kind": "twist",
+          "text": "开发商看完遗嘱复印件，主动撤回了合同"
+        },
+        {
+          "no": 8,
+          "kind": "close_hook",
+          "text": "林小满挂上外婆的厨房招牌，周曼把转让意向书塞进灶膛，火光照亮两个人的脸"
+        }
+      ],
+      "hooks": {
+        "open": {
+          "type": "危机钩子",
+          "subtag": "H1",
+          "reason": "签约日上午十点，开发商的车准时停在门口"
+        },
+        "close": {
+          "type": "反转钩子",
+          "subtag": "H6",
+          "concrete": {
+            "scene": "潮汐民宿前厅",
+            "characters": [
+              "林小满",
+              "周曼",
+              "陈砚"
+            ],
+            "prop": "外婆的厨房招牌",
+            "action": "林小满挂上外婆的厨房招牌，周曼把转让意向书塞进灶膛，火光照亮两个人的脸"
+          }
+        }
+      },
+      "satisfactionPoints": [
+        {
+          "position": 0.3,
+          "type": "反击得偿",
+          "witnesses": [
+            "老周"
+          ],
+          "description": "林小满当众拒绝开发商最后一笔钱，岛民在院子里鼓掌"
+        },
+        {
+          "position": 0.76,
+          "type": "关系反转",
+          "witnesses": [
+            "周曼"
+          ],
+          "description": "周曼接过店长围裙，第一次叫林小满一声妹"
+        }
+      ],
+      "paywall": null
+    }
+  ]
+}

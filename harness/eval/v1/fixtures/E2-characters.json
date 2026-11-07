@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "series": "外婆的民宿谁来接",
+  "characters": [
+    {
+      "canonicalName": "林小满",
+      "role": "女主",
+      "age": 28,
+      "identity": "被裁员的室内设计师，回岛接手外婆的民宿",
+      "voice": "短句、爱算账、嘴硬心软",
+      "forbiddenVariants": [
+        "林小曼",
+        "林晓满"
+      ]
+    },
+    {
+      "canonicalName": "周曼",
+      "role": "女二 / 表姐",
+      "age": 30,
+      "identity": "潮汐民宿实际经营者，账目和钥匙都在她手里",
+      "voice": "锋利、先算钱后讲情",
+      "forbiddenVariants": [
+        "周曼曼",
+        "周漫漫"
+      ]
+    },
+    {
+      "canonicalName": "陈砚",
+      "role": "男主",
+      "age": 32,
+      "identity": "建筑师，外婆生前资助过的学生，受设计院委派来量房",
+      "voice": "克制、只说事实",
+      "forbiddenVariants": [
+        "陈彦",
+        "陈砚之"
+      ]
+    },
+    {
+      "canonicalName": "林阿婆",
+      "role": "外婆",
+      "age": 78,
+      "identity": "已去世刚满一年，潮汐民宿原主人，留下遗嘱",
+      "voice": "只在遗物与回忆中出现",
+      "forbiddenVariants": [
+        "林奶奶",
+        "林婆婆"
+      ]
+    },
+    {
+      "canonicalName": "老周",
+      "role": "舅舅",
+      "age": 55,
+      "identity": "周曼父亲，岛上开渔家乐",
+      "voice": "和稀泥、爱打圆场",
+      "forbiddenVariants": []
+    }
+  ],
+  "addressForms": {
+    "林小满": [
+      "小满"
+    ],
+    "周曼": [
+      "曼曼"
+    ],
+    "陈砚": [
+      "砚哥"
+    ],
+    "林阿婆": [
+      "外婆",
+      "阿婆"
+    ],
+    "老周": [
+      "舅舅"
+    ]
+  },
+  "props": [
+    "退租通知单",
+    "外婆的旧账本",
+    "铜钥匙",
+    "转让意向书",
+    "遗嘱复印件",
+    "设计图纸"
+  ],
+  "places": [
+    "南屿岛",
+    "潮汐民宿",
+    "码头",
+    "渔市",
+    "库房"
+  ]
+}

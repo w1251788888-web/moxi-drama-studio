@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "proj_123",
+  "title": "《外婆的民宿谁来接》",
+  "logline": "被裁员的室内设计师林小满回到南屿岛想守住外婆的民宿，却发现表姐周曼已经把它抵押给了开发商。",
+  "genre": {
+    "main": "家庭",
+    "sub": "女性成长"
+  },
+  "audience": "男频",
+  "format": "漫剧",
+  "episodeCount": 12,
+  "episodeSeconds": 90,
+  "wordRange": {
+    "min": 800,
+    "max": 1200
+  },
+  "sceneHeaderStyle": "bracket",
+  "status": "draft",
+  "rulesPack": "rules/v2",
+  "createdAt": "2026-11-06T02:00:00+08:00",
+  "updatedAt": "2026-11-06T02:00:00+08:00",
+  "brief": "未定义字段，不应出现"
+}

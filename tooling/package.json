@@ -1,0 +1,9 @@
+{
+  "name": "moxi-tooling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "墨戏生花构建工具依赖：esbuild（把 dsh/bundles/*/src/client.jsx 打包成 DSH 客户端产物）",
+  "devDependencies": {
+    "esbuild": "0.27.3"
+  }
+}

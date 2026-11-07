@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "title": "外婆的民宿谁来接",
+    "format": "真人短剧",
+    "episode": 3,
+    "episodeTitle": "转债真相",
+    "episodeSeconds": 90,
+    "wordRange": {
+      "min": 1000,
+      "max": 1550
+    },
+    "sceneHeaderStyle": "bracket",
+    "sceneCount": 6,
+    "timeline": "第 3 集发生在台风过后第二天"
+  },
+  "characters": [
+    {
+      "canonicalName": "林小满",
+      "role": "女主",
+      "age": 28,
+      "identity": "被裁员的室内设计师，回岛接手外婆的民宿",
+      "voice": "短句、爱算账、嘴硬心软",
+      "forbiddenVariants": [
+        "林小曼",
+        "林晓满"
+      ]
+    },
+    {
+      "canonicalName": "周曼",
+      "role": "女二 / 表姐",
+      "age": 30,
+      "identity": "潮汐民宿实际经营者，账目和钥匙都在她手里",
+      "voice": "锋利、先算钱后讲情",
+      "forbiddenVariants": [
+        "周曼曼",
+        "周漫漫"
+      ]
+    },
+    {
+      "canonicalName": "陈砚",
+      "role": "男主",
+      "age": 32,
+      "identity": "建筑师，外婆生前资助过的学生，受设计院委派来量房",
+      "voice": "克制、只说事实",
+      "forbiddenVariants": [
+        "陈彦",
+        "陈砚之"
+      ]
+    },
+    {
+      "canonicalName": "林阿婆",
+      "role": "外婆",
+      "age": 78,
+      "identity": "已去世刚满一年，潮汐民宿原主人，留下遗嘱",
+      "voice": "只在遗物与回忆中出现",
+      "forbiddenVariants": [
+        "林奶奶",
+        "林婆婆"
+      ]
+    },
+    {
+      "canonicalName": "老周",
+      "role": "舅舅",
+      "age": 55,
+      "identity": "周曼父亲，岛上开渔家乐",
+      "voice": "和稀泥、爱打圆场",
+      "forbiddenVariants": []
+    }
+  ],
+  "addressForms": {
+    "林小满": [
+      "小满"
+    ],
+    "周曼": [
+      "曼曼"
+    ],
+    "陈砚": [
+      "砚哥"
+    ],
+    "林阿婆": [
+      "外婆",
+      "阿婆"
+    ],
+    "老周": [
+      "舅舅"
+    ]
+  },
+  "scenes": [
+    {
+      "no": "3-1",
+      "time": "日",
+      "inOut": "外",
+      "location": "潮汐民宿院子",
+      "summary": "台风过后清点损失，招牌和花架都倒了"
+    },
+    {
+      "no": "3-2",
+      "time": "日",
+      "inOut": "内",
+      "location": "潮汐民宿前台",
+      "summary": "周曼摊牌已签转让意向书，下周一签正式合同"
+    },
+    {
+      "no": "3-3",
+      "time": "日",
+      "inOut": "内",
+      "location": "潮汐民宿厨房",
+      "summary": "老周煮姜茶，提到外婆遗嘱的一年条件"
+    },
+    {
+      "no": "3-4",
+      "time": "日",
+      "inOut": "内",
+      "location": "潮汐民宿库房",
+      "summary": "周曼把铜钥匙交给林小满，两人一起翻外婆的旧账本"
+    },
+    {
+      "no": "3-5",
+      "time": "日",
+      "inOut": "外",
+      "location": "潮汐民宿院子",
+      "summary": "陈砚带着设计院图纸到场，说明自己只是建筑师"
+    },
+    {
+      "no": "3-6",
+      "time": "日",
+      "inOut": "内",
+      "location": "潮汐民宿前台",
+      "summary": "林小满把转让意向书压在账本下，放话下周一之前让民宿留下来"
+    }
+  ],
+  "facts": [
+    {
+      "id": "F1",
+      "desc": "外婆去世刚满一年",
+      "keyword": "一年"
+    },
+    {
+      "id": "F2",
+      "desc": "铜钥匙自第 2 集起由周曼保管，本集她把它交给林小满",
+      "keyword": "铜钥匙"
+    },
+    {
+      "id": "F3",
+      "desc": "本集是台风过后第二天",
+      "keyword": "台风过后"
+    },
+    {
+      "id": "F4",
+      "desc": "陈砚身份是建筑师，不是开发商、不是民宿老板",
+      "keyword": "建筑师"
+    },
+    {
+      "id": "F5",
+      "desc": "人物名一律用 canonicalName",
+      "keyword": "林小满"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C1",
+      "kind": "timeline",
+      "desc": "外婆去世时长：canon 是刚满一年，草稿写成三年",
+      "wrongLiteral": "走了三年",
+      "wrongPattern": null,
+      "fixLiteral": "一年",
+      "hint": "改写去世时长"
+    },
+    {
+      "id": "C2",
+      "kind": "name",
+      "desc": "女主姓名：canon 是林小满，草稿出现林小曼",
+      "wrongLiteral": "林小曼",
+      "wrongPattern": null,
+      "fixLiteral": "林小满",
+      "hint": "改回 canonicalName"
+    },
+    {
+      "id": "C3",
+      "kind": "prop",
+      "desc": "铜钥匙：第 2 集起由周曼保管，第 3 集不能写林小满第一次用它开库房",
+      "wrongLiteral": "第一次用铜钥匙",
+      "wrongPattern": null,
+      "fixLiteral": "铜钥匙",
+      "hint": "改成周曼把钥匙交给林小满"
+    },
+    {
+      "id": "C4",
+      "kind": "timeline",
+      "desc": "时间线：第 3 集是台风过后，草稿写成台风还没来",
+      "wrongLiteral": "台风还没来",
+      "wrongPattern": null,
+      "fixLiteral": "台风过后",
+      "hint": "改成台风过后"
+    },
+    {
+      "id": "C5",
+      "kind": "identity",
+      "desc": "陈砚身份：canon 是建筑师，草稿写成开发商老板",
+      "wrongLiteral": null,
+      "wrongPattern": "陈砚[^。\\n]{0,10}老板",
+      "fixLiteral": "建筑师",
+      "hint": "改回建筑师身份，不能称老板"
+    }
+  ],
+  "forbiddenNameVariants": [
+    "林小曼",
+    "林晓满",
+    "周曼曼",
+    "周漫漫",
+    "陈彦",
+    "陈砚之",
+    "林奶奶",
+    "林婆婆"
+  ]
+}

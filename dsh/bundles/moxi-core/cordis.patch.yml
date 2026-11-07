@@ -1,0 +1,8 @@
+# moxi-core bundle patch layer
+# Host 半：业务服务（项目/画布/正文/检查/导出）+ Agent 工具 + /api/moxi/* 路由。
+- insert:
+    - id: moxi-core
+      name: moxi-core-bundle
+      config:
+        # 项目根；留空则依次取 MOXI_PROJECTS_ROOT 环境变量，再回落到 ~/Documents/Moxi/projects
+        projectsRoot: ""

@@ -1,0 +1,195 @@
+# 墨戏生花 Harness² · Surface 清单（c1–c8）
+#
+# 作用：把 Harness² 论文里的 8 个可编辑 surface，映射到 DSH 的真实 seams 与 v2 仓库路径。
+# 纪律：本文件只记录「当前值在哪、能不能改、改之前必须过什么门」，不复制任何密钥/令牌。
+# 版本：v1-skeleton（S2.4 / Track H）；改本文件等于改 harness 定义，必须 bump 版本并重跑 baseline。
+
+schemaVersion: 1
+harnessVersion: "v1-skeleton"
+generatedAt: "2026-11-06"
+method:
+  source: "Harness²（Google Research，不改模型权重、只改外围 harness）"
+  whatWeBorrow: "propose → probe → compose 闭环；eval 任务集；预算 ledger；经验库；patch 门"
+  whatWeDont: "不训练权重；不跑 Vertex/Docker；不引入 harness2 包依赖；v1 不做 improver session（P=0）"
+
+substrate:
+  name: "DeepSeek Harness (DSH)"
+  versionVerified: "0.2.1-rc.5"
+  profiles:
+    - name: "moxi"
+      purpose: "v2 产品专用 profile（画布 + 业务内核插件隔离区）"
+      configPath: "~/.dsh/profiles/moxi/cordis.patch.yml"
+      generatedConfig: "dsh --profile moxi --dump-config（只读，不落库）"
+    - name: "headless"
+      purpose: "未来 h2d rollout 的执行 profile（S3 验证）"
+      configPath: "~/.dsh/profiles/headless/"
+  patchValidationGate: "dsh --patch <file> --dump-config 退出码 0，且已知 id 不丢失（unknown id 会被静默丢弃）"
+  patchValidationVerified: true
+  readOnlyBoundary: "本任务不修改 ~/.dsh；surface 值只做路径引用"
+
+budget:
+  roundDefinition: "R = 6 任务 × k=3 draws = 18 次 rollout；P = 0 次 probe session（v1 不跑 improver）"
+  k: 3
+  limitsPerRound:
+    maxTurns: 192
+    maxToolCalls: 600
+    maxWallClockSeconds: 5760
+  usd: null
+  accounting: "DSH 不提供按会话美元成本；ledger 只记 model/turns/toolCalls/wallClockS/budgetHit，禁止编造 usd"
+  ledgerTemplate: "runs/ledger-template.jsonl"
+  guardrails:
+    - "单次 6/6 不算证明：看 k=3 的中位数与最差项"
+    - "换模型/换 surface 必须单变量，并在 ledger 记录 model 与 harnessId"
+    - "预算打满（budgetHit=true）的 draw 不计入提升证据"
+    - "连续 2 轮无提升或预算耗尽 → 冻结当前 harness，写未采纳原因"
+
+surfaces:
+  - id: c1
+    harnessComponent: "system prompt"
+    name: "persona / system-prompt"
+    currentValuePaths:
+      - "~/.dsh/profiles/moxi/cordis.patch.yml（profile patch；当前只有 ui-settings-general 一行，persona 走 shipped 默认）"
+      - "~/.dsh/profiles/moxi/cordis.yml（dump-config 生成态，persona / system-prompt 行）"
+      - "参考：旧项目 harness2-dsh/README.md 的 c1 映射与 patch 写法"
+    whereInV2: "dsh/bundles/moxi-core/cordis.patch.yml（bundle patch 层，S3 起承载 persona 增量）"
+    editability: "可编辑（走 profile patch 或 bundle patch；禁止直接手改 ~/.dsh 的生成文件）"
+    changeGate: "G2/G3 门 + dsh --patch --dump-config 退出码 0 + 单变量 + 预算 ledger 闭合"
+    validationCommand: "dsh --profile moxi --dump-config >/dev/null"
+    evalCoverage: ["全部 6 个 eval 任务的 prompt 都依赖 c1 的人设与输出纪律；E4/E6 对格式纪律最敏感"]
+    status: "not-yet-migrated（S2 只建清单，不改 persona）"
+
+  - id: c2
+    harnessComponent: "guardrails / 审批与沙箱"
+    name: "approval / permission / sandbox-policy"
+    currentValuePaths:
+      - "~/.dsh/profiles/moxi/cordis.yml 的 approval / permission / sandbox-policy / fs-sandbox 行"
+      - "当前会话实测：danger-full-access（开发期），不是目标态"
+      - "目标态：moxi profile 限制在 projectsRoot 内读写，写画布外文件需审批"
+    whereInV2: "dsh/bundles/moxi-core/cordis.patch.yml + moxi profile patch"
+    editability: "可编辑；但任何放宽都是高风险变更"
+    changeGate: "安全评审 + G2/G3 门 + 失败回滚路径逐条演练；不得为了让 eval 过关而放宽沙箱"
+    validationCommand: "dsh --profile moxi --dump-config | grep -A2 'sandbox-policy'"
+    evalCoverage: ["不直接计分；作为防作弊背景（不许 eval 期间改沙箱绕过输出纪律）"]
+    status: "dev-only（目标态未冻结）"
+
+  - id: c3
+    harnessComponent: "memory"
+    name: "AGENTS.md + canon + 项目工作区 instructions"
+    currentValuePaths:
+      - "新项目骨架由 moxi-core 在仓库外生成（模板随代码内置）"
+      - "docs/设计/数据契约-v1.md（project.json / canvas.json / content 的落盘口径）"
+      - "参考：旧项目 墨戏生花/canon/（只读，S3 迁移为 canon/ 目录）"
+      - "参考：harness2-dsh 的 workspace AGENTS.md 注入方式"
+    whereInV2: "项目工作区根 AGENTS.md + canon/ + rules/v2/manifest.json（S2.1 交付）"
+    editability: "可编辑（每个项目工作区独立）"
+    changeGate: "与 rules/v2 manifest 的引用一致性由 rules_lint 保证；改 AGENTS 需过 E1/E2/E3 回归"
+    validationCommand: "python3 scripts/rules_lint.py（S2.1 交付后）"
+    evalCoverage: ["E1（项目卡字段）/ E2（锚点覆盖）/ E3（跨集承接）"]
+    status: "not-yet-migrated（S3）"
+
+  - id: c4
+    harnessComponent: "tool guidance"
+    name: "Host 工具描述 + AGENTS.md 工具段"
+    currentValuePaths:
+      - "dsh/bundles/moxi-core/index.js registerTools()（当前 9 个工具：moxi_project_list / project_create / project_open / node_create / node_write / node_transition / edge_create / check_run / export）"
+      - "dsh/bundles/moxi-core/lib/checks.js（确定性检查码 C001–C007 / X001–X004）"
+      - "DSH shipped tool 行：tool-fs / tool-bash / tool-web / tool-skill / tool-jobs 等（~/.dsh/profiles/moxi/cordis.yml）"
+    whereInV2: "dsh/bundles/*/index.js 的 tool description + 项目 AGENTS.md 工具段"
+    editability: "可编辑（bundle 代码内的 description 字符串）"
+    changeGate: "改了工具描述必须重跑 E1（项目卡写入）/ E5（质检报告码表）/ E6（改稿写回）；desc 与实现语义必须一致"
+    validationCommand: "dsh --profile moxi --dump-config >/dev/null && node --check dsh/bundles/moxi-core/index.js"
+    evalCoverage: ["E5（必须复用 C 码口径）/ E6（改稿走 node_write 语义）"]
+    status: "partially-live（moxi-core bundle 已存在，但 eval 尚未接它跑 rollout）"
+
+  - id: c5
+    harnessComponent: "subagents / 模型路由"
+    name: "llm-pi-ai 模型表 + agent-default-model"
+    currentValuePaths:
+      - "~/.dsh/profiles/moxi/cordis.yml 的 llm-pi-ai / agent-default-model / subagent-model-selection-settings 行"
+      - "内部模型链路记录（未随仓库分发；实测矩阵与额度问题见开发日志）"
+      - "本轮会话实测 model：deepseek-flash"
+    whereInV2: "moxi profile 的模型表 + harness/runs/*/ledger.jsonl 的 model 字段"
+    editability: "可编辑（profile 级）；但 eval baseline 必须锁死模型"
+    changeGate: "改模型 = 换 baseline，必须新开 baseline 版本并全量重跑；ASRA/终审链路按 G2/G3 门"
+    validationCommand: "python3 scripts/model_probe.py --only deepseek-flash"
+    evalCoverage: ["全部任务；ledger 必须记录每个 draw 的 model，换模型不记录直接判本轮无效"]
+    status: "live（链路已实测；eval baseline 未跑）"
+
+  - id: c6
+    harnessComponent: "skills"
+    name: "skills/moxi-drama-creation"
+    currentValuePaths:
+      - "skills/（空，S3 建）"
+      - "参考源：~/.agents/skills/moxi-drama-creation/（用户级 skill，只读）"
+      - "待迁来源：moxi-drama-creation/02-creation-rules/（规则包，S2.1 迁 rules/v2）"
+    whereInV2: "skills/<name>/SKILL.md + references/"
+    editability: "可编辑（项目 skill 根）"
+    changeGate: "skill 变更必须与 rules/v2 manifest 对齐；过 E2/E3/E4 回归"
+    validationCommand: "python3 scripts/rules_lint.py（S2.1 交付后）"
+    evalCoverage: ["E2（概念）/ E3（节拍）/ E4（单场）"]
+    status: "not-yet-migrated（S3）"
+
+  - id: c7
+    harnessComponent: "scripts / 确定性工具"
+    name: "scripts/（质检、迁移、导出、eval grader）"
+    currentValuePaths:
+      - "scripts/model_probe.py（已有）"
+      - "scripts/rules_lint.py（S2.1 交付）"
+      - "scripts/migrate/legacy_sqlite_to_workspace.py + verify.py（S2.3 交付）"
+      - "harness/graders/grade.py + graders.py + checks.py（本任务交付，74 项 checks）"
+      - "dsh/bundles/moxi-core/lib/checks.js（生产侧确定性检查）"
+    whereInV2: "scripts/ 与 harness/graders/"
+    editability: "可编辑（普通文件）"
+    changeGate: "grader 改动必须过 --selftest（6 任务正/反例）与 --audit-isolation；改题必须 bump evalVersion"
+    validationCommand: "python3 harness/graders/grade.py --selftest"
+    evalCoverage: ["grader 本身就是 eval 的裁判；其口径漂移会静默反转结论（见 experience.md CUE-005）"]
+    status: "live"
+
+  - id: c8
+    harnessComponent: "plugins / loader 行"
+    name: "cordis.patch.yml 的 loader 行（插件启停）"
+    currentValuePaths:
+      - "dsh/bundles/moxi-core/ + moxi-canvas/（本地 link 安装）"
+      - "~/.dsh/profiles/moxi/package.json 的 dsh.profile.bundles（安装态，只读引用）"
+      - "~/.dsh/profiles/moxi/cordis.patch.yml（profile 追加行，当前 1 行 ui-settings-general）"
+    whereInV2: "dsh/bundles/*/cordis.patch.yml（bundle patch）+ profile patch"
+    editability: "可编辑（bundle patch 随代码走；profile patch 走 dsh plugin 命令）"
+    changeGate: "新增/停用插件必须过 dsh --patch --dump-config + 已知 id 检查 + 一次真实启动；影响 eval 则重跑 baseline"
+    validationCommand: "dsh --profile moxi --dump-config >/dev/null && dsh --profile moxi --no-open --port 0 --help >/dev/null"
+    evalCoverage: ["间接受影响：插件启停改变可用工具集，可能让 E4/E6 写文件路径行为变化"]
+    status: "partially-live（moxi-canvas + moxi-core 已 link）"
+
+eval:
+  version: "v1"
+  taskIds: ["E1", "E2", "E3", "E4", "E5", "E6"]
+  taskCount: 6
+  graderChecksTotal: 74
+  isolation: "合成题材《外婆的民宿谁来接》（海岛民宿继承），与验收项目《我的父母没素质》隔离"
+  index: "eval/v1/index.json"
+  selftest: "python3 harness/graders/grade.py --selftest"
+
+experience:
+  path: "experience.md"
+  format: "一条一个可迁移 cue；状态 seed/verified/rejected；必须带来源与反例"
+
+knownRulePackConflicts:
+  - id: RPC-1
+    issue: "数据契约 §2 的 format 枚举没有「漫剧」，而 pipeline project_type 有「漫剧-*」"
+    evalChoice: "eval v1 用 format=真人短剧 + 90 秒 + D-06 折算，避开枚举缺口"
+    needsLeadDecision: true
+  - id: RPC-2
+    issue: "付费墙节点两套口径：00_project_init_check §检查5 用 round(episode_count×0.3)；03_beat_sheet 用固定 8–12 集（节点A）+ round(ep×0.8)（节点B，<30 集压缩）"
+    evalChoice: "E3 采用 03_beat_sheet（标注 v1.1 平台数据、更具体）；E1 不含付费墙字段以避开冲突"
+    needsLeadDecision: true
+  - id: RPC-3
+    issue: "两套钩子分类：03_beat_sheet 的 5 种钩子公式（悬念/反转/情感/信息/危机）vs hook-patterns 的 5 主类（悬念/关系/代价/升级/反转）+ H1–H11 子标签"
+    evalChoice: "E3 分别校验（hooks.type 用 5 公式、hooks.subtag 用 H1–H11），不做跨分类映射"
+    needsLeadDecision: true
+  - id: RPC-4
+    issue: "moxi-core checks.js 的 C006 阈值是单场 <50 字，创作规则 05_script_draft 是单场 <150 判废"
+    evalChoice: "E5 按规则包 150 字判定，并在 E5-rules.md 标注 S3 需校准 moxi-core"
+    needsLeadDecision: true
+  - id: RPC-5
+    issue: "rules 说真人短剧无字数硬约束，但 D-06 字数折算公式对任何 episodeSeconds 都折算 1000–1550"
+    evalChoice: "eval 题面显式给出净字区间，按 D-06 公式执行；不赌 rules 的隐含例外"
+    needsLeadDecision: true

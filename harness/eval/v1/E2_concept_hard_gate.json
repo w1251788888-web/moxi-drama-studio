@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "id": "E2",
+  "slug": "concept-hard-gate",
+  "title": "E2 概念硬门：logline + 8–12 分集锚点 + 剧名主语判定",
+  "goal": "产出过硬门的概念卡：logline 含主角/目标/阻碍/代价，seasonAnchors 8–12 条且覆盖首尾，剧名主语是人物或关系而不是抽象概念。",
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "input": {
+    "prompt": "任务：为合成项目《外婆的民宿谁来接》产出概念卡 concept.json，并过“概念硬门”。\n输入：project.json（项目卡）、characters.json（角色 canon）；题材海岛民宿继承，女频，12 集真人短剧。\n输出：只在工作区根目录写 concept.json。\n\n## 字段要求\n- schemaVersion: 1\n- title: 与 project.json 的 title 完全一致\n- logline: 一句话（中文字符 20–90，全篇只允许 1 个句末标点（。！？）），必须包含主角名“林小满”，而且同时满足：\n  * 目标：至少含一个目标动词（守住/保住/救/夺回/接手/经营/查清/留下）\n  * 阻碍：至少含一个阻碍标记（却/但/然而/没想到/暗中/已经/背地/偏偏）\n  * 代价：至少含一个代价标记（必须/否则/代价/失去/抵押/卖掉/破产/退出/救回来）\n- coreConflict: ≥15 字，必须同时出现“林小满”和“周曼”，并含 争/夺/保/继承/转让/抵押 之一\n- sellingPoints: 恰好 3 条，每条 8–40 字，互不相同\n- mainline: {hookFrequency: ≥6 字; reversalTypes: ≥1 条}\n- titleSubject: {subject: ≥2 字; subjectType: \"character\" 或 \"relationship\"; evidence: ≥10 字且提到 subject 或剧名}\n- commercialScore: 0–10 整数；<6 时 commercialWarnings ≥2 条；≥6 时必须是空数组 []\n- seasonAnchors: 8–12 条，每条 {episode: 1–12 严格递增且不重复; event: ≥8 字; primary_change: ≥4 字; keyword: 锚点关键词（≥2 字）}\n  * 必须至少有 1 条 episode ≤ 2、至少 1 条 episode ≥ 11\n  * 不得出现“继续调查/继续揭露/推进剧情/日常相处/感情升温”这类没有变化的表述\n\n## 剧名主语硬门（v1 确定性口径）\ntitle 去掉《》后必须是 4–12 个汉字，禁止出现 ，。！？、；：,.!? 标点，并且必须含有以下“主语锚”之一：\n人物名（林小满/周曼/陈砚/林阿婆/老周），或亲属/关系词（外婆/奶奶/爷爷/父母/爸妈/妈妈/爸爸/姐姐/妹妹/哥哥/弟弟/舅舅/家人/女儿/儿子/我/她/他）。\n只输出 concept.json，不要解释。\n",
+    "workspaceFiles": [
+      {
+        "from": "eval/v1/fixtures/E2-project.json",
+        "to": "project.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E2-characters.json",
+        "to": "characters.json"
+      }
+    ],
+    "output": {
+      "path": "concept.json",
+      "kind": "json"
+    }
+  },
+  "expected": {
+    "title": "外婆的民宿谁来接",
+    "titleSubjectAnchors": [
+      "林小满",
+      "周曼",
+      "陈砚",
+      "林阿婆",
+      "老周",
+      "外婆",
+      "奶奶",
+      "爷爷",
+      "父母",
+      "爸妈",
+      "妈妈",
+      "爸爸",
+      "姐姐",
+      "妹妹",
+      "哥哥",
+      "弟弟",
+      "舅舅",
+      "家人",
+      "女儿",
+      "儿子",
+      "我",
+      "她",
+      "他"
+    ],
+    "titleLen": {
+      "minCJK": 4,
+      "maxCJK": 12
+    },
+    "subjectTypes": [
+      "character",
+      "relationship"
+    ],
+    "logline": {
+      "minCJK": 20,
+      "maxCJK": 90,
+      "maxSentenceEnd": 1,
+      "protagonist": "林小满",
+      "goalVerbs": [
+        "守住",
+        "保住",
+        "救",
+        "夺回",
+        "接手",
+        "经营",
+        "查清",
+        "留下",
+        "救回来"
+      ],
+      "obstacleMarkers": [
+        "却",
+        "但",
+        "然而",
+        "没想到",
+        "暗中",
+        "已经",
+        "背地",
+        "偏偏"
+      ],
+      "stakeMarkers": [
+        "必须",
+        "否则",
+        "代价",
+        "失去",
+        "抵押",
+        "卖掉",
+        "破产",
+        "退出",
+        "救回来"
+      ]
+    },
+    "coreConflict": {
+      "minCJK": 15,
+      "mustContain": [
+        "林小满",
+        "周曼"
+      ],
+      "conflictMarkers": [
+        "争",
+        "夺",
+        "保",
+        "继承",
+        "转让",
+        "抵押"
+      ]
+    },
+    "sellingPoints": {
+      "count": 3,
+      "minChars": 8,
+      "maxChars": 40
+    },
+    "mainline": {
+      "minHookFrequencyCJK": 6,
+      "minReversalTypes": 1
+    },
+    "anchors": {
+      "min": 8,
+      "max": 12,
+      "episodeMin": 1,
+      "episodeMax": 12,
+      "minEventCJK": 8,
+      "minPrimaryChangeCJK": 4,
+      "mustCoverLow": 2,
+      "mustCoverHigh": 11,
+      "minKeywordCJK": 2,
+      "abstractBlocklist": [
+        "继续调查",
+        "继续揭露",
+        "推进剧情",
+        "日常相处",
+        "感情升温"
+      ]
+    },
+    "commercial": {
+      "scoreMin": 0,
+      "scoreMax": 10,
+      "lowScoreThreshold": 6,
+      "lowScoreMinWarnings": 2
+    }
+  },
+  "grader": {
+    "function": "grade_E2",
+    "entry": "graders/grade.py",
+    "cli": "python3 harness/graders/grade.py --task E2 --output <file> --json",
+    "passRule": "全部 checks 通过（blocking=all）"
+  },
+  "selftest": {
+    "positive": "graders/tests/E2/positive/concept.json",
+    "negative": "graders/tests/E2/negative/concept.json"
+  },
+  "budget": {
+    "k": 3,
+    "maxTurns": 10,
+    "maxToolCalls": 30,
+    "maxWallClockSeconds": 300,
+    "usd": null,
+    "note": "DSH 不提供按会话美元成本；ledger 只记 turns/toolCalls/wallClock 与预算是否打满，禁止编造 usd"
+  }
+}

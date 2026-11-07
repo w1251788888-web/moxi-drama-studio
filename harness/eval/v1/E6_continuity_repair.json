@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "id": "E6",
+  "slug": "continuity-repair",
+  "title": "E6 连续性：跨 3 集 canon 修稿，硬检查必须 0 冲突",
+  "goal": "按 canon 重写第 3 集，修掉 5 条已登记连续性矛盾（人名/道具/时间线/身份），修后确定性冲突数必须为 0，且格式与字数达标。",
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "input": {
+    "prompt": "任务：修复第 3 集剧本的连续性问题，把修好的整集写入 episode_03_repaired.md。\n输入：E6-canon.json（角色 canon + 本集 6 场分场表 + 禁改事实 + 5 条已知冲突）、E6-ep3-draft.md（带矛盾的草稿）。\n\n## 要求\n1. 按 canon 的 6 场分场表重写整集（场次标头格式 【场3-N：日  外  潮汐民宿院子】），一场都不能少、顺序不变。\n2. 修复 E6-canon.json 中 conflicts 列出的全部 5 条矛盾：草稿里的错误写法（wrongLiteral / wrongPattern）不得再出现，并且要写出正确的 canon 事实（fixLiteral）。修复后冲突数必须为 0。\n3. 人名一律用 canonicalName；不得出现姓名变体（林小曼/林晓满/周曼曼/周漫漫/陈彦/陈砚之/林奶奶/林婆婆）。\n4. 格式：每场有 人物：A，B 行；△ 动作行禁止第一人称与心理描写；台词行格式 角色名：内容；至少 1 条 OS。\n5. 全文净字数 1000–1550（口径：CJK 字符各计 1，连续拉丁词各计 1，连续数字各计 1，标点/空白/符号不计）；台词 ≥8 条。\n6. 结尾必须是可拍的定格画面，不得用“故事继续/真相未明/期待下集”之类抽象句。\n只写剧本正文，不要解释。\n",
+    "workspaceFiles": [
+      {
+        "from": "eval/v1/fixtures/E6-canon.json",
+        "to": "E6-canon.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E6-ep3-draft.md",
+        "to": "E6-ep3-draft.md"
+      }
+    ],
+    "output": {
+      "path": "episode_03_repaired.md",
+      "kind": "markdown"
+    }
+  },
+  "expected": {
+    "fixtureCanon": "eval/v1/fixtures/E6-canon.json",
+    "fixtureDraft": "eval/v1/fixtures/E6-ep3-draft.md",
+    "requiredSceneCount": 6,
+    "wordRange": {
+      "min": 1000,
+      "max": 1550
+    },
+    "minDialogueLines": 8,
+    "minOS": 1,
+    "conflictsMustBeZero": true,
+    "hookAbstractBlocklist": [
+      "故事继续",
+      "故事还在继续",
+      "真相未明",
+      "真相还未揭晓",
+      "期待下集",
+      "下集见分晓",
+      "危机来临",
+      "敬请期待",
+      "未完待续"
+    ],
+    "firstPersonPronouns": [
+      "我们",
+      "我",
+      "咱"
+    ],
+    "psychVerbs": [
+      "心想",
+      "想着",
+      "觉得",
+      "意识到",
+      "内心",
+      "心里",
+      "暗自"
+    ],
+    "canonNames": [
+      "林小满",
+      "周曼",
+      "陈砚",
+      "林阿婆",
+      "老周"
+    ],
+    "timeTokens": [
+      "日",
+      "夜",
+      "晨",
+      "黄昏",
+      "傍晚",
+      "清晨"
+    ],
+    "inOutTokens": [
+      "内",
+      "外"
+    ]
+  },
+  "grader": {
+    "function": "grade_E6",
+    "entry": "graders/grade.py",
+    "cli": "python3 harness/graders/grade.py --task E6 --output <file> --json",
+    "passRule": "全部 checks 通过（blocking=all）"
+  },
+  "selftest": {
+    "positive": "graders/tests/E6/positive/episode_03_repaired.md",
+    "negative": "graders/tests/E6/negative/episode_03_repaired.md"
+  },
+  "budget": {
+    "k": 3,
+    "maxTurns": 12,
+    "maxToolCalls": 40,
+    "maxWallClockSeconds": 360,
+    "usd": null,
+    "note": "DSH 不提供按会话美元成本；ledger 只记 turns/toolCalls/wallClock 与预算是否打满，禁止编造 usd"
+  }
+}

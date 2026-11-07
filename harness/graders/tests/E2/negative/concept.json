@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "title": "风暴将至",
+  "logline": "这是一个关于民宿的故事。",
+  "coreConflict": "有人想卖，有人想留。",
+  "sellingPoints": [
+    "海岛风景好看",
+    "女主很坚强"
+  ],
+  "mainline": {
+    "hookFrequency": "",
+    "reversalTypes": []
+  },
+  "titleSubject": {
+    "subject": "风暴",
+    "subjectType": "abstract",
+    "evidence": "剧名主语是风暴。"
+  },
+  "commercialScore": 5,
+  "commercialWarnings": [],
+  "seasonAnchors": [
+    {
+      "episode": 1,
+      "event": "林小满回岛当晚在民宿门口捡到退租通知单，落款是周曼",
+      "primary_change": "民宿经营权出现争议",
+      "keyword": "退租通知单"
+    },
+    {
+      "episode": 2,
+      "event": "台风夜民宿漏水，林小满在旧账本夹层里发现外婆手写的遗嘱条件",
+      "primary_change": "林小满拿到第一个谈判筹码",
+      "keyword": "遗嘱"
+    },
+    {
+      "episode": 3,
+      "event": "周曼摊牌已签转让意向书，开发商下周一签正式合同",
+      "primary_change": "民宿命运出现倒计时",
+      "keyword": "转让意向书"
+    },
+    {
+      "episode": 4,
+      "event": "林小满改造出一间海景房，迎来台风后第一位客人",
+      "primary_change": "林小满用经营证明自己留下来",
+      "keyword": "第一位客人"
+    },
+    {
+      "episode": 6,
+      "event": "周曼把库房铜钥匙交给林小满，两人第一次并肩",
+      "primary_change": "姐妹从对立转为临时同盟",
+      "keyword": "铜钥匙"
+    },
+    {
+      "episode": 7,
+      "event": "林小满对账发现三年账目缺口，怀疑周曼挪用",
+      "primary_change": "同盟出现裂痕，信息差反转",
+      "keyword": "账目缺口"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "title": "外婆的民宿谁来接",
+    "sceneHeaderStyle": "bracket",
+    "wordRange": {
+      "min": 1000,
+      "max": 1550
+    }
+  },
+  "canonNames": [
+    "林小满",
+    "周曼",
+    "陈砚",
+    "林阿婆",
+    "老周"
+  ],
+  "forbiddenNameVariants": [
+    "林小曼",
+    "林晓满",
+    "周曼曼",
+    "周漫漫",
+    "陈彦",
+    "陈砚之",
+    "林奶奶",
+    "林婆婆"
+  ],
+  "sceneMinNet": 150,
+  "hookAbstractBlocklist": [
+    "故事继续",
+    "故事还在继续",
+    "真相未明",
+    "真相还未揭晓",
+    "期待下集",
+    "下集见分晓",
+    "危机来临",
+    "敬请期待",
+    "未完待续"
+  ],
+  "osBadMarkers": [
+    "（内心）",
+    "（心里）",
+    "画外音："
+  ],
+  "netWordCountFormula": "CJK 字符各计 1；连续拉丁词各计 1；连续数字各计 1；标点/空白/符号不计",
+  "codebook": {
+    "C002": {
+      "severity": "warning",
+      "rule": "全文净字数不在 wordRange [1000,1550] 内"
+    },
+    "C006": {
+      "severity": "error",
+      "rule": "任一场次净字数 < sceneMinNet（碎片化场次）"
+    },
+    "Q_SCENE_HEADER_MIXED": {
+      "severity": "error",
+      "rule": "bracket 项目中出现 plain 场次标头（如 `1-3  夜  内  地点`）"
+    },
+    "Q_HOOK_ABSTRACT": {
+      "severity": "error",
+      "rule": "集末最后一段命中 hookAbstractBlocklist 任一短语"
+    },
+    "Q_OS_FORMAT": {
+      "severity": "warning",
+      "rule": "出现非标准内心独白标记（见 osBadMarkers），应改为 角色名OS：/角色名（情绪）OS："
+    },
+    "Q_NAME_VARIANT": {
+      "severity": "error",
+      "rule": "出现 forbiddenNameVariants 中的姓名变体"
+    },
+    "C001": {
+      "severity": "error",
+      "rule": "完全未识别到场次标头（v1 不检查）"
+    },
+    "C003": {
+      "severity": "warning",
+      "rule": "场次编号不连续（v1 不检查）"
+    },
+    "C004": {
+      "severity": "warning",
+      "rule": "集末最后一段净字数 < 20（v1 不检查）"
+    },
+    "C007": {
+      "severity": "error",
+      "rule": "出现完全重复段落（v1 不检查）"
+    }
+  },
+  "v1DetectorScope": [
+    "C002",
+    "C006",
+    "Q_SCENE_HEADER_MIXED",
+    "Q_HOOK_ABSTRACT",
+    "Q_OS_FORMAT",
+    "Q_NAME_VARIANT"
+  ],
+  "outputSchema": {
+    "schemaVersion": 1,
+    "evalTask": "E5",
+    "episode": 1,
+    "verdict": "fail",
+    "mustFix": [
+      {
+        "code": "C006",
+        "severity": "error",
+        "evidence": "样例原文片段（≥6 字，必须逐字出现在剧本里）",
+        "message": "问题说明"
+      }
+    ],
+    "shouldFix": [],
+    "summary": "一句话结论"
+  }
+}

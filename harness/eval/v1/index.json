@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "createdAt": "2026-11-06",
+  "taskCount": 6,
+  "taskIds": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6"
+  ],
+  "taskFiles": {
+    "E1": "eval/v1/E1_project_init.json",
+    "E2": "eval/v1/E2_concept_hard_gate.json",
+    "E3": "eval/v1/E3_beat_sheet.json",
+    "E4": "eval/v1/E4_scene_script.json",
+    "E5": "eval/v1/E5_quality_replay.json",
+    "E6": "eval/v1/E6_continuity_repair.json"
+  },
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "graders": {
+    "entry": "graders/grade.py",
+    "module": "graders/graders.py",
+    "checks": "graders/checks.py",
+    "stdlibOnly": true,
+    "offline": true,
+    "cli": [
+      "python3 harness/graders/grade.py --task E1 --output <file> --json",
+      "python3 harness/graders/grade.py --all --run-dir <runs/stamp> --json",
+      "python3 harness/graders/grade.py --selftest",
+      "python3 harness/graders/grade.py --audit-isolation"
+    ]
+  },
+  "scoring": {
+    "taskPass": "单任务单 draw：该任务全部 blocking checks 通过 → ok=true；score=通过项/总项（仅排序参考，不用于放行）",
+    "round": "一轮 = 6 任务 × k 次 draw；taskPassRate = 通过 draw 数 / k；roundScore = 6 个 taskPassRate 的均值",
+    "adoption": "候选 harness 采用条件：(a) 任一任务 passRate 不低于 baseline；(b) 至少 2 个任务较 baseline 提升 ≥1 个 draw；(c) 预算 ledger 闭合（无超预算、无换模型不记录）；单次 6/6 不算证明",
+    "k": 3,
+    "freeze": "连续 2 轮无提升或预算耗尽 → 冻结当前 harness，写“未采纳原因”进 runs/"
+  },
+  "versioning": "改题面/阈值/样本必须 bump evalVersion 并重跑 baseline；eval/v1 只追加不改写",
+  "ruleSources": [
+    "rules/v2/steps/01_concept.md（概念硬门）",
+    "rules/v2/steps/03_beat_sheet.md（节拍/爽感/付费墙）",
+    "rules/v2/steps/05_script_draft.md（剧本格式/字数）",
+    "rules/v2/core/drama-format.md（场标/OS/VO）",
+    "rules/v2/core-rules/duration_char_count.md（90 秒=1000–1550 净字）",
+    "rules/v2/core/hook-patterns.md（H1–H11）",
+    "docs/设计/数据契约-v1.md §2（project.json）",
+    "dsh/bundles/moxi-core/lib/checks.js（字数折算与 C001–C007 确定性检查码）"
+  ]
+}

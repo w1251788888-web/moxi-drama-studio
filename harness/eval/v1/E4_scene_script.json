@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "id": "E4",
+  "slug": "scene-script",
+  "title": "E4 单场剧本：第 1 集 1-1（字数/格式/人称/场景头）",
+  "goal": "按分场表写 1-1 单场成品稿：bracket 场标、人物行、△ 动作第三人称、OS 格式、台词数与净字数全部达标。",
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "input": {
+    "prompt": "任务：写第 1 集第 1 场（1-1）的成品剧本单场稿，写入 episode_01_scene1.md。\n输入：project.json / characters.json / episode-outline.json / scene-list.json（第 1 集共 6 场，本次只写 1-1）。\n\n## 格式（bracket 场标）\n【场1-1：夜  外  潮汐民宿门口】\n人物：林小满，周曼\n△动作/画面行……\n林小满：台词\n林小满OS：内心独白\nVO（角色名）：离镜画外音（本场可不出现）\n\n## 硬指标\n1. 只写 1 场：场次标头只出现 1 个，且必须是【场1-1：夜  外  <地点>】格式（时间用 日/夜/晨/黄昏/傍晚/清晨；内/外必填；地点非空）\n2. 人物行紧跟标头：人物：A，B（中文逗号分隔），只能出现 characters.json 里的 canonicalName\n3. △ 动作行 ≥2 条；△ 行禁止第一人称（我/我们/咱），禁止心理描写（心想/想着/觉得/意识到/内心/心里/暗自），心理活动一律用 OS\n4. 台词行 ≥5 条，格式 角色名：内容；说话人必须是 canon 角色\n5. 内心独白 ≥1 条，格式 角色名OS： 或 角色名（情绪）OS：\n6. 本场必须落地分场表 1-1 的核心道具/事件：对白或动作中必须出现“退租通知单”\n7. 全文净字数（含标头与人物行）必须落在 190–230；净字数口径：CJK 字符各计 1，连续拉丁词各计 1，连续数字各计 1，标点/空白/符号不计\n只写剧本正文，不要任何说明、标题或字数自检。\n",
+    "workspaceFiles": [
+      {
+        "from": "eval/v1/fixtures/E4-project.json",
+        "to": "project.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E4-characters.json",
+        "to": "characters.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E4-episode-outline.json",
+        "to": "episode-outline.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E4-scene-list.json",
+        "to": "scene-list.json"
+      }
+    ],
+    "output": {
+      "path": "episode_01_scene1.md",
+      "kind": "markdown"
+    }
+  },
+  "expected": {
+    "fixtureProject": "eval/v1/fixtures/E4-project.json",
+    "fixtureCharacters": "eval/v1/fixtures/E4-characters.json",
+    "fixtureOutline": "eval/v1/fixtures/E4-episode-outline.json",
+    "fixtureSceneList": "eval/v1/fixtures/E4-scene-list.json",
+    "sceneNo": "1-1",
+    "sceneCountInEpisode": 6,
+    "wordRange": {
+      "min": 190,
+      "max": 230
+    },
+    "keyword": "退租通知单",
+    "minDialogueLines": 5,
+    "minActionLines": 2,
+    "minOS": 1,
+    "canonNames": [
+      "林小满",
+      "周曼",
+      "陈砚",
+      "林阿婆",
+      "老周"
+    ],
+    "timeTokens": [
+      "日",
+      "夜",
+      "晨",
+      "黄昏",
+      "傍晚",
+      "清晨"
+    ],
+    "inOutTokens": [
+      "内",
+      "外"
+    ],
+    "firstPersonPronouns": [
+      "我们",
+      "我",
+      "咱"
+    ],
+    "psychVerbs": [
+      "心想",
+      "想着",
+      "觉得",
+      "意识到",
+      "内心",
+      "心里",
+      "暗自"
+    ],
+    "osBadMarkers": [
+      "（内心）",
+      "（心里）",
+      "画外音：",
+      "（旁白）"
+    ]
+  },
+  "grader": {
+    "function": "grade_E4",
+    "entry": "graders/grade.py",
+    "cli": "python3 harness/graders/grade.py --task E4 --output <file> --json",
+    "passRule": "全部 checks 通过（blocking=all）"
+  },
+  "selftest": {
+    "positive": "graders/tests/E4/positive/episode_01_scene1.md",
+    "negative": "graders/tests/E4/negative/episode_01_scene1.md"
+  },
+  "budget": {
+    "k": 3,
+    "maxTurns": 10,
+    "maxToolCalls": 30,
+    "maxWallClockSeconds": 300,
+    "usd": null,
+    "note": "DSH 不提供按会话美元成本；ledger 只记 turns/toolCalls/wallClock 与预算是否打满，禁止编造 usd"
+  }
+}

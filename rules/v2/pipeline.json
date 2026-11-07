@@ -1,0 +1,698 @@
+{
+  "version": 2,
+  "schema": "moxi.rules.pipeline/v2",
+  "generatedFrom": {
+    "pipelineToml": "pipeline.toml",
+    "stepDefinitions": "steps/*.md",
+    "note": "pipeline.json 是供 moxi-canvas 铺骨架的节点编排清单；旧引擎完整配置仍以随包迁移的 pipeline.toml 为准"
+  },
+  "nodeTypes": [
+    "project_root",
+    "settings",
+    "asset",
+    "beat_sheet",
+    "scene_list",
+    "script_scene",
+    "quality",
+    "compliance",
+    "delivery"
+  ],
+  "nodeTypeZh": {
+    "project_root": "项目根",
+    "settings": "设定集",
+    "asset": "角色·场景·道具",
+    "beat_sheet": "分集节拍",
+    "scene_list": "分场表",
+    "script_scene": "剧本场次",
+    "quality": "质检",
+    "compliance": "合规",
+    "delivery": "分镜·成片·导出"
+  },
+  "requiredStages": [
+    {
+      "stage": "概念",
+      "stepId": "concept",
+      "nodeType": "settings"
+    },
+    {
+      "stage": "角色",
+      "stepId": "characters",
+      "nodeType": "asset"
+    },
+    {
+      "stage": "分集节拍",
+      "stepId": "beat_sheet",
+      "nodeType": "beat_sheet"
+    },
+    {
+      "stage": "分场",
+      "stepId": "scene_list",
+      "nodeType": "scene_list"
+    },
+    {
+      "stage": "剧本",
+      "stepId": "script_draft",
+      "nodeType": "script_scene"
+    },
+    {
+      "stage": "质检",
+      "stepId": "quality_check",
+      "nodeType": "quality"
+    },
+    {
+      "stage": "合规",
+      "stepId": "compliance_check",
+      "nodeType": "compliance"
+    },
+    {
+      "stage": "导出",
+      "stepId": "storyboard",
+      "nodeType": "delivery"
+    }
+  ],
+  "steps": [
+    {
+      "id": "project_init_check",
+      "title": "项目初始化核对",
+      "nodeType": "project_root",
+      "nodeTypeZh": "项目根",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/00_project_init_check.md",
+      "dependsOn": [],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "optional": false,
+      "stepType": "human_review",
+      "outputKey": "project_init"
+    },
+    {
+      "id": "novel_analysis",
+      "title": "原著分析（小说 IP 改编）",
+      "nodeType": "settings",
+      "nodeTypeZh": "设定集",
+      "nodeTypeConfidence": "medium",
+      "nodeTypeCandidates": [
+        "settings",
+        "asset"
+      ],
+      "nodeTypeNote": "原著分析产物（集-章节对照表、改编设定）无专门节点类型；归 settings（设定集）为最接近映射，候选 asset",
+      "ruleFile": "steps/00_novel_analysis.md",
+      "dependsOn": [
+        "project_init_check"
+      ],
+      "inStepOrder": [
+        "ordered_novel_adaptation"
+      ],
+      "optional": true,
+      "requiredWhenProjectTypeContains": "小说IP改编",
+      "outputKey": "novel_analysis"
+    },
+    {
+      "id": "character_lock",
+      "title": "角色锁定（人工确认）",
+      "nodeType": "asset",
+      "nodeTypeZh": "角色·场景·道具",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/00_character_lock.md",
+      "dependsOn": [
+        "novel_analysis"
+      ],
+      "inStepOrder": [
+        "ordered_novel_adaptation"
+      ],
+      "optional": true,
+      "requiredWhenProjectTypeContains": "小说IP改编",
+      "stepType": "human_review",
+      "outputKey": "locked_characters",
+      "blocksUntilApproved": true,
+      "persistToState": "locked_characters"
+    },
+    {
+      "id": "market_check",
+      "title": "市场可行性门控",
+      "nodeType": null,
+      "nodeTypeZh": null,
+      "nodeTypeConfidence": "none",
+      "nodeTypeCandidates": [
+        "project_root",
+        null
+      ],
+      "nodeTypeNote": "硬门控，不产出内容节点；九类节点无 gate 类型。门控结果建议落 project_root.meta 或 history/events.jsonl（check.run），需 Lead 裁定",
+      "ruleFile": "steps/00_market_check.md",
+      "dependsOn": [
+        "project_init_check"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "optional": false,
+      "stepType": "gate",
+      "outputKey": "market_check",
+      "gateId": "market_check"
+    },
+    {
+      "id": "concept",
+      "title": "概念规划",
+      "nodeType": "settings",
+      "nodeTypeZh": "设定集",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/01_concept.md",
+      "dependsOn": [
+        "market_check"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "concept",
+      "agentFile": "agents/planner-script-concept.md",
+      "knowledge": [
+        "opening_formulas"
+      ]
+    },
+    {
+      "id": "characters",
+      "title": "角色设计",
+      "nodeType": "asset",
+      "nodeTypeZh": "角色·场景·道具",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/02_characters.md",
+      "dependsOn": [
+        "concept"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "characters",
+      "agentFile": "agents/executor-script-characters.md"
+    },
+    {
+      "id": "episode_outlines",
+      "title": "分集集纲（30 集硬骨架，可分批）",
+      "nodeType": "beat_sheet",
+      "nodeTypeZh": "分集节拍",
+      "nodeTypeConfidence": "low",
+      "nodeTypeCandidates": [
+        "beat_sheet",
+        "settings"
+      ],
+      "nodeTypeNote": "系列级集纲（每集 150-250 字）无对应九类节点：v2 beat_sheet.meta 是单集 {episode,hooks,anchors}。可落 beat_sheet 节点（episode=null）或 settings，需 Lead 裁定。旧 pipeline.toml 的 3 个 ordered_* 均未收录此步，但旧代码 STEP_ID 含 episode_outlines（step_routes 分批生成），属真实运行步骤",
+      "ruleFile": "steps/02b_episode_outlines.md",
+      "dependsOn": [
+        "concept",
+        "characters"
+      ],
+      "inStepOrder": []
+    },
+    {
+      "id": "beat_sheet",
+      "title": "分集节拍表",
+      "nodeType": "beat_sheet",
+      "nodeTypeZh": "分集节拍",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/03_beat_sheet.md",
+      "dependsOn": [
+        "characters"
+      ],
+      "contextDependsOn": [
+        "episode_outlines"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "beat_sheet",
+      "knowledge": [
+        "opening_formulas",
+        "satisfaction_matrix"
+      ]
+    },
+    {
+      "id": "scene_list",
+      "title": "分场表",
+      "nodeType": "scene_list",
+      "nodeTypeZh": "分场表",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/04_scene_list.md",
+      "dependsOn": [
+        "beat_sheet"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "scene_list"
+    },
+    {
+      "id": "script_draft",
+      "title": "剧本初稿",
+      "nodeType": "script_scene",
+      "nodeTypeZh": "剧本场次",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/05_script_draft.md",
+      "dependsOn": [
+        "scene_list"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "script_draft",
+      "agentFile": "agents/executor-script-draft.md"
+    },
+    {
+      "id": "quality_check",
+      "title": "质检评分",
+      "nodeType": "quality",
+      "nodeTypeZh": "质检",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/07_quality_check.md",
+      "dependsOn": [
+        "script_draft"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "quality_report",
+      "agentFile": "agents/reviewer-quality-score.md"
+    },
+    {
+      "id": "narrative_consistency",
+      "title": "跨集叙事一致性审查",
+      "nodeType": "quality",
+      "nodeTypeZh": "质检",
+      "nodeTypeConfidence": "medium",
+      "nodeTypeCandidates": [
+        "quality",
+        "settings"
+      ],
+      "nodeTypeNote": "跨集一致性审查产出审查报告，归 quality（质检）节点；旧 pipeline.toml 未收录，旧代码 STEP_ID 含 narrative_consistency（STRUCTURED_ONLY_STEPS），属真实运行步骤",
+      "ruleFile": "steps/08_narrative_consistency.md",
+      "dependsOn": [
+        "script_draft"
+      ],
+      "inStepOrder": []
+    },
+    {
+      "id": "compliance_check",
+      "title": "合规审查",
+      "nodeType": "compliance",
+      "nodeTypeZh": "合规",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/08_compliance_check.md",
+      "dependsOn": [
+        "script_draft"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "outputKey": "compliance_report",
+      "agentFile": "agents/compliance-checker.md"
+    },
+    {
+      "id": "storyboard",
+      "title": "分镜提示词",
+      "nodeType": "delivery",
+      "nodeTypeZh": "分镜·成片·导出",
+      "nodeTypeConfidence": "high",
+      "ruleFile": "steps/06_storyboard_prompts.md",
+      "dependsOn": [
+        "scene_list",
+        "script_draft"
+      ],
+      "inStepOrder": [
+        "ordered_original",
+        "ordered_novel_adaptation",
+        "ordered_long_series"
+      ],
+      "optional": true,
+      "outputKey": "storyboard"
+    }
+  ],
+  "auxStepTemplates": [
+    {
+      "id": "script_test_scene",
+      "title": "工作台单场/分段生成",
+      "nodeType": "script_scene",
+      "nodeTypeConfidence": "medium",
+      "ruleFile": "steps/05_script_test_scene.md",
+      "dependsOn": [
+        "scene_list"
+      ],
+      "note": "工作台运行时模板（单集正文或单个分段），非 pipeline 独立步骤；产出 script_scene 节点正文"
+    },
+    {
+      "id": "segment_generate",
+      "title": "段落级剧本生成（红-绿-重构）",
+      "nodeType": "script_scene",
+      "nodeTypeConfidence": "medium",
+      "ruleFile": "steps/05a_segment_generate.md",
+      "dependsOn": [
+        "scene_list"
+      ],
+      "contextDependsOn": [
+        "beat_sheet"
+      ],
+      "note": "每集 4 段（hook/validation/explosion/resolution）分段生成，落 script_scene.meta.segment；旧 episode_segment_router 直接读取该模板"
+    },
+    {
+      "id": "page_design",
+      "title": "页面设计技能",
+      "nodeType": null,
+      "nodeTypeConfidence": "none",
+      "ruleFile": "steps/00_page_design.md",
+      "dependsOn": [],
+      "note": "前端页面设计技能（StudioView 界面），不产出创作节点，不参与创作链"
+    }
+  ],
+  "stepOrder": {
+    "canonical": [
+      "project_init_check",
+      "market_check",
+      "concept",
+      "characters",
+      "beat_sheet",
+      "scene_list",
+      "script_draft",
+      "quality_check",
+      "compliance_check",
+      "storyboard"
+    ],
+    "ordered_original": [
+      "project_init_check",
+      "market_check",
+      "concept",
+      "characters",
+      "beat_sheet",
+      "scene_list",
+      "script_draft",
+      "quality_check",
+      "compliance_check",
+      "storyboard"
+    ],
+    "ordered_novel_adaptation": [
+      "project_init_check",
+      "novel_analysis",
+      "character_lock",
+      "market_check",
+      "concept",
+      "characters",
+      "beat_sheet",
+      "scene_list",
+      "script_draft",
+      "quality_check",
+      "compliance_check",
+      "storyboard"
+    ],
+    "ordered_long_series": [
+      "project_init_check",
+      "market_check",
+      "concept",
+      "characters",
+      "beat_sheet",
+      "scene_list",
+      "script_draft",
+      "quality_check",
+      "compliance_check",
+      "storyboard"
+    ]
+  },
+  "stepOrderNotes": {
+    "canonical": "ordered_original 原样（pipeline.toml [short_drama_writing_steps]）",
+    "episode_outlines": "三个 ordered_* 均未收录；旧代码 STEP_ID 含 episode_outlines，作可选增强步骤",
+    "narrative_consistency": "三个 ordered_* 均未收录；旧代码 STEP_ID / STRUCTURED_ONLY_STEPS 含该步"
+  },
+  "hardGates": [
+    "market_check"
+  ],
+  "gates": {
+    "market_check": {
+      "kind": "hard_gate",
+      "ruleFile": "steps/00_market_check.md",
+      "field": "market_check_result.verdict",
+      "rejectValue": "reject",
+      "warnValue": "warn",
+      "thresholds": {
+        "hardBlock": "≤1 项通过",
+        "softWarn": "2 项通过",
+        "pass": "≥3 项通过"
+      }
+    },
+    "project_init_check": {
+      "kind": "human_review",
+      "blocking": true,
+      "ruleFile": "steps/00_project_init_check.md"
+    },
+    "character_lock": {
+      "kind": "human_review",
+      "blocking": true,
+      "blocksUntilApproved": true,
+      "ruleFile": "steps/00_character_lock.md"
+    }
+  },
+  "rules": {
+    "male_core": "core-rules/male_core.md",
+    "male_style": "core-rules/male_style.md",
+    "female_core": "core-rules/female_core.md",
+    "female_style": "core-rules/female_style.md",
+    "hybrid_genre": "core-rules/hybrid_genre.md",
+    "novel_adaptation": "core-rules/novel_adaptation.md",
+    "long_series": "core-rules/long_series.md",
+    "short_drama_core": "core-rules/short_drama_core.md",
+    "duration_char_count": "core-rules/duration_char_count.md",
+    "manga_production_2026": "core-rules/manga_production_2026.md",
+    "satisfaction_taxonomy": "core-rules/satisfaction_taxonomy.md",
+    "head_hit_scene_engine": "core-rules/head_hit_scene_engine.md",
+    "short_drama_quality": "core-rules/short_drama_quality.md",
+    "conflict_design": "core-rules/conflict_design.md",
+    "character_arc": "core-rules/character_arc.md",
+    "content_compliance": "core-rules/content_compliance.md",
+    "platform_compliance_2026": "core-rules/platform_compliance_2026.md",
+    "format_adaptation": "core-rules/format_adaptation.md",
+    "commercial_viability": "core-rules/commercial_viability.md"
+  },
+  "ruleRouting": {
+    "audience_rules": {
+      "男频": [
+        "male_core",
+        "male_style"
+      ],
+      "女频": [
+        "female_core",
+        "female_style"
+      ],
+      "混合": [
+        "hybrid_genre"
+      ]
+    },
+    "subgenre_rules": [
+      "subgenre_female_face_slap",
+      "subgenre_female_power_taming",
+      "subgenre_female_misrecognition",
+      "subgenre_hybrid_realistic_family",
+      "female_subgenres",
+      "male_subgenres",
+      "hybrid_subgenres"
+    ],
+    "sample_track_rules": [
+      "sample_track_a_high_pressure_female",
+      "sample_track_b_power_taming",
+      "sample_track_c_misrecognition_secret",
+      "sample_track_d_realistic_family"
+    ]
+  },
+  "knowledge": {
+    "opening_formulas": "knowledge/opening_formulas.md",
+    "satisfaction_matrix": "knowledge/satisfaction_matrix.md",
+    "shot_timing_rules": "knowledge/shot_timing_rules.md",
+    "structure_imitation": "knowledge/structure_imitation.md"
+  },
+  "injectionPolicy": {
+    "market_check": {
+      "always": [
+        "commercial_viability"
+      ]
+    },
+    "concept": {
+      "always": [
+        "commercial_viability"
+      ],
+      "conditional": [
+        "audience_rules",
+        "novel_adaptation"
+      ]
+    },
+    "beat_sheet": {
+      "always": [
+        "short_drama_core",
+        "duration_char_count",
+        "manga_production_2026",
+        "satisfaction_taxonomy",
+        "conflict_design",
+        "character_arc",
+        "content_compliance"
+      ],
+      "conditional": [
+        "audience_rules",
+        "long_series",
+        "novel_adaptation"
+      ]
+    },
+    "scene_list": {
+      "always": [
+        "short_drama_core",
+        "duration_char_count",
+        "manga_production_2026",
+        "conflict_design",
+        "format_adaptation"
+      ],
+      "conditional": [
+        "audience_rules",
+        "long_series"
+      ]
+    },
+    "script_draft": {
+      "always": [
+        "short_drama_core",
+        "duration_char_count",
+        "manga_production_2026",
+        "satisfaction_taxonomy",
+        "head_hit_scene_engine",
+        "conflict_design",
+        "character_arc",
+        "commercial_viability",
+        "content_compliance"
+      ],
+      "conditional": [
+        "audience_rules",
+        "long_series",
+        "novel_adaptation"
+      ]
+    },
+    "quality_check": {
+      "always": [
+        "duration_char_count",
+        "manga_production_2026",
+        "satisfaction_taxonomy",
+        "commercial_viability"
+      ]
+    },
+    "compliance_check": {
+      "always": [
+        "content_compliance",
+        "platform_compliance_2026"
+      ]
+    }
+  },
+  "projectTypeValues": [
+    "漫剧-男频",
+    "漫剧-女频",
+    "漫剧-混合",
+    "真人短剧-男频",
+    "真人短剧-女频",
+    "真人短剧-混合",
+    "小说IP改编",
+    "精品短剧",
+    "长剧/系列剧"
+  ],
+  "configDigest": {
+    "source": "pipeline.toml（原样抽取，字段名保持原 TOML 键）",
+    "project_format": {
+      "scene_header_style": "bracket"
+    },
+    "manga_constraints": {
+      "enabled": true,
+      "target_word_count": 1200,
+      "word_count_min": 1000,
+      "word_count_max": 1550,
+      "word_count_tolerance": 350,
+      "episode_duration_seconds": 90,
+      "auto_reject_out_of_range": true,
+      "ai_realistic": {
+        "enabled": true,
+        "require_sound_annotation": true,
+        "opening_formula_group": "AI"
+      }
+    },
+    "premium_mode": {
+      "enabled": false,
+      "agent": "agents/executor-script-premium.md",
+      "applies_to_steps": [
+        "script_draft"
+      ],
+      "description": "精品剧本模式：戏剧动作驱动，潜台词写法，适用于精品/参展/高质量改稿场景。与内容类型正交，可与任意 project_type 叠加。"
+    },
+    "comic_mode": {
+      "enabled": false,
+      "agent": "agents/executor-script-comic.md",
+      "applies_to_steps": [
+        "script_draft"
+      ],
+      "description": "沙雕漫模式：夸张反差，表情包时刻，三段式完整剧本包输出"
+    },
+    "batch": {
+      "enabled": true,
+      "max_concurrent_episodes": 5,
+      "quality_gate_min_score": 35,
+      "max_retries_per_episode": 2,
+      "auto_compliance_check": true,
+      "auto_quality_check": true,
+      "paywall": {
+        "node_a_episode_range": [
+          8,
+          12
+        ],
+        "node_b_episode_range": [
+          26,
+          30
+        ],
+        "node_b_short_series_ratio": 0.8,
+        "bridge_density": 2
+      }
+    }
+  },
+  "legacyStateFiles": {
+    "source": "pipeline.toml [state]（旧引擎 workspace 状态文件）",
+    "mapping": "v2 未映射：改由 canvas 节点 meta / history/events.jsonl 承载；本字段保留供 S2.3 迁移对照",
+    "files": {
+      "character_voice_state": "workspace/{project_id}/character_voices.json",
+      "paywall_position_state": "workspace/{project_id}/paywall_plan.json",
+      "emotion_curve_progress": "workspace/{project_id}/emotion_curve.json",
+      "satisfaction_debt_tracker": "workspace/{project_id}/satisfaction_debt.json",
+      "episode_progress": "workspace/{project_id}/episode_progress.json",
+      "issue_feedback_history": "workspace/{project_id}/issue_feedback_history.json",
+      "locked_characters": "workspace/{project_id}/locked_characters.json"
+    }
+  },
+  "legacyStepIdsNotInPipelineToml": [
+    "episode_outlines",
+    "narrative_consistency"
+  ],
+  "legacyStepIdsInPipelineToml": [
+    "project_init_check",
+    "market_check",
+    "concept",
+    "characters",
+    "beat_sheet",
+    "scene_list",
+    "script_draft",
+    "quality_check",
+    "compliance_check",
+    "storyboard"
+  ]
+}

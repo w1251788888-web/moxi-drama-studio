@@ -1,0 +1,9 @@
+# moxi-canvas bundle patch layer
+# 一行加载本包：host 半 = 包主入口（Cordis plugin）；dsh.client 声明让 web app 额外加载 ./client 浏览器半。
+- insert:
+    - id: moxi-canvas
+      name: moxi-canvas-bundle
+
+# 产品化：停用宿主官方品牌位，由本 bundle 的「墨戏生花」品牌位接管
+- id: ui-brand-official
+  disabled: true

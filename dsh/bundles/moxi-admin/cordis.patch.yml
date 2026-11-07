@@ -1,0 +1,5 @@
+# moxi-admin bundle patch layer
+# Host 半为空（数据由 moxi-core 的 /api/moxi/admin/* 提供）；Client 半负责 5 页 UI。
+- insert:
+    - id: moxi-admin
+      name: moxi-admin-bundle

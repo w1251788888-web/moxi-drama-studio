@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "evalTask": "E5",
+  "episode": 1,
+  "verdict": "fail",
+  "mustFix": [
+    {
+      "code": "C002",
+      "severity": "warning",
+      "evidence": "【场1-1：夜  外  潮汐民宿门口】",
+      "message": "全文净字数 264，不在 1000–1550 区间内"
+    },
+    {
+      "code": "C006",
+      "severity": "error",
+      "evidence": "周曼：账上只剩三百块。",
+      "message": "场 1-2 净字数不足 150，属碎片化短场"
+    },
+    {
+      "code": "Q_SCENE_HEADER_MIXED",
+      "severity": "error",
+      "evidence": "1-3  夜  内  潮汐民宿厨房",
+      "message": "bracket 项目里混入了 plain 场次标头"
+    },
+    {
+      "code": "Q_HOOK_ABSTRACT",
+      "severity": "error",
+      "evidence": "故事还在继续，真相还未揭晓，期待下集。",
+      "message": "集末钩子是抽象套话，必须改成可拍的具体定格画面"
+    },
+    {
+      "code": "Q_OS_FORMAT",
+      "severity": "warning",
+      "evidence": "林小满（内心）：她连商量都省了。",
+      "message": "内心独白用了（内心），应写成 林小满OS："
+    },
+    {
+      "code": "Q_NAME_VARIANT",
+      "severity": "error",
+      "evidence": "林小曼：舅舅，外婆的遗嘱在哪？",
+      "message": "出现了女主姓名变体“林小曼”，canonicalName 是林小满"
+    }
+  ],
+  "shouldFix": [],
+  "summary": "本集存在字数不达标、碎片化短场、场标混用、抽象钩子、OS 格式错误与姓名变体六类问题，判定打回。"
+}

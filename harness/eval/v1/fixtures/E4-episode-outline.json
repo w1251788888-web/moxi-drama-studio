@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "projectTitle": "外婆的民宿谁来接",
+  "episode": 1,
+  "title": "退租单",
+  "episodeSeconds": 90,
+  "wordRange": {
+    "min": 1000,
+    "max": 1550
+  },
+  "mainEvent": "林小满回岛当晚在潮汐民宿门口捡到退租通知单，落款是周曼。",
+  "relationshipChange": "林小满与周曼从多年不见的客气寒暄，转成对民宿去留的正面交锋。",
+  "infoRevealed": "周曼已经把民宿挂牌退租，限期十五天清空。",
+  "cliffhanger": {
+    "freeze_scene": "潮汐民宿前台",
+    "freeze_characters": [
+      "林小满",
+      "周曼"
+    ],
+    "freeze_prop": "退租通知单",
+    "freeze_action": "周曼把退租通知单按在桌上，说明天一早要清空民宿。"
+  },
+  "previousCliffhanger": null
+}

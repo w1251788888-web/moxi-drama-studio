@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "evalVersion": "v1",
+  "id": "E3",
+  "slug": "beat-sheet",
+  "title": "E3 分集节拍：12 集节拍表（字段完整 + 钩子密度/多样性 + 主线连续）",
+  "goal": "产出 12 集结构化节拍表：每集四要素齐全、6–10 个节拍、2 个爽感点、具体集末钩子，双付费墙与情绪曲线正确，callbacks 只向后承接，概念锚点逐集对齐。",
+  "isolation": {
+    "acceptanceProject": "《我的父母没素质》",
+    "evalTheme": "海岛民宿继承（合成题材《外婆的民宿谁来接》）",
+    "rule": "eval 题面、夹具、样例一律不得复用验收项目的剧名/人物/桥段；本目录只允许合成题材",
+    "auditCommand": "python3 harness/graders/grade.py --audit-isolation"
+  },
+  "input": {
+    "prompt": "任务：基于 project.json / concept.json / characters.json，产出 12 集分集节拍表，写成 beat_sheet.json（只写 JSON）。\n\n## 顶层字段\n- schemaVersion: 1；evalVersion: \"v1\"\n- project: {title: 与 project.json 一致, episodeCount: 12}\n- seasonCurve: {setup:[1,2], climb:[3,6], storm:[7,10], climax:[11,12]}（按 15/30/35/20% 四舍五入到整集；原样照填）\n- paywall: {a: 8–12 中选一集, b: 10}（a≠b；12 集制的充值高峰墙按 round(12×0.8)=10）\n- episodes: 12 条，episode 从 1 连续到 12\n\n## 每集字段\n- episode、title（2–8 汉字，全季不重复）\n- mainline（关系线，≥8 字）/ infoChain（信息链，≥8 字）/ powerShift（权力变化，≥8 字）/ openPromise（未完成承诺，≥8 字）\n- callbacks: 第 1 集为 []；第 N(≥2) 集 ≥1 条 {episode: 小于 N 的整数, event: ≥6 字}\n- beats: 6–10 条 {no: 从 1 连续, kind: open_hook|conflict|satisfaction|reveal|escalation|twist|close_hook, text: ≥6 字}；\n  第 1 条必须是 open_hook，最后 1 条必须是 close_hook；每集至少 2 条 satisfaction、1 条 conflict、1 条 reveal、1 条 escalation、1 条 twist\n- hooks.open: {type: 悬念钩子|反转钩子|情感钩子|信息钩子|危机钩子 五选一, subtag: H1–H11, reason: ≥6 字}\n- hooks.close: {type: 同上五选一, subtag: H1–H11, concrete: {scene: 具体场所（不能写“某处”）, characters: ≥1 个 canon 角色名, prop: 具体可视道具, action: ≥8 字且不得含抽象套话（故事继续/真相未明/期待下集/下集见分晓/危机来临/决心/内心）}}\n- 每集 hooks.open.type 必须与 hooks.close.type 不同（每集至少 2 种钩子）\n- satisfactionPoints: 每集恰好 2 条 {position: 0–1 小数, type: 爽感类型, witnesses: ≥1 个 canon 角色名, description: ≥8 字}\n  * 第一条 position ≤ 0.34；至少一条 position ≤ 0.67（不得都堆在最后 1/3）\n  * 每集至少 1 条 type ∈ {伤害被看见, 关系反转, 反击得偿}（女频一级爽感）\n- paywall: null / \"A\" / \"B\"；paywall.a 对应集填 \"A\"，paywall.b 对应集填 \"B\"，其余 null\n\n## 硬约束\n- 钩子多样性：hooks.close.subtag 连续 3 集不得相同；任意 5 集滑窗内同一 subtag 不得出现 ≥3 次\n- 主线连续：callbacks 只能指向更早的集；全季 title、mainline、各 beat.text 不得完全重复\n- 角色：林小满必须每集出现（任一字段出现即可）；周曼、陈砚、林阿婆至少各出现 1 次；\n  不得使用姓名变体：林小曼/林晓满/周曼曼/周漫漫/陈彦/陈砚之/林奶奶/林婆婆\n- 概念锚点对齐：concept.json 的 seasonAnchors 中每条的 keyword，必须出现在同一集号的节拍内容里（任一字段含该关键词即可）\n- 爽感类型全集：伤害被看见/关系反转/反击得偿/亮牌逆袭/围观打脸/规则兑现/身份暴露/现实代价/连续反转/夸张反差/弹幕金句/表情包时刻\n- 只输出 beat_sheet.json，不要解释。\n",
+    "workspaceFiles": [
+      {
+        "from": "eval/v1/fixtures/E3-project.json",
+        "to": "project.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E3-concept.json",
+        "to": "concept.json"
+      },
+      {
+        "from": "eval/v1/fixtures/E3-characters.json",
+        "to": "characters.json"
+      }
+    ],
+    "output": {
+      "path": "beat_sheet.json",
+      "kind": "json"
+    }
+  },
+  "expected": {
+    "fixtureProject": "eval/v1/fixtures/E3-project.json",
+    "fixtureConcept": "eval/v1/fixtures/E3-concept.json",
+    "fixtureCharacters": "eval/v1/fixtures/E3-characters.json",
+    "episodeCount": 12,
+    "seasonCurve": {
+      "setup": [
+        1,
+        2
+      ],
+      "climb": [
+        3,
+        6
+      ],
+      "storm": [
+        7,
+        10
+      ],
+      "climax": [
+        11,
+        12
+      ]
+    },
+    "paywall": {
+      "aMin": 8,
+      "aMax": 12,
+      "b": 10
+    },
+    "canonNames": [
+      "林小满",
+      "周曼",
+      "陈砚",
+      "林阿婆",
+      "老周"
+    ],
+    "forbiddenNameVariants": [
+      "林小曼",
+      "林晓满",
+      "周曼曼",
+      "周漫漫",
+      "陈彦",
+      "陈砚之",
+      "林奶奶",
+      "林婆婆"
+    ],
+    "hookFormulaTypes": [
+      "悬念钩子",
+      "反转钩子",
+      "情感钩子",
+      "信息钩子",
+      "危机钩子"
+    ],
+    "hookSubtags": [
+      "H1",
+      "H2",
+      "H3",
+      "H4",
+      "H5",
+      "H6",
+      "H7",
+      "H8",
+      "H9",
+      "H10",
+      "H11"
+    ],
+    "satisfactionTypes": [
+      "伤害被看见",
+      "关系反转",
+      "反击得偿",
+      "亮牌逆袭",
+      "围观打脸",
+      "规则兑现",
+      "身份暴露",
+      "现实代价",
+      "连续反转",
+      "夸张反差",
+      "弹幕金句",
+      "表情包时刻"
+    ],
+    "femalePrimaryTypes": [
+      "伤害被看见",
+      "关系反转",
+      "反击得偿"
+    ],
+    "beatKinds": [
+      "open_hook",
+      "conflict",
+      "satisfaction",
+      "reveal",
+      "escalation",
+      "twist",
+      "close_hook"
+    ],
+    "beatsPerEpisode": {
+      "min": 6,
+      "max": 10
+    },
+    "abstractActionBlocklist": [
+      "故事继续",
+      "故事还在继续",
+      "真相未明",
+      "真相还未揭晓",
+      "期待下集",
+      "下集见分晓",
+      "危机来临",
+      "敬请期待",
+      "未完待续",
+      "决心",
+      "内心"
+    ],
+    "requiredFields": [
+      "mainline",
+      "infoChain",
+      "powerShift",
+      "openPromise"
+    ],
+    "minChars": {
+      "mainline": 8,
+      "infoChain": 8,
+      "powerShift": 8,
+      "openPromise": 8,
+      "beatText": 6,
+      "callbackEvent": 6,
+      "concreteAction": 8,
+      "satisfactionDescription": 8
+    },
+    "hookDiversity": {
+      "noConsecutive3": true,
+      "window5Max": 2
+    }
+  },
+  "grader": {
+    "function": "grade_E3",
+    "entry": "graders/grade.py",
+    "cli": "python3 harness/graders/grade.py --task E3 --output <file> --json",
+    "passRule": "全部 checks 通过（blocking=all）"
+  },
+  "selftest": {
+    "positive": "graders/tests/E3/positive/beat_sheet.json",
+    "negative": "graders/tests/E3/negative/beat_sheet.json"
+  },
+  "budget": {
+    "k": 3,
+    "maxTurns": 14,
+    "maxToolCalls": 50,
+    "maxWallClockSeconds": 420,
+    "usd": null,
+    "note": "DSH 不提供按会话美元成本；ledger 只记 turns/toolCalls/wallClock 与预算是否打满，禁止编造 usd"
+  }
+}
