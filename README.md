@@ -1,10 +1,10 @@
 # 墨戏生花 · Moxi
 
-> **跑在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 上的开源短剧创作工作台：在无限画布上，把一部短剧从一句话故事写到可导出 docx，再判断它到底能不能拍。**
+> **跑在 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 上的短剧创作工作台（源码公开 · 个人非商业免费）：在无限画布上，把一部短剧从一句话故事写到可导出 docx，再判断它到底能不能拍。**
 >
-> 底座：DeepSeek Harness（DSH）· 界面：无限画布 + 管理后台 · 数据：本机项目工作区文件 · 许可：MIT
+> 底座：DeepSeek Harness（DSH）· 界面：无限画布 + 管理后台 · 数据：本机项目工作区文件 · 许可：非商业免费（商用需授权）
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-blue.svg)](LICENSE)
 [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-0.2.1--rc.5%2B-4f7cff.svg)](https://github.com/deepseek-ai/deepseek-harness)
 [![Version](https://img.shields.io/badge/version-v0.1.0--exp.5-orange.svg)](CHANGELOG.md)
 [![Status](https://img.shields.io/badge/status-experimental-red.svg)](#12-状态与路线)
@@ -13,7 +13,7 @@
 
 ---
 
-> 🆕 **2026-11-07 起完整开源**：本仓库现在是完整源码仓库——DSH 三个插件、规则包、技能、确定性脚本与评测集全部入库；此前实验版以安装包形式分发。许可：MIT。
+> 🆕 **2026-11-07 起源码完整公开**：DSH 三个插件、规则包、技能、确定性脚本与评测集全部入库；此前实验版以安装包形式分发。**2026-11-08 起许可调整为「个人非商业免费 + 商用需授权」**（PolyForm Noncommercial 1.0.0，见 [`LICENSE`](LICENSE)）。
 
 ## 1. 这是什么
 
@@ -119,7 +119,7 @@
 ```text
 moxi-drama-studio/
 ├── README.md
-├── LICENSE                          # MIT
+├── LICENSE                          # PolyForm Noncommercial 1.0.0
 ├── CHANGELOG.md                     # 版本变更记录
 ├── assets/                          # 界面截图
 ├── dsh/
@@ -140,7 +140,8 @@ moxi-drama-studio/
 │   ├── adr/                         # 架构决策记录
 │   ├── 设计/                        # 数据契约、后台信息架构、前端接口契约
 │   ├── 选型/                        # 画布集成面勘察（DSH 客户端插件实测）
-│   └── 部署与回滚.md
+│   ├── 部署与回滚.md
+│   └── 使用说明.md                  # 授权范围 + 上手教程
 └── tooling/
     └── package.json                 # 构建依赖（esbuild），供 scripts/build-client.mjs 使用
 ```
@@ -149,6 +150,7 @@ moxi-drama-studio/
 
 | 文档 | 内容 |
 |---|---|
+| [`docs/使用说明.md`](docs/使用说明.md) | **授权范围（免费 / 商用）+ 产品上手教程 + 常见问题** |
 | [`docs/adr/001-目标架构.md`](docs/adr/001-目标架构.md) | 五平面、数据契约、Host API、工具契约与取舍 |
 | [`docs/设计/数据契约-v1.md`](docs/设计/数据契约-v1.md) | 目录 / JSON / 状态机 / 事件 / 错误码 / 事务与崩溃恢复 |
 | [`docs/设计/后台信息架构.md`](docs/设计/后台信息架构.md) | 后台 5 页 IA 与视觉规范 |
@@ -267,6 +269,8 @@ bash dsh/profile/install-desktop.sh    # 再装本地应用
 装好后双击 `~/Applications/墨戏生花.app`：它会自动拉起本地服务（`127.0.0.1:59911`），并用应用窗口打开（无地址栏 / 标签页）。`install-desktop.sh --check` 做依赖自检，`--uninstall` 卸载（项目数据不动）。依赖：本机有 Chrome（`install-desktop.sh` 也会探测 ego lite）、python3、node、dsh。
 
 ## 8. 使用
+
+> 完整图文步骤（含授权范围、常见问题）见 [`docs/使用说明.md`](docs/使用说明.md)。
 
 ### 8.1 快速上手
 
@@ -497,7 +501,7 @@ node --check dsh/bundles/moxi-core/index.js    # Host 插件语法检查
 | `moxi-core` bundle | `0.2.0` |
 | `moxi-admin` bundle | `0.2.0` |
 | `moxi-canvas` bundle | `0.1.0-spike`（画布仍是 spike 形态，接口可能调整） |
-| 许可 | MIT |
+| 许可 | PolyForm Noncommercial 1.0.0（个人非商业免费；商用需授权） |
 
 开发过程中在开发机上做过这些验收：30 集一键直出（30/30，0 失败）、跨题材 30 集验收、四轮交叉审查、数值一致性核对（0 偏差）。这些是实验版的能力边界，**不是生产级保证**。
 
@@ -523,14 +527,21 @@ node --check dsh/bundles/moxi-core/index.js    # Host 插件语法检查
 
 版本变更见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-## 13. 许可与友链
+## 13. 许可、使用说明与友链
 
-本项目以 **MIT License** 开源，完整条款见 [`LICENSE`](LICENSE)：
+本项目采用 **PolyForm Noncommercial License 1.0.0**，完整条款见 [`LICENSE`](LICENSE)：
+
+**个人学习、研究、非商业创作免费；任何商业用途需要作者书面授权。**
 
 ```text
-Copyright (c) 2026 龙樆 / 墨戏生花 (Moxi) contributors
+Required Notice: Copyright (c) 2026 龙樆 / 墨戏生花 (Moxi) contributors
 ```
 
+**可以免费使用**：个人学习 / 研究 / 测试 / 私人娱乐 / 业余爱好、个人非商业创作，以及慈善、教育、公共研究、公共安全卫生、环保、政府机构的使用。
+
+**需要先取得授权**：接单或付费服务、集成进商业产品 / SaaS / 付费课程、公司内部经营使用、转售或盈利性二次分发。申请方式：开一个标题为「商用授权」的 Issue（<https://github.com/w1251788888-web/moxi-drama-studio/issues/new>），说明场景与规模。
+
+- 详细授权范围与上手教程：[`docs/使用说明.md`](docs/使用说明.md)；
 - 本仓库不包含 DeepSeek Harness 本体；DSH 及其依赖遵循其各自的许可证；
 - 构建依赖 `esbuild` 仅用于开发时打包客户端，遵循其自身许可证；
 - 第三方与历史来源（含早期版本 OpenMOSS 署名）说明见 [`NOTICE.md`](NOTICE.md)；
@@ -545,4 +556,4 @@ Copyright (c) 2026 龙樆 / 墨戏生花 (Moxi) contributors
 
 欢迎开 [Issue](https://github.com/w1251788888-web/moxi-drama-studio/issues) 和 PR。报 Bug 请附：系统版本、`dsh --version`、复现步骤；Windows 用户可附 `moxi-diagnose.txt`。请勿在 Issue 里附带真实项目文稿或任何敏感数据。
 
-本项目是个人开源项目：没有站点，不设群组，不接收打赏。
+本项目是个人项目：**个人非商业使用免费，商业使用需授权**；没有站点、不设群组、不接收打赏。

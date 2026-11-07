@@ -1,5 +1,12 @@
 # 更新记录
 
+## 2026-11-08 · 许可调整 + 使用说明
+
+- 许可由 MIT 改为 **PolyForm Noncommercial 1.0.0**：个人学习、研究、非商业创作免费；商业使用需联系作者取得书面授权
+- 新增 [`docs/使用说明.md`](docs/使用说明.md)：授权范围（免费 / 商用 / 申请方式）+ 产品上手教程 + 常见问题
+- README 增加「使用说明」入口与商用授权申请方式；GitHub About 描述与 topics 同步调整（移除 mit-license）
+- 预编译发行包重新打包（包内 LICENSE / 授权说明同步更新）
+
 ## 2026-11-07 · 完整开源（MIT）
 
 - 仓库从「安装包 + 文档分发」改为**完整开源**：DSH 三个插件（moxi-core Host / moxi-canvas / moxi-admin）、

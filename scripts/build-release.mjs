@@ -5,7 +5,7 @@
  * 发行包口径：
  *   - 打包编译后的 JS（host index.js、client client.js），方便不想自行构建的用户直接安装
  *   - 规则包 rules/v2 内嵌进 moxi-core 的 JS（lib/rules-bundle.js），安装后不依赖仓库目录
- *   - 许可证：MIT，附 LICENSE.txt；完整源码见 GitHub 仓库
+ *   - 许可证：PolyForm Noncommercial 1.0.0（个人非商业免费，商用需授权），附 LICENSE.txt；完整源码见 GitHub 仓库
  *   - 版本：0.1.0-exp.<n>，README 标注实验版与免责声明
  *
  * 产物：
@@ -32,7 +32,7 @@ const esbuildEntry = join(repoRoot, 'tooling', 'node_modules', 'esbuild', 'lib',
 const argv = process.argv.slice(2)
 const versionArg = argv.indexOf('--version')
 const VERSION = versionArg >= 0 ? argv[versionArg + 1] : '0.1.0-exp.1'
-const LICENSE = 'MIT'
+const LICENSE = 'PolyForm-Noncommercial-1.0.0'
 
 const esbuild = await import(pathToFileURL(esbuildEntry).href)
 
@@ -187,30 +187,11 @@ const icoSrc = join(repoRoot, 'dsh', 'launcher', 'Moxi.ico')
 if (existsSync(icoSrc)) await fs.copyFile(icoSrc, join(distRoot, 'Moxi.ico'))
 
 /* ---------------- 6. 法律与安装文档 ---------------- */
-await fs.writeFile(join(distRoot, 'LICENSE.txt'), `MIT License
-
-Copyright (c) 2026 龙樆 / 墨戏生花 (Moxi) contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+await fs.writeFile(join(distRoot, 'LICENSE.txt'), (await fs.readFile(join(repoRoot, 'LICENSE'), 'utf8')) + `
 
 第三方组件：本软件通过 DeepSeek Harness（DSH）运行时加载；DSH 及其依赖组件
 （如 react 等）遵循其各自的许可证。本发行包不包含 DSH 本体。完整源码见 GitHub 仓库。
+商业使用授权请联系作者（通过 GitHub Issue 申请）。
 `, 'utf8')
 
 await fs.writeFile(join(distRoot, 'NOTICE.txt'), `墨戏生花 v${VERSION}（实验版）发行说明
@@ -222,6 +203,7 @@ await fs.writeFile(join(distRoot, 'NOTICE.txt'), `墨戏生花 v${VERSION}（实
 
 说明：
   本包为安装用打包产物；完整源码、规则 Markdown、技能源码见 GitHub 仓库。
+  许可：PolyForm Noncommercial 1.0.0（个人非商业免费；商业使用需授权）。
 
 版本兼容：DeepSeek Harness 0.2.1-rc.5+
 `, 'utf8')
@@ -282,7 +264,7 @@ dsh plugin --profile moxi-exp remove moxi-core-bundle moxi-canvas-bundle moxi-ad
 
 ## 授权
 
-本发行包遵循 MIT 许可；完整源码见 GitHub 仓库。详见 LICENSE.txt。
+本发行包采用 PolyForm Noncommercial 1.0.0：个人学习、研究、非商业创作免费；商业使用需联系作者取得书面授权。完整源码见 GitHub 仓库，详见 LICENSE.txt。
 `, 'utf8')
 
 /* ---------------- 7. 安装脚本 ---------------- */
@@ -472,4 +454,4 @@ await fs.rename(zipName, join(distRoot, `moxi-studio-exp-${VERSION}.zip`)).catch
 log(`zip: moxi-studio-exp-${VERSION}.zip (${((await fs.stat(join(distRoot, `moxi-studio-exp-${VERSION}.zip`))).size / 1024 / 1024).toFixed(1)} MB)`)
 log(`tarballs: ${list.join(', ')}`)
 log(`安装包: ${relative(repoRoot, archiveName)} (${(archiveBytes / 1024 / 1024).toFixed(1)} MB)`)
-log(`版本 ${VERSION} · 开源（MIT）· 安装包`)
+log(`版本 ${VERSION} · 非商业免费（PolyForm NC）· 安装包`)
