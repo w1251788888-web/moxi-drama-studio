@@ -65,17 +65,177 @@ const jobDone = (job) => {
   return { done: Number(p.done) || 0, failed: Number(p.failed) || 0, total: Number(p.total) || 0, current: p.current }
 }
 
+/* ---------------- 统一口径（与 core/admin 对齐） ---------------- */
+/**
+ * 逐集签收三态：有效签收 / 改稿失效（stale）/ 从未签收。
+ * 待签收 = 从未签收 + 改稿失效；host 的 unsigned 本身就是这个合计（含 stale），
+ * 所以绝不能把 staleSignoffs 再加到 unsigned 上（那样 1 集会算成 2 集）。
+ */
+const reportNeedsSignoff = (s) => {
+  if (!s) return 0
+  if (Array.isArray(s.needsSignoff)) return s.needsSignoff.length
+  const n = Number(s.needsSignoff)
+  if (Number.isFinite(n)) return n
+  return Number(s.unsigned) || 0
+}
+const reportStaleCount = (s) => Number((s && s.staleSignoffs) || 0)
+/** 从未签收（不含改稿失效）：host 给了 unsignedOnly 就用，缺字段时用合计减失效兜底 */
+const reportUnsignedOnly = (s) => {
+  if (!s) return 0
+  if (Array.isArray(s.unsignedOnly)) return s.unsignedOnly.length
+  const n = Number(s.unsignedOnly)
+  if (Number.isFinite(n)) return n
+  return Math.max(0, reportNeedsSignoff(s) - reportStaleCount(s))
+}
+/** 集号文案统一写作「第 5 集」 */
+const epLabel = (ep) => `第 ${ep} 集`
+/** 集号列表：第 1 集、第 2 集 … 超过 max 个时折叠成「等 N 集」 */
+const epLabelList = (list, max = 24) => {
+  const rows = (list || []).map(Number).filter((n) => Number.isFinite(n))
+  const head = rows.slice(0, max).map(epLabel).join('、')
+  return rows.length > max ? `${head} 等 ${rows.length} 集` : head
+}
+
+/**
+ * 任务集范围文案：from/to 是「首末集号」，不等于集数。
+ * 优先用 host 给的 job.scope（dense 表示连续），缺字段时从 episodes 明细兜底，
+ * 避免把「第 1、6、8、10 集」误读成「第 1–10 集」。
+ */
+const jobScopeText = (job) => {
+  if (!job) return ''
+  const sc = job.scope || null
+  const from = Number(job.from) || 0
+  const to = Number(job.to) || 0
+  let eps = []
+  if (sc && Array.isArray(sc.episodes) && sc.episodes.length) eps = sc.episodes.map(Number)
+  else eps = ((job.episodes) || []).map((e) => Number(e && e.ep))
+  eps = [...new Set(eps.filter((n) => Number.isFinite(n) && n > 0))].sort((a, b) => a - b)
+  if (eps.length === 1) return `第 ${eps[0]} 集`
+  if (eps.length) {
+    const dense = sc
+      ? !!sc.dense
+      : (from > 0 && to > 0 && eps.length === (to - from + 1) && eps[0] === from && eps[eps.length - 1] === to)
+    return dense ? `第 ${eps[0]}–${eps[eps.length - 1]} 集` : `第 ${eps.join('、')} 集（共 ${eps.length} 集）`
+  }
+  if (from > 0 && to > 0) return `第 ${from}–${to} 集`
+  return '范围未记录'
+}
+
 /* ------------------------------------------------------------------ */
 /* 项目列表页                                                          */
 /* ------------------------------------------------------------------ */
-function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh, error }) {
+function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh, error, stats, jobs }) {
   const [skin, setSkin] = useState(() => (typeof window !== 'undefined' && window.__moxiSkin ? window.__moxiSkin.getSkin() : 'ink'))
   const toggleSkin = () => {
     const next = skin === 'ink' ? 'host' : 'ink'
     setSkin(next)
     if (window.__moxiSkin) window.__moxiSkin.setSkin(next)
   }
-  const pendingOf = (p) => ((p.byStatus || {}).review || 0) + ((p.byStatus || {}).rejected || 0)
+  // 首页增强数据：stats 给节点状态/集数/最近任务，可拍性摘要给「下一步」提示（拿不到就不显示）
+  const [shootMap, setShootMap] = useState({})
+  const statsById = useMemo(() => {
+    const m = new Map()
+    for (const row of ((stats && stats.projects) || [])) if (row && row.id) m.set(row.id, row)
+    return m
+  }, [stats])
+  const jobById = useMemo(() => {
+    const m = new Map()
+    for (const j of (jobs || [])) {
+      if (!j || !j.projectId) continue
+      if (!m.has(j.projectId)) m.set(j.projectId, j) // listJobs 已按创建时间倒序，取第一条即最近任务
+    }
+    return m
+  }, [jobs])
+  const pendingOf = (p) => {
+    const st = statsById.get(p.id)
+    if (st) return Number(st.pending) || 0
+    return ((p.byStatus || {}).review || 0) + ((p.byStatus || {}).rejected || 0)
+  }
+  const projectSignature = projects.map((p) => `${p.id}:${p.reviewState || ''}:${p.updatedAt || ''}`).join('|')
+  // 首页「下一步」要看到缺钩子/待签收，只有可拍性报告有这两项；仅对「已生成」项目并行取一次摘要
+  useEffect(() => {
+    const targets = projects.filter((p) => p.reviewState === 'generated').slice(0, 12)
+    if (!targets.length) { setShootMap({}); return undefined }
+    let alive = true
+    Promise.all(targets.map((p) => api.shootability(p.id, 'json')
+      .then((r) => [p.id, (r && r.summary) || null])
+      .catch(() => null)))
+      .then((rows) => {
+        if (!alive) return
+        const m = {}
+        for (const row of rows) if (row && row[1]) m[row[0]] = row[1]
+        setShootMap(m)
+      })
+    return () => { alive = false }
+  }, [projectSignature])
+
+  // 阶段分布（按节点状态）：已批准 / 待审 / 生成中 / 草稿（阻塞并入草稿）
+  const stageBar = (byStatus) => {
+    const st = byStatus || {}
+    const segs = [
+      { key: 'approved', n: Number(st.approved) || 0, color: TOKENS.success, label: '已批准' },
+      { key: 'pending', n: (Number(st.review) || 0) + (Number(st.rejected) || 0), color: TOKENS.warn, label: '待审' },
+      { key: 'generating', n: Number(st.generating) || 0, color: TOKENS.goldSoft, label: '生成中' },
+      { key: 'draft', n: (Number(st.draft) || 0) + (Number(st.blocked) || 0), color: TOKENS.neutral, label: '草稿' },
+    ].filter((s) => s.n > 0)
+    const total = segs.reduce((a, s) => a + s.n, 0)
+    if (!total) return null
+    return h('div', { style: { marginBottom: 9 } },
+      h('div', { style: { display: 'flex', height: 6, borderRadius: 999, overflow: 'hidden', background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` } },
+        segs.map((s) => h('div', { key: s.key, title: `${s.label} ${s.n} 个工位`, style: { width: `${(s.n / total) * 100}%`, background: s.color } }))),
+      h('div', { style: { marginTop: 4, fontSize: 10.5, opacity: 0.6, display: 'flex', gap: 9, flexWrap: 'wrap' } },
+        segs.map((s) => h('span', { key: s.key }, `${s.label} ${s.n}`)))
+    )
+  }
+  // 最近任务（状态 + 集数）
+  const jobLine = (p, st) => {
+    const job = jobById.get(p.id) || null
+    const last = (st && st.lastJob) || null
+    if (!job && !last) return null
+    const status = (job && job.status) || (last && last.status)
+    const pr = (job && job.progress) || (last && last.progress) || {}
+    const rawRange = job ? jobScopeText(job) : ''
+    const range = job && job.mode === 'ensure'
+      ? '概念/资产补齐'
+      : (rawRange === '范围未记录' ? '' : rawRange)
+    const total = Number(pr.total) || 0
+    // 没有集数的任务（补齐类）不显示 0/0，避免像个没跑完的任务
+    const count = total > 0 ? `${Number(pr.done) || 0}/${total} 集` : ''
+    const tail = [range, count].filter(Boolean).join(' · ')
+    return h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7, fontSize: 11 } },
+      h('span', { style: { opacity: 0.6 } }, '最近任务'),
+      h(JobBadge, { status }),
+      tail ? h('span', { style: { opacity: 0.72 } }, tail) : null
+    )
+  }
+  // 下一步提示：只用真实报告/统计，缺数据就不显示，不自造数字
+  const nextStep = (p, st, shoot) => {
+    if (p.reviewState === 'released') return null
+    if (shoot) {
+      const need = reportNeedsSignoff(shoot)
+      const hooks = Number(shoot.hooksMissing) || 0
+      const parts = []
+      if (hooks > 0) parts.push(`${hooks} 集缺钩子`)
+      if (need > 0) parts.push(`${need} 集待签收`)
+      if (parts.length) return { color: TOKENS.warn, text: `${parts.join(' · ')} → 去可拍性` }
+    }
+    const last = st && st.lastJob
+    if (last && (last.status === 'failed' || last.status === 'done_with_errors')) {
+      const failed = Number(last.progress && last.progress.failed) || 0
+      return { color: TOKENS.error, text: `最近任务有 ${failed || 1} 集失败 → 续跑或修复` }
+    }
+    const pending = pendingOf(p)
+    if (pending > 0) return { color: TOKENS.warn, text: `${pending} 个工位待审 → 进入画布` }
+    return null
+  }
+  // 总览：项目数 / 已生成集数 / 待签收集数（只列 stats 与真实报告可得的项）
+  const overviewItems = []
+  if (stats && stats.total) {
+    if (Number.isFinite(Number(stats.total.projects))) overviewItems.push(`${Number(stats.total.projects)} 部剧`)
+    if (Number.isFinite(Number(stats.total.episodes))) overviewItems.push(`已生成 ${Number(stats.total.episodes)} 集`)
+  }
+  const shootRows = Object.values(shootMap || {})
+  if (shootRows.length) overviewItems.push(`待签收 ${shootRows.reduce((a, s) => a + reportNeedsSignoff(s), 0)} 集`)
   return h('div', {
     className: 'moxi-app moxi-paper-bg',
     style: { height: '100%', overflow: 'auto', padding: '34px 36px', boxSizing: 'border-box' },
@@ -92,17 +252,27 @@ function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh
     ),
     h('p', { style: { fontSize: 13, opacity: 0.68, margin: '0 0 22px' } },
       '一张画布写一部剧：对话是导演，画布是片场，工位是拍摄现场。'),
-    error ? h('div', { style: { marginBottom: 14, padding: '8px 12px', borderRadius: 8, fontSize: 12, background: '#fef2f2', color: '#b91c1c', border: '1px solid #fecaca' } }, error) : null,
-    h('div', { style: { display: 'flex', gap: 8, marginBottom: 18 } },
+    error ? h('div', { style: { marginBottom: 14, padding: '8px 12px', borderRadius: 8, fontSize: 12, background: 'rgba(178,58,50,.07)', color: '#b91c1c', border: '1px solid #fecaca' } }, error) : null,
+    h('div', { style: { display: 'flex', gap: 8, marginBottom: 12 } },
       h(Button, { tone: 'primary', onClick: onCreate, 'data-testid': 'btn-new-project' }, '+ 新开一部剧'),
       h(Button, { onClick: onRefresh, 'data-testid': 'btn-refresh-projects' }, '刷新')
     ),
+    overviewItems.length
+      ? h('div', {
+        'data-testid': 'projects-overview',
+        style: { fontSize: 12, opacity: 0.66, marginBottom: 16, display: 'flex', gap: 14, flexWrap: 'wrap' },
+      }, overviewItems.map((t) => h('span', { key: t }, t)))
+      : h('div', { style: { height: 4 } }),
     loading
       ? h('div', { style: { fontSize: 12, opacity: 0.6 } }, '加载中…')
       : projects.length === 0
         ? h(Empty, { text: '还没有剧作', action: h(Button, { tone: 'primary', onClick: onCreate }, '新开第一部剧') })
-        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14, maxWidth: 1240 } },
-          projects.map((p) => h('div', {
+        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14, maxWidth: 1240 } },
+          projects.map((p) => {
+            const st = statsById.get(p.id) || null
+            const shoot = shootMap[p.id] || null
+            const hint = nextStep(p, st, shoot)
+            return h('div', {
             key: p.id,
             'data-testid': `project-card-${p.id}`,
             onClick: () => onOpen(p.id),
@@ -121,12 +291,18 @@ function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh
                 style: { border: 0, background: 'transparent', cursor: 'pointer', opacity: 0.4, fontSize: 13, color: 'inherit' },
               }, '🗑')
             ),
-            h('div', { style: { fontSize: 11.5, opacity: 0.62, display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 } },
+            h('div', { style: { fontSize: 11.5, opacity: 0.62, display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
               h('span', null, `${p.episodeCount ?? '集数未确认'} 集`),
               p.audience ? h('span', null, p.audience) : null,
               p.genre && p.genre.main ? h('span', null, p.genre.main) : null,
               h('span', null, '更新于 ' + fmtTs(p.updatedAt))
             ),
+            stageBar((st && st.byStatus) || p.byStatus),
+            jobLine(p, st),
+            hint ? h('div', {
+              'data-testid': `project-hint-${p.id}`,
+              style: { fontSize: 11, lineHeight: 1.55, marginBottom: 8, color: hint.color },
+            }, hint.text) : null,
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
               p.reviewState === 'generated'
                 ? h('span', { className: 'moxi-stamp' }, '待放行')
@@ -140,11 +316,11 @@ function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh
               h('span', { style: { flex: 1 } }),
               h(Button, { tone: 'primary', onClick: (e) => { e.stopPropagation(); onOpen(p.id) }, 'data-testid': `btn-continue-${p.id}` }, '继续创作')
             )
-          ))
+            )
+          })
         )
   )
 }
-
 /* ------------------------------------------------------------------ */
 /* 新建项目弹窗                                                        */
 /* ------------------------------------------------------------------ */
@@ -186,7 +362,7 @@ function NewProjectModal({ onClose, onSubmit, busy }) {
 /* ------------------------------------------------------------------ */
 /* 节点卡片                                                            */
 /* ------------------------------------------------------------------ */
-function NodeCard({ node, selected, onPointerDown, onClick, findings, editing, editingText, onStartRename, onEditText, onCommitRename, onCancelRename }) {
+function NodeCard({ node, selected, onPointerDown, onClick, findings, editing, editingText, onStartRename, onEditText, onCommitRename, onCancelRename, summary }) {
   const meta = NODE_TYPES[node.type] || NODE_TYPES.settings
   const errs = findings ? findings.filter((f) => f.severity === 'error').length : 0
   const warns = findings ? findings.filter((f) => f.severity === 'warning').length : 0
@@ -241,10 +417,18 @@ function NodeCard({ node, selected, onPointerDown, onClick, findings, editing, e
         onDoubleClick: (e) => { e.stopPropagation(); onStartRename() },
         style: { fontSize: 13, fontWeight: 600, lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' },
       }, node.title),
+    // 卡片摘要行：剧本卡看「字数 · 钩子 · 角色数」，节拍/分场看集号与状态，资产卡看角色/类型
+    summary
+      ? h('div', {
+        'data-testid': `node-summary-${node.id}`,
+        title: summary,
+        style: { marginTop: 5, fontSize: 10.5, lineHeight: 1.5, opacity: 0.62, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+      }, summary)
+      : null,
     (errs || warns)
       ? h('div', { style: { marginTop: 6, fontSize: 10.5, display: 'flex', gap: 8 } },
-        errs ? h('span', { style: { color: '#dc2626' } }, `✕ ${errs}`) : null,
-        warns ? h('span', { style: { color: '#d97706' } }, `! ${warns}`) : null)
+        errs ? h('span', { style: { color: TOKENS.error } }, `✕ ${errs}`) : null,
+        warns ? h('span', { style: { color: TOKENS.warn } }, `! ${warns}`) : null)
       : null
   )
 }
@@ -403,7 +587,7 @@ function Inspector({ project, node, onClose, onSaved, onTransition, onCheck, onD
           key: i,
           style: {
             padding: '8px 10px', borderRadius: 8, fontSize: 12,
-            background: f.severity === 'error' ? '#fef2f2' : f.severity === 'warning' ? '#fffbeb' : TOKENS.bgSoft,
+            background: f.severity === 'error' ? 'rgba(178,58,50,.07)' : f.severity === 'warning' ? '#fffbeb' : TOKENS.bgSoft,
             border: `1px solid ${f.severity === 'error' ? '#fecaca' : f.severity === 'warning' ? '#fde68a' : TOKENS.border}`,
           },
         },
@@ -435,7 +619,7 @@ function Inspector({ project, node, onClose, onSaved, onTransition, onCheck, onD
     h('div', { style: { padding: '8px 14px', display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
       h(Badge, { status: node.status }),
       h('span', { style: { fontSize: 11, opacity: 0.6 } }, meta.label),
-      dirty ? h('span', { style: { fontSize: 11, color: '#d97706' } }, '● 未保存') : null
+      dirty ? h('span', { style: { fontSize: 11, color: TOKENS.warn } }, '● 未保存') : null
     ),
     tabs,
     tab === 'content' ? contentTab : tab === 'meta' ? metaTab : eventsTab
@@ -490,7 +674,7 @@ function GenerateModal({ project, onClose, onStarted, toast }) {
         model: model || undefined,
         skipConcept,
       })
-      toast({ kind: 'success', text: `生成任务已启动：第 ${job.from}–${job.to} 集` })
+      toast({ kind: 'success', text: `生成任务已启动：${jobScopeText(job)}` })
       onStarted(job)
     } catch (e) {
       const hint = e.code === 'E_JOB_RUNNING' ? '该项目已有任务在跑，先到「任务」里查看/取消。' : e.message
@@ -571,15 +755,15 @@ function GenerateModal({ project, onClose, onStarted, toast }) {
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 8, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` } },
         h(Button, { onClick: probeModel, disabled: probing, 'data-testid': 'btn-probe' }, probing ? '探测中…' : '模型探测'),
         h('div', { style: { fontSize: 11.5, lineHeight: 1.5, opacity: 0.8, flex: 1 } },
-          probing ? h('span', null, h(Spinner, { size: 10 }), ' 正在调用 /llm/probe…')
+          probing ? h('span', null, h(Spinner, { size: 10 }), ' 正在调用模型探测…')
             : probe
               ? (probe.error
-                ? h('span', { style: { color: '#dc2626' } }, `探测失败：${probe.error}`)
+                ? h('span', { style: { color: TOKENS.error } }, `探测失败：${probe.error}`)
                 : h('span', null, `✓ ${probe.provider}/${probe.model} · ${probe.ms}ms · ${probe.chars} 字符 · 样例「${String(probe.sample || '').slice(0, 20)}」`))
               : '点击探测当前 provider/model 链路是否可用（会真实调用一次模型）'
         )
       ),
-      invalid ? h('div', { style: { fontSize: 11.5, color: '#dc2626' } }, `集数范围非法：要求 1 ≤ 起始 ≤ 结束 ≤ ${maxTo}`) : null
+      invalid ? h('div', { style: { fontSize: 11.5, color: TOKENS.error } }, `集数范围非法：要求 1 ≤ 起始 ≤ 结束 ≤ ${maxTo}`) : null
     )
   )
 }
@@ -603,7 +787,7 @@ function EpisodeRows({ job }) {
       h('span', { style: { opacity: 0.8 } }, EP_STAGE_LABEL[ep.stage] || ep.stage || '—'),
       h(EpBadge, { status: ep.status }),
       h('span', { style: { fontFamily: TOKENS.mono, opacity: 0.8 } }, String(ep.words || 0)),
-      h('span', { style: { fontFamily: TOKENS.mono, opacity: ep.findings ? 0.9 : 0.5, color: ep.findings ? '#d97706' : 'inherit' } }, String(ep.findings || 0)),
+      h('span', { style: { fontFamily: TOKENS.mono, opacity: ep.findings ? 0.9 : 0.5, color: ep.findings ? TOKENS.warn : 'inherit' } }, String(ep.findings || 0)),
       h('span', { style: { opacity: 0.65, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, title: ep.error || '' }, ep.error || '')
     ))
   )
@@ -612,7 +796,7 @@ function EpisodeRows({ job }) {
 function JobLog({ log }) {
   const rows = (log || []).slice(-20)
   if (!rows.length) return h('div', { style: { fontSize: 11.5, opacity: 0.6 } }, '暂无日志')
-  const color = (level) => level === 'error' ? '#dc2626' : level === 'warn' ? '#d97706' : TOKENS.dim
+  const color = (level) => level === 'error' ? TOKENS.error : level === 'warn' ? TOKENS.warn : TOKENS.dim
   return h('div', { style: { display: 'grid', gap: 2, maxHeight: 150, overflow: 'auto', fontFamily: TOKENS.mono, fontSize: 10.5, lineHeight: 1.5 } },
     rows.map((row, i) => h('div', { key: i, style: { display: 'flex', gap: 6, whiteSpace: 'nowrap' } },
       h('span', { style: { opacity: 0.5 } }, String(row.ts || '').slice(11, 19)),
@@ -664,7 +848,7 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
   const cancel = async () => {
     const ok = await confirm({
       title: '取消生成任务',
-      message: `确认取消任务 ${job.id}（第 ${job.from}–${job.to} 集）？已完成的集会保留。`,
+      message: `确认取消任务 ${job.id}（${jobScopeText(job)}）？已完成的集会保留。`,
       detail: '取消后可用「续跑」从第一个未完成集继续。',
       danger: true,
       confirmText: '取消任务',
@@ -713,7 +897,7 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
   }
 
   const progress = jobDone(job)
-  const pctText = `${progress.done}/${progress.total}`
+  const pctText = `${progress.done}/${progress.total} 集`
   const canResume = terminal && ['cancelled', 'failed', 'done_with_errors'].includes(String(status))
   const failedEps = (((job && job.episodes) || []).filter((e) => e && e.status === 'failed').map((e) => Number(e.ep)).filter((n) => Number.isFinite(n))).sort((a, b) => a - b)
   const failedCount = progress.failed || failedEps.length
@@ -738,17 +922,17 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
     ],
   },
     loading ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } }, h(Spinner), '加载任务…')
-      : err ? h('div', { style: { fontSize: 12.5, color: '#dc2626', lineHeight: 1.6 } }, err)
+      : err ? h('div', { style: { fontSize: 12.5, color: TOKENS.error, lineHeight: 1.6 } }, err)
         : !job ? h('div', { style: { fontSize: 12 } }, '任务不存在')
           : h('div', { style: { display: 'grid', gap: 12 } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
               h('div', { style: { fontSize: 13, fontWeight: 650, flex: 1 } }, job.projectTitle || '未知项目'),
-              h('div', { style: { fontSize: 11.5, opacity: 0.65 } }, `第 ${job.from}–${job.to} 集 · ${job.provider}/${job.model}`)
+              h('div', { style: { fontSize: 11.5, opacity: 0.65 } }, `${jobScopeText(job)} · ${job.provider}/${job.model}`)
             ),
             status === 'done_with_errors'
               ? h('div', {
                 'data-testid': 'drawer-job-alert',
-                style: { padding: '9px 11px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fca5a5', color: '#991b1b', fontSize: 12.5, lineHeight: 1.6 },
+                style: { padding: '9px 11px', borderRadius: 8, background: 'rgba(178,58,50,.07)', border: '1px solid #fca5a5', color: '#991b1b', fontSize: 12.5, lineHeight: 1.6 },
               },
                 h('div', { style: { fontWeight: 700, marginBottom: 2 } }, `${failedCount} 集失败：导出前请先续跑或修复`),
                 h('div', { style: { fontSize: 11.5, opacity: 0.9 } },
@@ -804,49 +988,50 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
 /* ------------------------------------------------------------------ */
 /* 可拍性抽屉：时长估算 / 角色 / 钩子 / 逐集签收                        */
 /* ------------------------------------------------------------------ */
-function ShootabilityDrawer({ project, onClose, toast, confirm }) {
-  const [report, setReport] = useState(null)
-  const [loading, setLoading] = useState(true)
+// 报告数据由 CanvasView 统一持有（打开项目就拉），这里只负责展示与签收；
+// 签收/撤回后调 onReload 重新拉取，横幅与卡片同步刷新。
+function ShootabilityDrawer({ project, report, loading, onReload, onClose, toast, confirm }) {
   const [busyEp, setBusyEp] = useState(null)
   const [signEp, setSignEp] = useState(null)
   const [notes, setNotes] = useState('')
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await api.shootability(project.id, 'json')
-      setReport(r)
-    } catch (e) {
-      toast({ kind: 'error', text: '可拍性报告失败：' + e.message })
-    } finally { setLoading(false) }
-  }, [project.id, toast])
-
-  useEffect(() => { load() }, [load])
+  const load = async () => { await onReload() }
 
   const doSign = async () => {
     if (!signEp) return
     setBusyEp(signEp.episode)
     try {
       await api.signoff(project.id, signEp.episode, 'sign', notes)
-      toast({ kind: 'success', text: `第 ${signEp.episode} 集已签收` })
+      toast({ kind: 'success', text: `${epLabel(signEp.episode)}已签收` })
       setSignEp(null); setNotes('')
-      await load()
+      await onReload()
     } catch (e) {
       toast({ kind: 'error', text: '签收失败：' + e.message })
+    } finally { setBusyEp(null) }
+  }
+  // 改稿失效的行：不用再走签收弹窗，直接按当前稿件版本重新签收
+  const reSign = async (ep) => {
+    setBusyEp(ep.episode)
+    try {
+      await api.signoff(project.id, ep.episode, 'sign', notes)
+      toast({ kind: 'success', text: `${epLabel(ep.episode)}已按当前稿件版本重新签收` })
+      await onReload()
+    } catch (e) {
+      toast({ kind: 'error', text: '重新签收失败：' + e.message })
     } finally { setBusyEp(null) }
   }
   const revoke = async (ep) => {
     const ok = await confirm({
       title: '撤回签收',
-      message: `撤回第 ${ep.episode} 集的签收记录？`,
+      message: `撤回${epLabel(ep.episode)}的签收记录？`,
       confirmText: '撤回', cancelText: '保留',
     })
     if (!ok) return
     setBusyEp(ep.episode)
     try {
       await api.signoff(project.id, ep.episode, 'revoke')
-      toast({ kind: 'success', text: `第 ${ep.episode} 集签收已撤回` })
-      await load()
+      toast({ kind: 'success', text: `${epLabel(ep.episode)}签收已撤回` })
+      await onReload()
     } catch (e) {
       toast({ kind: 'error', text: '撤回失败：' + e.message })
     } finally { setBusyEp(null) }
@@ -867,13 +1052,78 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
   }
 
   const s = report ? report.summary : null
-  const card = (label, value, hint) => h('div', {
+  const needSignoff = reportNeedsSignoff(s)
+  const staleCount = reportStaleCount(s)
+  const unsignedOnly = reportUnsignedOnly(s)
+  const card = (label, value, hint, opts = {}) => h('div', {
+    title: opts.title || undefined,
     style: { padding: '9px 11px', borderRadius: 8, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` },
   },
     h('div', { style: { fontSize: 11, opacity: 0.6, marginBottom: 2 } }, label),
-    h('div', { className: 'moxi-serif', style: { fontSize: 19, fontWeight: 600 } }, value),
+    h('div', {
+      className: 'moxi-serif',
+      style: { fontSize: 19, fontWeight: 600, color: opts.danger && Number(value) > 0 ? TOKENS.error : undefined },
+    }, value),
     hint ? h('div', { style: { fontSize: 10.5, opacity: 0.55 } }, hint) : null
   )
+  // 待处理优先：改稿失效/未签收 → 缺钩子 → 其余已签收；同组内按集号
+  const rowKind = (e) => {
+    if (!e.signoff || e.signoff.stale) return 0
+    if (e.hook && !e.hook.has) return 1
+    return 2
+  }
+  const sortedEpisodes = [...((report && report.episodes) || [])]
+    .sort((a, b) => (rowKind(a) - rowKind(b)) || (Number(a.episode) - Number(b.episode)))
+  const pendingRows = sortedEpisodes.filter((e) => rowKind(e) < 2)
+  const signedRows = sortedEpisodes.filter((e) => rowKind(e) === 2)
+  const cellStyle = { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}` }
+  const sectionRow = (key, title, count) => h('tr', { key },
+    h('td', {
+      colSpan: 7,
+      style: {
+        padding: '8px 8px 4px', fontSize: 11, fontWeight: 650, opacity: 0.72,
+        borderBottom: `1px solid ${TOKENS.border}`, background: TOKENS.bg, position: 'sticky', top: 28,
+      },
+    }, `${title} · ${count} 集`))
+  const episodeRow = (e) => {
+    const stale = !!(e.signoff && e.signoff.stale)
+    return h('tr', {
+      key: `row-${e.episode}`,
+      'data-testid': `shoot-row-${e.episode}`,
+      style: stale ? { background: 'rgba(176,138,74,.12)' } : undefined,
+    },
+      h('td', { style: cellStyle }, epLabel(e.episode)),
+      h('td', { style: cellStyle }, e.scenes),
+      h('td', { style: cellStyle }, `${e.durationSeconds}s`),
+      h('td', { style: { ...cellStyle, maxWidth: 180 } },
+        e.speakers.length ? e.speakers.slice(0, 4).join('、') : '—',
+        e.unknownSpeakers.length ? h('span', { style: { color: TOKENS.warn }, title: `不在设定集：${e.unknownSpeakers.join('、')}` }, ` ⚠${e.unknownSpeakers.length}`) : null),
+      h('td', { style: cellStyle }, e.hook.has ? '有' : h('span', { style: { color: TOKENS.warn } }, '缺')),
+      h('td', { style: cellStyle },
+        e.signoff
+          ? (stale
+            ? h('span', { style: { color: TOKENS.warn } }, '已签收（改稿失效）')
+            : `已签收 ${String(e.signoff.at || '').slice(5, 16)}`)
+          : h('span', { style: { opacity: 0.7 } }, '未签收')),
+      h('td', { style: { ...cellStyle, whiteSpace: 'nowrap' } },
+        !e.signoff
+          ? h(Button, { onClick: () => { setSignEp(e); setNotes('') }, disabled: busyEp === e.episode, title: '我读过这一集，签字' }, '签收')
+          : h('span', { style: { display: 'inline-flex', gap: 4 } },
+            stale
+              ? h(Button, {
+                tone: 'primary', onClick: () => reSign(e), disabled: busyEp === e.episode,
+                title: '按当前稿件版本重新签收（改稿后原签收已失效）',
+              }, busyEp === e.episode ? '处理中…' : '重新签收')
+              : null,
+            h(Button, { onClick: () => revoke(e), disabled: busyEp === e.episode, title: '撤回签收' }, '撤回'))
+      )
+    )
+  }
+  const tableRows = []
+  if (pendingRows.length) tableRows.push(sectionRow('sec-pending', '待处理', pendingRows.length))
+  for (const e of pendingRows) tableRows.push(episodeRow(e))
+  if (signedRows.length) tableRows.push(sectionRow('sec-signed', '已签收', signedRows.length))
+  for (const e of signedRows) tableRows.push(episodeRow(e))
 
   return h(Drawer, {
     title: h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
@@ -888,14 +1138,18 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
     ],
   },
     loading && !report ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } }, h(Spinner), '正在估算…')
-      : !report ? h('div', { style: { fontSize: 12 } }, '暂无数据')
+      : !report ? h('div', { style: { fontSize: 12, lineHeight: 1.7, opacity: 0.8 } },
+        '暂无数据：报告还没读到，或这个项目还没有剧本正文。可点「刷新」重试。')
         : h('div', { style: { display: 'grid', gap: 12 } },
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 } },
             card('集数', s.episodes),
             card('平均估算', `${s.avgDurationSeconds}s`, `目标 ${report.project.episodeSeconds}s`),
-            card('缺钩子', s.hooksMissing),
-            card('陌生角色', s.unknownSpeakerEpisodes, '对白人物不在设定集'),
-            card('已签收', `${s.signedOff}/${s.episodes}`, s.staleSignoffs ? `失效 ${s.staleSignoffs}` : '逐集人工签收')
+            card('待签收', needSignoff, `未签收 ${unsignedOnly} 集 + 改稿失效 ${staleCount} 集`, {
+              danger: true,
+              title: `待签收 ${needSignoff} 集 ＝ 未签收 ${unsignedOnly} 集 + 改稿失效 ${staleCount} 集（改稿失效已包含在待签收内，不重复计数）`,
+            }),
+            card('缺钩子', s.hooksMissing, `陌生角色 ${s.unknownSpeakerEpisodes} 集`),
+            card('已签收', `${s.signedOff}/${s.episodes}`, staleCount ? `另有改稿失效 ${staleCount} 集待重签` : '逐集人工签收')
           ),
           h('div', { style: { fontSize: 11.5, opacity: 0.65, lineHeight: 1.7 } },
             '时长按对白字数（约 4.6 字/秒）与动作行推算，±25% 容差；钩子为文本特征检测。两者都只是审读辅助，不替代你的判断。'),
@@ -905,29 +1159,20 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
                 ['集', '场次', '估算', '角色', '钩子', '签收', '操作'].map((t) => h('th', {
                   key: t, style: { textAlign: 'left', padding: '7px 8px', borderBottom: `1px solid ${TOKENS.border}`, fontSize: 11, opacity: 0.7, position: 'sticky', top: 0, background: TOKENS.bg },
                 }, t)))),
-              h('tbody', null, report.episodes.map((e) => h('tr', { key: e.episode, 'data-testid': `shoot-row-${e.episode}` },
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}` } }, `第 ${e.episode} 集`),
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}` } }, e.scenes),
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}` } }, `${e.durationSeconds}s`),
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}`, maxWidth: 180 } },
-                  e.speakers.length ? e.speakers.slice(0, 4).join('、') : '—',
-                  e.unknownSpeakers.length ? h('span', { style: { color: '#b45309' }, title: `不在设定集：${e.unknownSpeakers.join('、')}` }, ` ⚠${e.unknownSpeakers.length}`) : null),
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}` } }, e.hook.has ? '有' : h('span', { style: { color: '#b45309' } }, '缺')),
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}` } },
-                  e.signoff
-                    ? (e.signoff.stale ? h('span', { style: { color: '#b45309' } }, '已签收（改稿失效）') : `已签收 ${String(e.signoff.at || '').slice(5, 16)}`)
-                    : '未签收'),
-                h('td', { style: { padding: '6px 8px', borderBottom: `1px solid ${TOKENS.border}`, whiteSpace: 'nowrap' } },
-                  e.signoff
-                    ? h(Button, { onClick: () => revoke(e), disabled: busyEp === e.episode, title: '撤回签收' }, '撤回')
-                    : h(Button, { onClick: () => { setSignEp(e); setNotes('') }, disabled: busyEp === e.episode, title: '我读过这一集，签字' }, '签收'))
-              )))
+              h('tbody', null, tableRows)
             )
           ),
-          h('div', { style: { fontSize: 11, opacity: 0.55 } },
-            `问题项 ${s.issueCount} 个；角色出场分布：` + Object.entries(report.presence || {}).map(([k, v]) => `${k}(${v.length}集)`).join(' · ').slice(0, 160)),
+          h('div', { style: { fontSize: 11, opacity: 0.55 } }, `问题项 ${s.issueCount} 个`),
+          // 角色出场分布默认折叠，避免抢走「待处理」表格的注意力
+          h('details', { style: { fontSize: 11, opacity: 0.72 } },
+            h('summary', { style: { cursor: 'pointer', lineHeight: 1.7 } },
+              `角色出场分布（${Object.keys(report.presence || {}).length} 位）`),
+            h('div', { style: { marginTop: 6, display: 'grid', gap: 3, paddingLeft: 2 } },
+              Object.entries(report.presence || {}).map(([name, eps]) => h('div', { key: name },
+                h('span', { style: { fontWeight: 600 } }, name), `：${eps.join('、')} 集`)))
+          ),
           signEp ? h(Modal, {
-            title: `签收第 ${signEp.episode} 集`,
+            title: `签收${epLabel(signEp.episode)}`,
             onClose: () => setSignEp(null),
             width: 460,
             testid: 'modal-signoff',
@@ -974,7 +1219,7 @@ function JobListModal({ project, onClose, onOpenJob, toast, confirm }) {
   const cancel = async (job) => {
     const ok = await confirm({
       title: '取消生成任务',
-      message: `确认取消任务 ${job.id}（第 ${job.from}–${job.to} 集）？已完成的集保留。`,
+      message: `确认取消任务 ${job.id}（${jobScopeText(job)}）？已完成的集保留。`,
       danger: true, confirmText: '取消任务', cancelText: '继续跑',
     })
     if (!ok) return
@@ -1022,10 +1267,10 @@ function JobListModal({ project, onClose, onOpenJob, toast, confirm }) {
             },
               h('div', null,
                 h('div', { style: { fontFamily: TOKENS.mono, fontSize: 11 } }, job.id),
-                h('div', { style: { opacity: 0.65 } }, `第 ${job.from}–${job.to} 集 · ${job.provider}/${job.model}`)
+                h('div', { style: { opacity: 0.65 } }, `${jobScopeText(job)} · ${job.provider}/${job.model}`)
               ),
               h(JobBadge, { status: job.status }),
-              h('div', { style: { fontFamily: TOKENS.mono } }, `${p.done}/${p.total}${p.failed ? ` · ✕${p.failed}` : ''}`),
+              h('div', { style: { fontFamily: TOKENS.mono } }, `${p.done}/${p.total} 集${p.failed ? ` · ✕${p.failed}` : ''}`),
               h('div', { style: { opacity: 0.65, fontFamily: TOKENS.mono } }, fmtTs(job.createdAt)),
               h('div', { style: { display: 'flex', gap: 4, justifyContent: 'flex-end' } },
                 h(Button, { 'data-testid': `btn-view-job-${job.id}`, onClick: () => onOpenJob(job) }, '查看'),
@@ -1224,7 +1469,7 @@ function ImportModal({ project, canvas, onClose, onImported, toast }) {
       ? h('div', { style: { display: 'grid', gap: 12 } },
         h('div', { style: { fontSize: 12.5, lineHeight: 1.65, opacity: 0.85 } },
           `把本地 v2 工作区（project.json + canvas.json + content/*.md）导入到当前项目「${project.title}」。`,
-          '导入会按 ≤50 个操作/批走 /canvas/apply，分批写入；同 id 节点会自动改名避免冲突。'
+          '导入会按每批 ≤50 个操作分批写入；同 id 节点会自动改名避免冲突。'
         ),
         h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           pickerSupported ? h(Button, { tone: 'primary', onClick: readFromPicker, 'data-testid': 'btn-choose-dir' }, '选择目录（系统对话框）') : null,
@@ -1254,7 +1499,7 @@ function ImportModal({ project, canvas, onClose, onImported, toast }) {
         h('div', { style: { fontSize: 11.5, opacity: 0.6, lineHeight: 1.6 } },
           '说明：浏览器安全限制下无法直接按绝对路径读盘，因此「逐个选文件」是兜底方式（选 project.json、canvas.json 和 content 下的 .md 即可）。'
         ),
-        error ? h('div', { style: { fontSize: 12, color: '#dc2626', lineHeight: 1.6 } }, error) : null
+        error ? h('div', { style: { fontSize: 12, color: TOKENS.error, lineHeight: 1.6 } }, error) : null
       )
       : phase === 'preview' && source
         ? h('div', { style: { display: 'grid', gap: 12 } },
@@ -1266,7 +1511,7 @@ function ImportModal({ project, canvas, onClose, onImported, toast }) {
           ),
           warnings.length ? h('div', { style: { padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1px solid #fde68a', fontSize: 11.5, lineHeight: 1.6, color: '#92400e' } },
             ...warnings.map((w, i) => h('div', { key: i }, `⚠ ${w}`))) : null,
-          error ? h('div', { style: { fontSize: 12, color: '#dc2626', lineHeight: 1.6 } }, error) : null
+          error ? h('div', { style: { fontSize: 12, color: TOKENS.error, lineHeight: 1.6 } }, error) : null
         )
         : h('div', { style: { display: 'grid', gap: 10 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 } }, h(Spinner), `正在分批导入：${progress.done}/${progress.total} 个操作…`),
@@ -1302,7 +1547,9 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
   const [releasing, setReleasing] = useState(false)
   const [gateInfo, setGateInfo] = useState(null) // 可拍性闸门未通过的详情
   const [forceReason, setForceReason] = useState('')
-  const [gateSummary, setGateSummary] = useState(null)
+  // 完整可拍性报告：打开项目就拉，横幅/顶卡片/画布摘要/集导航都从这一份派生
+  const [shootReport, setShootReport] = useState(null)
+  const [shootLoading, setShootLoading] = useState(false)
   const [reviewState, setReviewState] = useState(project.reviewState || null)
   const inspectorSaveRef = useRef(null)
   const handleSaveReady = useCallback((fn) => { inspectorSaveRef.current = fn }, [])
@@ -1526,6 +1773,8 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       forward: [{ op: 'node.write', nodeId: selected, text: after }],
       inverse: [{ op: 'node.write', nodeId: selected, text: before }],
     })
+    // 正文字数/钩子检测都来自报告，保存后重拉一次，让横幅与卡片跟上
+    reloadShootReport()
   }
 
   const onDeleteNode = async (node) => {
@@ -1711,19 +1960,148 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
     } finally { setReleasing(false) }
   }
 
-  // 待放行时拉一次可拍性摘要，横幅直接显示闸门计数
+  // 打开项目就拉完整报告（不再只等 reviewState==='generated'）；签收/撤回后由抽屉回调重拉
+  const reloadShootReport = useCallback(async () => {
+    if (!project || !project.id) return null
+    setShootLoading(true)
+    try {
+      const r = await api.shootability(project.id, 'json')
+      setShootReport(r || null)
+      return r || null
+    } catch {
+      // 报告拿不到不打断画布：横幅退回定性文案，报告抽屉显示「暂无数据」
+      return null
+    } finally { setShootLoading(false) }
+  }, [project && project.id])
+
+  useEffect(() => { reloadShootReport() }, [reloadShootReport, reviewState])
+
+  // 任务跑到终态后重拉报告（生成/续跑完成时 rev 会变，报告里的字数/钩子也要跟上）
+  const reportJobRef = useRef('')
+  const onDrawerJobChanged = useCallback((j) => {
+    refreshActiveJobs()
+    if (!j || !isJobTerminal(j)) return
+    const sig = `${j.id}:${j.status}:${(j.progress && j.progress.done) || 0}`
+    if (reportJobRef.current === sig) return
+    reportJobRef.current = sig
+    reloadShootReport()
+  }, [refreshActiveJobs, reloadShootReport])
+
+  // 生成完成后 project.reviewState 会从 null 变 generated，同步进组件状态
   useEffect(() => {
-    if (reviewState !== 'generated') { setGateSummary(null); return }
-    let alive = true
-    api.shootability(project.id, 'json').then((r) => { if (alive) setGateSummary(r.summary) }).catch(() => {})
-    return () => { alive = false }
-  }, [reviewState, project.id, rev])
+    if (project && project.reviewState !== undefined) setReviewState(project.reviewState || null)
+  }, [project && project.reviewState])
+
+  // 横幅/顶卡片用的闸门摘要：待签收只数一次（needsSignoff 已含改稿失效）
+  const gateSummary = useMemo(() => {
+    const s = shootReport && shootReport.summary
+    if (!s) return null
+    return {
+      episodes: Number(s.episodes) || 0,
+      signedOff: Number(s.signedOff) || 0,
+      needsSignoff: reportNeedsSignoff(s),
+      unsignedOnly: reportUnsignedOnly(s),
+      staleSignoffs: reportStaleCount(s),
+      hooksMissing: Number(s.hooksMissing) || 0,
+    }
+  }, [shootReport])
+
+  /* ---------- 集级派生数据（卡片摘要 / 集导航 / 闸门明细共用） ---------- */
+  const epInfoByEp = useMemo(() => {
+    const m = new Map()
+    for (const e of ((shootReport && shootReport.episodes) || [])) m.set(Number(e.episode), e)
+    return m
+  }, [shootReport])
+  const scriptEpisodes = useMemo(() => {
+    const eps = nodes
+      .filter((n) => n.type === 'script_scene')
+      .map((n) => Number(n.ref && n.ref.episode))
+      .filter((n) => Number.isInteger(n) && n > 0)
+    return [...new Set(eps)].sort((a, b) => a - b)
+  }, [nodes])
+  /** 卡片摘要：报告有数据就用报告，没有就退回状态文案 */
+  const nodeSummary = (node) => {
+    if (!node) return ''
+    const ep = node.ref && node.ref.episode != null ? Number(node.ref.episode) : null
+    const statusLabel = (STATUS_META[node.status] || STATUS_META.draft).label
+    if (node.type === 'script_scene' && ep) {
+      const info = epInfoByEp.get(ep)
+      if (info) {
+        const hook = info.hook && info.hook.has ? '有钩子' : '缺钩子'
+        return `${Number(info.bodyChars) || 0} 字 · ${hook} · ${(info.speakers || []).length} 角色`
+      }
+      return `${epLabel(ep)} · ${statusLabel}`
+    }
+    if ((node.type === 'beat_sheet' || node.type === 'scene_list') && ep) return `${epLabel(ep)} · ${statusLabel}`
+    if (node.type === 'asset') {
+      const f = (node.meta && node.meta.fields) || {}
+      const titleParts = String(node.title || '').split(/[·・:：]/)
+      const titleName = titleParts.length > 1 ? String(titleParts.pop()).trim() : ''
+      const name = String(f.name || '').trim() || titleName
+      const kind = String(f.role || f.kind || '').trim()
+        || ((node.meta && node.meta.assetKind === 'character') ? '角色' : NODE_TYPES[node.type].label)
+      return name ? `${name} · ${kind}` : statusLabel
+    }
+    if (ep) return `${epLabel(ep)} · ${statusLabel}`
+    return statusLabel
+  }
+
+  // 定位到某一集：选中该集剧本节点并把视口居中（闸门弹窗与集导航共用）
+  const focusEpisode = useCallback((ep) => {
+    const n = nodes.find((x) => x.type === 'script_scene' && Number(x.ref && x.ref.episode) === Number(ep))
+    if (!n) { toast({ kind: 'error', text: `没找到${epLabel(ep)}的剧本节点` }); return }
+    // 选中后右侧检查器（380px）会展开并挤窄画布：按展开后的可视宽度算中心，否则节点会偏右半个面板
+    const inspectorOpening = !selected
+    selectNode(n.id)
+    const el = surfaceRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const usableWidth = inspectorOpening ? Math.max(320, rect.width - 380) : rect.width
+    setViewport((vp) => {
+      const zoom = vp.zoom || 0.85
+      return {
+        ...vp,
+        x: Math.round(usableWidth / 2 - (n.x + n.w / 2) * zoom),
+        y: Math.round(rect.height / 2 - (n.y + n.h / 2) * zoom),
+      }
+    })
+  }, [nodes, selected, selectNode, toast])
 
   const zoomBy = (k) => setViewport((vp) => ({ ...vp, zoom: Math.min(2.5, Math.max(0.2, vp.zoom * k)) }))
   const maxX = nodes.reduce((m, n) => Math.max(m, n.x + n.w), 800)
   const maxY = nodes.reduce((m, n) => Math.max(m, n.y + n.h), 600)
   const canUndo = history.undo.length > 0
   const canRedo = history.redo.length > 0
+
+  /* ---------- 闸门弹窗明细：未签收 / 改稿失效 / 缺钩子 分开列，不重复计数 ---------- */
+  const gateDetails = (gateInfo && gateInfo.details) || {}
+  const gateUnsignedAll = Array.isArray(gateDetails.unsigned) ? gateDetails.unsigned.map(Number) : []
+  const gateStale = Array.isArray(gateDetails.stale) ? gateDetails.stale.map(Number) : []
+  const gateStaleSet = new Set(gateStale)
+  const gateUnsignedOnly = Array.isArray(gateDetails.unsignedOnly)
+    ? gateDetails.unsignedOnly.map(Number)
+    : gateUnsignedAll.filter((n) => !gateStaleSet.has(n))
+  const gateNoHook = Array.isArray(gateDetails.noHook) ? gateDetails.noHook.map(Number) : []
+  // host 的 details.needsSignoff 可能是集号数组（与 unsigned 同源），也可能是数字
+  const gateNeeds = Array.isArray(gateDetails.needsSignoff)
+    ? gateDetails.needsSignoff.length
+    : (Number.isFinite(Number(gateDetails.needsSignoff)) ? Number(gateDetails.needsSignoff) : gateUnsignedAll.length)
+  const gateEpChip = (ep) => h('button', {
+    key: `gate-ep-${ep}`,
+    'data-testid': `gate-ep-${ep}`,
+    onClick: () => { setGateInfo(null); focusEpisode(ep) },
+    title: `定位到${epLabel(ep)}的剧本节点`,
+    style: {
+      border: 0, background: 'transparent', cursor: 'pointer', padding: '0 1px',
+      color: TOKENS.brand, fontSize: 11.5, fontFamily: 'inherit', textDecoration: 'underline dotted',
+    },
+  }, epLabel(ep))
+  const gateEpLine = (label, list) => (list.length
+    ? h('div', { key: label, style: { fontSize: 11.5, lineHeight: 1.8, opacity: 0.9 } },
+      h('span', { style: { opacity: 0.7 } }, `${label} ${list.length} 集：`),
+      h('span', null, list.slice(0, 30).map((ep, i) => h(React.Fragment, { key: `f-${ep}` }, i ? '、' : '', gateEpChip(ep)))),
+      list.length > 30 ? h('span', { style: { opacity: 0.6 } }, ` 等 ${list.length} 集`) : null)
+    : null)
 
   const edgePath = (a, b) => {
     const from = { x: a.x + a.w, y: a.y + a.h / 2 }
@@ -1732,20 +2110,33 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
     return `M ${from.x} ${from.y} C ${from.x + dx} ${from.y}, ${to.x - dx} ${to.y}, ${to.x} ${to.y}`
   }
 
+  // 右侧弱化区的小按钮：不抢主操作视线，但仍可点
+  const weakBtnStyle = { height: 24, padding: '0 6px', fontSize: 11.5, opacity: 0.82 }
+  // 横幅文案：待签收只数一次；N=0 只显示缺钩子；都为 0 显示闸门已通过
+  const gateNeedSignoff = reportNeedsSignoff(gateSummary)
+  const gateUnsignedOnlyN = reportUnsignedOnly(gateSummary)
+  const gateStaleN = reportStaleCount(gateSummary)
+  // 待签收直接给出拆分（未签收 a 集、改稿失效 b 集），避免用户自己换算或把失效重复算一次
+  const gateSignoffText = gateNeedSignoff > 0
+    ? `待签收 ${gateNeedSignoff} 集（未签收 ${gateUnsignedOnlyN} 集、改稿失效 ${gateStaleN} 集）`
+    : null
+  const gateParts = gateSummary
+    ? [
+      gateSignoffText,
+      Number(gateSummary.hooksMissing) > 0 ? `缺钩子 ${Number(gateSummary.hooksMissing)} 集` : null,
+    ].filter(Boolean)
+    : []
+  const gatePassed = !!gateSummary && gateParts.length === 0
+
   return h('div', { className: 'moxi-panel', style: { height: '100%', display: 'flex', flexDirection: 'column', background: TOKENS.bg, color: TOKENS.text } },
-    /* 工具栏 */
+    /* 工具栏：左侧按阶段排主操作（生成 → 可拍性 → 导出），其余收进右侧弱化区 */
     h('div', { 'data-testid': 'toolbar', style: { flex: '0 0 auto', minHeight: 44, display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', borderBottom: `1px solid ${TOKENS.border}`, overflowX: 'auto' } },
       h(Button, { tone: 'ghost', onClick: goBack, 'data-testid': 'btn-back' }, '← 项目'),
       h('span', { style: { fontSize: 13, fontWeight: 650, whiteSpace: 'nowrap' } }, project.title),
       h('span', { style: { fontSize: 11, opacity: 0.55, whiteSpace: 'nowrap' } }, `${project.episodeCount ?? '集数未确认'} 集${project.audience ? ' · ' + project.audience : ''}`),
       h('span', { style: { width: 1, height: 18, background: TOKENS.border, margin: '0 2px' } }),
-      h(Button, { onClick: () => setCreateOpen(true), 'data-testid': 'btn-add-node' }, '+ 工位'),
       h(Button, { tone: 'primary', onClick: () => setGenOpen(true), 'data-testid': 'btn-generate' }, '⚡ 生成'),
-      h(Button, { onClick: () => setJobsOpen(true), 'data-testid': 'btn-jobs' }, activeJobs ? `创作记录 (${activeJobs})` : '创作记录'),
-      h(Button, { onClick: () => setImportOpen(true), 'data-testid': 'btn-import' }, '导入'),
       h(Button, { onClick: () => setShootOpen(true), 'data-testid': 'btn-shootability', title: '可拍性报告：时长/角色/钩子/逐集签收' }, '可拍性'),
-      h(Button, { onClick: undo, disabled: !canUndo || historyBusy, title: canUndo ? `撤销：${history.undo[history.undo.length - 1].label}（Cmd+Z）` : '没有可撤销的操作', 'data-testid': 'btn-undo' }, '↶ 撤销'),
-      h(Button, { onClick: redo, disabled: !canRedo || historyBusy, title: canRedo ? `重做：${history.redo[history.redo.length - 1].label}（Shift+Cmd+Z）` : '没有可重做的操作', 'data-testid': 'btn-redo' }, '↷ 重做'),
       h(Button, {
         onClick: onExport,
         disabled: exporting,
@@ -1757,18 +2148,58 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
         h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
           exporting ? '导出中…' : '导出',
           latestJob && latestJob.status === 'done_with_errors'
-            ? h('span', { 'data-testid': 'export-warn-dot', title: '最近任务有失败集，导出前请先续跑或修复', style: { width: 7, height: 7, borderRadius: 999, background: '#ef4444', display: 'inline-block' } })
+            ? h('span', { 'data-testid': 'export-warn-dot', title: '最近任务有失败集，导出前请先续跑或修复', style: { width: 7, height: 7, borderRadius: 999, background: TOKENS.error, display: 'inline-block' } })
             : null
         )
       ),
       h('span', { style: { flex: 1 } }),
-      h('span', { style: { fontSize: 11, opacity: 0.5, whiteSpace: 'nowrap' } }, `rev ${rev}`),
-      h(Button, { onClick: () => zoomBy(1 / 1.2), 'data-testid': 'btn-zoom-out' }, '－'),
-      h('span', { style: { fontSize: 11, width: 42, textAlign: 'center', opacity: 0.7 } }, `${Math.round(viewport.zoom * 100)}%`),
-      h(Button, { onClick: () => zoomBy(1.2), 'data-testid': 'btn-zoom-in' }, '＋'),
-      h(Button, { onClick: () => setViewport({ x: 0, y: 0, zoom: 0.85 }), 'data-testid': 'btn-zoom-reset' }, '复位'),
-      h(Button, { onClick: () => setShowGrid((v) => !v), 'data-testid': 'btn-grid' }, showGrid ? '网格开' : '网格关')
+      // —— 右侧弱化区：次级操作与视图控制 ——
+      h('span', { style: { width: 1, height: 18, background: TOKENS.border, margin: '0 2px' } }),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => setCreateOpen(true), 'data-testid': 'btn-add-node' }, '+ 工位'),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => setJobsOpen(true), 'data-testid': 'btn-jobs' }, activeJobs ? `创作记录 (${activeJobs})` : '创作记录'),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => setImportOpen(true), 'data-testid': 'btn-import' }, '导入'),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: undo, disabled: !canUndo || historyBusy, title: canUndo ? `撤销：${history.undo[history.undo.length - 1].label}（Cmd+Z）` : '没有可撤销的操作', 'data-testid': 'btn-undo' }, '↶ 撤销'),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: redo, disabled: !canRedo || historyBusy, title: canRedo ? `重做：${history.redo[history.redo.length - 1].label}（Shift+Cmd+Z）` : '没有可重做的操作', 'data-testid': 'btn-redo' }, '↷ 重做'),
+      h('span', { style: { fontSize: 10.5, opacity: 0.45, whiteSpace: 'nowrap', fontFamily: TOKENS.mono } }, `rev ${rev}`),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => zoomBy(1 / 1.2), 'data-testid': 'btn-zoom-out' }, '－'),
+      h('span', { style: { fontSize: 10.5, minWidth: 34, textAlign: 'center', opacity: 0.62 } }, `${Math.round(viewport.zoom * 100)}%`),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => zoomBy(1.2), 'data-testid': 'btn-zoom-in' }, '＋'),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => setViewport({ x: 0, y: 0, zoom: 0.85 }), 'data-testid': 'btn-zoom-reset' }, '复位'),
+      h(Button, { tone: 'ghost', style: weakBtnStyle, onClick: () => setShowGrid((v) => !v), 'data-testid': 'btn-grid' }, showGrid ? '网格开' : '网格关')
     ),
+
+    /* 集导航条：剧本集 > 6 才出现；签收改稿失效（朱砂点）/ 缺钩子（赭金点）做标记 */
+    scriptEpisodes.length > 6
+      ? h('div', {
+        'data-testid': 'episode-nav',
+        style: { flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', borderBottom: `1px solid ${TOKENS.border}`, overflowX: 'auto', fontSize: 11 },
+      },
+        h('span', { style: { opacity: 0.5, marginRight: 4, whiteSpace: 'nowrap' } }, '集'),
+        scriptEpisodes.map((ep) => {
+          const info = epInfoByEp.get(ep)
+          const stale = !!(info && info.signoff && info.signoff.stale)
+          const noHook = !!(info && info.hook && !info.hook.has)
+          const active = !!(selectedNode && selectedNode.type === 'script_scene' && Number(selectedNode.ref && selectedNode.ref.episode) === ep)
+          return h('button', {
+            key: `nav-${ep}`,
+            'data-testid': `ep-nav-${ep}`,
+            onClick: () => focusEpisode(ep),
+            title: `${epLabel(ep)}${stale ? ' · 签收已改稿失效' : ''}${noHook ? ' · 缺钩子' : ''}`,
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: 3, height: 21, padding: '0 7px',
+              borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: TOKENS.mono, fontSize: 10.5,
+              color: active ? '#fff' : TOKENS.text,
+              background: active ? TOKENS.brand : 'transparent',
+              border: `1px solid ${active ? TOKENS.brand : TOKENS.border}`,
+              opacity: active ? 1 : 0.85,
+            },
+          },
+            `第${ep}集`,
+            stale ? h('span', { title: '签收已改稿失效', style: { width: 5, height: 5, borderRadius: 999, background: TOKENS.error, display: 'inline-block' } }) : null,
+            noHook ? h('span', { title: '缺集末钩子', style: { width: 5, height: 5, borderRadius: 999, background: TOKENS.warn, display: 'inline-block' } }) : null)
+        })
+      )
+      : null,
 
     // 评审状态条：生成完成 ≠ 可交付
     (reviewState === 'generated' || reviewState === 'has_errors')
@@ -1776,19 +2207,17 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
         'data-testid': 'review-banner',
         style: {
           flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: 10, padding: '7px 14px',
-          background: reviewState === 'generated' ? 'rgba(164,71,54,.08)' : '#fef2f2',
-          borderBottom: `1px solid ${reviewState === 'generated' ? 'rgba(164,71,54,.28)' : '#fca5a5'}`,
+          background: reviewState === 'generated' ? 'rgba(164,71,54,.08)' : 'rgba(178,58,50,.07)',
+          borderBottom: `1px solid ${reviewState === 'generated' ? 'rgba(164,71,54,.28)' : 'rgba(178,58,50,.32)'}`,
           fontSize: 12.5,
         },
       },
         h('span', { className: 'moxi-stamp' }, reviewState === 'generated' ? '待放行' : '有失败集'),
         h('span', { style: { flex: 1, opacity: 0.85 } },
           reviewState === 'generated'
-            ? `本剧已生成，自动质检通过。放行需通过可拍性闸门${
-              gateSummary
-                ? `（未签收 ${gateSummary.unsigned + (gateSummary.staleSignoffs || 0)} 集 · 缺钩子 ${gateSummary.hooksMissing} 集）`
-                : ''
-            }：逐集签收 + 补齐钩子后才可放行。`
+            ? (gatePassed
+              ? '本剧已生成，自动质检通过；可拍性闸门已通过，可以放行。'
+              : `本剧已生成，自动质检通过。放行需通过可拍性闸门${gateParts.length ? `：${gateParts.join(' · ')}` : ''}。逐集签收 + 补齐钩子后才可放行。`)
             : '最近一次生成有失败集，请打开「创作记录」续跑或修复后再放行。'),
         reviewState === 'generated'
           ? h(Button, { tone: 'primary', onClick: onRelease, disabled: releasing, 'data-testid': 'btn-release' }, releasing ? '放行中…' : '人工放行')
@@ -1837,6 +2266,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
           nodes.map((n) => h(NodeCard, {
             key: n.id, node: n, selected: selected === n.id,
             findings: n.meta && n.meta.findings,
+            summary: nodeSummary(n),
             editing: editingId === n.id,
             editingText,
             onEditText: setEditingText,
@@ -1874,7 +2304,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       h('span', null, `工位 ${nodes.length}`),
       h('span', null, `连线 ${edges.length}`),
       h('span', null, `rev ${rev}`),
-      dirty ? h('span', { style: { color: '#d97706', opacity: 1 } }, '● 正文未保存') : null,
+      dirty ? h('span', { style: { color: TOKENS.warn, opacity: 1 } }, '● 正文未保存') : null,
       h('span', { style: { flex: 1 } }),
       h('span', null, `撤销 ${history.undo.length} / 重做 ${history.redo.length}`),
       h('span', null, '拖空白=平移 · 滚轮=缩放 · 双击标题=改名 · Cmd+Z=撤销')
@@ -1906,7 +2336,12 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
     }) : null,
 
     shootOpen ? h(ShootabilityDrawer, {
-      project, onClose: () => setShootOpen(false), toast, confirm,
+      project,
+      report: shootReport,
+      loading: shootLoading,
+      onReload: reloadShootReport,
+      onClose: () => setShootOpen(false),
+      toast, confirm,
     }) : null,
 
     importOpen ? h(ImportModal, {
@@ -1922,33 +2357,37 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       width: 640,
       testid: 'modal-release-gate',
       footer: [
-        h(Button, { key: 's', onClick: () => { setGateInfo(null); setShootOpen(true) }, 'data-testid': 'btn-gate-goto-signoff' }, '去可拍性页签收'),
-        h(Button, { key: 'f', tone: 'danger', onClick: forceRelease, disabled: releasing, 'data-testid': 'btn-gate-force' }, releasing ? '处理中…' : '强制放行（需理由）'),
+        h(Button, { key: 's', tone: 'primary', onClick: () => { setGateInfo(null); setShootOpen(true) }, 'data-testid': 'btn-gate-goto-signoff' }, '去可拍性页签收'),
+        h(Button, {
+          key: 'f', tone: 'danger', onClick: forceRelease, disabled: releasing,
+          // 强制放行是例外路径：danger 只保留语义色，样式降级为描边，避免被当成主操作
+          style: { background: 'transparent', color: TOKENS.error, border: `1px solid ${TOKENS.error}`, opacity: releasing ? 0.5 : 0.9 },
+          'data-testid': 'btn-gate-force',
+        }, releasing ? '处理中…' : '强制放行（需理由）'),
         h(Button, { key: 'c', onClick: () => setGateInfo(null) }, '取消'),
       ],
     },
       h('div', { style: { fontSize: 12.5, lineHeight: 1.8, marginBottom: 10 } },
         gateInfo.message),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 12, fontSize: 11.5 } },
-        [['未签收', (gateInfo.details.unsigned || []).length],
-          ['签收失效', (gateInfo.details.stale || []).length],
-          ['缺钩子', (gateInfo.details.noHook || []).length]].map(([k, v]) => h('div', {
+      // 计数卡只放两项：待签收（合计，含改稿失效）与缺钩子；明细拆开列，不重复计数
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8, marginBottom: 10, fontSize: 11.5 } },
+        [['待签收', gateNeeds], ['缺钩子', gateNoHook.length]].map(([k, v]) => h('div', {
           key: k, style: { padding: '8px 10px', borderRadius: 8, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` },
         },
           h('div', { style: { opacity: 0.6 } }, k),
-          h('div', { className: 'moxi-serif', style: { fontSize: 20, fontWeight: 600 } }, v))
+          h('div', { className: 'moxi-serif', style: { fontSize: 20, fontWeight: 600, color: k === '待签收' && v > 0 ? TOKENS.error : undefined } }, v))
         )
       ),
-      (gateInfo.details.unsigned || []).length
-        ? h('div', { style: { fontSize: 11.5, lineHeight: 1.7, opacity: 0.85, marginBottom: 6 } },
-          `未签收集数：${(gateInfo.details.unsigned || []).join('、')}${(gateInfo.details.unsigned || []).length > 20 ? ' 等' : ''}`)
-        : null,
-      (gateInfo.details.noHook || []).length
-        ? h('div', { style: { fontSize: 11.5, lineHeight: 1.7, opacity: 0.85, marginBottom: 10 } },
-          `缺钩子集数：${(gateInfo.details.noHook || []).join('、')}${(gateInfo.details.noHook || []).length > 20 ? ' 等' : ''}`)
-        : null,
-      h('div', { style: { fontSize: 11.5, opacity: 0.7, marginBottom: 6 } },
-        '若确需跳过（例如钩子由人工确认过），可填写理由强制放行；理由会写入审计事件。'),
+      h('div', { style: { marginBottom: 10 } },
+        gateEpLine('未签收', gateUnsignedOnly),
+        gateEpLine('改稿失效', gateStale),
+        gateEpLine('缺钩子', gateNoHook),
+        (!gateUnsignedOnly.length && !gateStale.length && !gateNoHook.length)
+          ? h('div', { style: { fontSize: 11.5, opacity: 0.65, lineHeight: 1.7 } }, '闸门明细为空：可以直接重试放行。')
+          : null
+      ),
+      h('div', { style: { fontSize: 11.5, opacity: 0.7, marginBottom: 6, lineHeight: 1.7 } },
+        '正常路径：补齐后直接放行，不需要强制。若确需跳过（例如钩子由人工确认过），可填写理由强制放行；理由会写入审计事件。'),
       h('textarea', {
         value: forceReason, maxLength: 300,
         onChange: (ev) => setForceReason(ev.target.value),
@@ -1992,7 +2431,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
     },
       h('div', { style: { fontSize: 12.5, lineHeight: 1.8 } },
         h('div', null, `格式 ${String(exportDone.format || 'docx').toUpperCase()} · ${Math.round((exportDone.bytes || 0) / 1024)} KB · ${exportDone.sections || 0} 节`),
-        exportDone.fallback ? h('div', { style: { color: '#b45309' } }, `降级说明：${exportDone.fallback.reason || 'docx 不可用'}`) : null,
+        exportDone.fallback ? h('div', { style: { color: TOKENS.warn } }, `降级说明：${exportDone.fallback.reason || 'docx 不可用'}`) : null,
         h('div', { style: { marginTop: 8, fontSize: 11.5, opacity: 0.7, fontFamily: TOKENS.mono, wordBreak: 'break-all' } }, exportDone.path || '')
       ),
       h('div', { style: { marginTop: 10, fontSize: 11.5, opacity: 0.7 } },
@@ -2023,7 +2462,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       projectId: project.id,
       jobId: drawerJob.jobId,
       onClose: () => { setDrawerJob(null); refreshActiveJobs() },
-      onJobChanged: refreshActiveJobs,
+      onJobChanged: onDrawerJobChanged,
       toast, confirm,
     }) : null
   )
@@ -2041,6 +2480,9 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState(null)
   const [confirmState, setConfirmState] = useState(null) // { opts, resolve }
+  // 首页增强数据：统计（节点状态/集数/最近任务）+ 全部任务（用于「最近任务」与集范围）
+  const [stats, setStats] = useState(null)
+  const [allJobs, setAllJobs] = useState([])
 
   const showToast = useCallback((t) => {
     setToast(t)
@@ -2072,6 +2514,25 @@ export default function App() {
   }, [])
 
   useEffect(() => { reloadProjects() }, [reloadProjects])
+
+  // 首页增强数据：拿不到就退回朴素卡片，不阻塞项目列表
+  // 防重复：项目列表还没到（空列表）时不发；同一份项目快照（id+更新时间）只拉一次
+  const overviewKeyRef = useRef('')
+  const reloadOverview = useCallback(async (force = false) => {
+    if (!projects.length) return
+    const key = projects.map((p) => `${p.id}:${p.updatedAt || ''}`).join('|')
+    if (!force && key === overviewKeyRef.current) return
+    try {
+      const [s, rows] = await Promise.all([api.stats(), api.listJobs()])
+      setStats(s || null)
+      setAllJobs(Array.isArray(rows) ? rows : [])
+      overviewKeyRef.current = key
+    } catch { /* 静默：增强信息缺失不影响列表 */ }
+  }, [projects])
+  const overviewSignature = projects.map((p) => `${p.id}:${p.updatedAt || ''}`).join('|')
+  useEffect(() => {
+    if (!current) reloadOverview()
+  }, [current && current.project.id, overviewSignature, reloadOverview])
 
   const restoreLastRef = useRef(false)
   // 上次项目恢复失败时明确告知，而不是静默留在列表
@@ -2167,7 +2628,7 @@ export default function App() {
         onChanged: refresh, toast: showToast, confirm,
       })
       : h(ProjectsView, {
-        projects, loading, error,
+        projects, loading, error, stats, jobs: allJobs,
         onCreate: () => setNewOpen(true),
         onOpen: openProject,
         onDelete: deleteProject,

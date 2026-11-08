@@ -47,13 +47,17 @@ var import_react2 = __toESM(require("react"), 1);
 var import_react = __toESM(require("react"), 1);
 var h = import_react.default.createElement;
 var STATUS_META = {
-  draft: { label: "\u8349\u7A3F", color: "#94a3b8" },
-  generating: { label: "\u751F\u6210\u4E2D", color: "#3b82f6" },
-  review: { label: "\u5F85\u5BA1", color: "#f59e0b" },
-  rejected: { label: "\u6253\u56DE", color: "#ef4444" },
-  approved: { label: "\u5DF2\u6279\u51C6", color: "#22c55e" },
-  blocked: { label: "\u963B\u585E", color: "#a1a1aa" }
+  draft: { label: "\u8349\u7A3F", color: "#8C9194" },
+  generating: { label: "\u751F\u6210\u4E2D", color: "#A44736" },
+  review: { label: "\u5F85\u5BA1", color: "#B08A4A" },
+  rejected: { label: "\u6253\u56DE", color: "#B23A32" },
+  approved: { label: "\u5DF2\u6279\u51C6", color: "#4E7A4B" },
+  blocked: { label: "\u963B\u585E", color: "#5B6163" }
 };
+function statusLabel(status) {
+  const meta = STATUS_META[status];
+  return meta ? meta.label : status || "\u2014";
+}
 var TOKENS = {
   border: "var(--dsw-alias-border-l1, rgba(127,127,127,.25))",
   bg: "var(--dsw-alias-bg-layer-1, #fff)",
@@ -62,22 +66,26 @@ var TOKENS = {
   labelSecondary: "var(--dsw-alias-label-secondary, rgba(24,24,27,.62))",
   brand: "var(--dsw-alias-brand-primary, #247bbf)",
   mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  // 状态语义色（数据/状态可视化允许字面色；随主题不变，暗色下对比度足够）
-  ok: "#22c55e",
-  info: "#3b82f6",
-  warn: "#f59e0b",
-  danger: "#ef4444",
-  muted: "#94a3b8"
+  // 状态语义色（数据/状态可视化允许字面色；与画布端收敛为同一套）
+  ok: "#4E7A4B",
+  info: "#A44736",
+  warn: "#B08A4A",
+  danger: "#B23A32",
+  muted: "#8C9194"
 };
 var JOB_STATUS_META = {
   queued: { label: "\u6392\u961F\u4E2D", color: TOKENS.muted },
   running: { label: "\u751F\u6210\u4E2D", color: TOKENS.info },
   done: { label: "\u5DF2\u5B8C\u6210", color: TOKENS.ok },
-  done_with_errors: { label: "\u90E8\u5206\u5931\u8D25", color: TOKENS.danger },
-  cancelled: { label: "\u5DF2\u53D6\u6D88", color: TOKENS.danger },
+  done_with_errors: { label: "\u90E8\u5206\u5931\u8D25", color: TOKENS.warn },
+  cancelled: { label: "\u5DF2\u53D6\u6D88", color: TOKENS.muted },
   failed: { label: "\u5931\u8D25", color: TOKENS.danger }
 };
 var JOB_ALERT_STATUS = /* @__PURE__ */ new Set(["done_with_errors", "cancelled", "failed"]);
+function jobStatusLabel(status) {
+  const meta = JOB_STATUS_META[status];
+  return meta ? meta.label : status || "\u2014";
+}
 function JobBadge({ status }) {
   const meta = JOB_STATUS_META[status] || { label: status || "\u672A\u77E5", color: TOKENS.muted };
   return h("span", {
@@ -115,29 +123,41 @@ function fmtDuration(startIso, endIso) {
   if (m < 60) return `${m}m ${s % 60}s`;
   return `${Math.floor(m / 60)}h ${m % 60}m`;
 }
-function Badge({ status }) {
-  const meta = STATUS_META[status] || STATUS_META.draft;
-  return h("span", {
-    style: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 4,
-      fontSize: 10.5,
-      lineHeight: "16px",
-      padding: "0 7px",
-      borderRadius: 999,
-      color: meta.color,
-      border: `1px solid ${meta.color}55`,
-      background: `${meta.color}14`,
-      whiteSpace: "nowrap"
-    }
-  }, h("span", { style: { width: 5, height: 5, borderRadius: 999, background: meta.color } }), meta.label);
+var TONE_META = {
+  success: { color: TOKENS.ok },
+  warn: { color: TOKENS.warn },
+  danger: { color: TOKENS.danger },
+  neutral: { color: TOKENS.muted }
+};
+function Badge({ status, tone, children }) {
+  const meta = tone && TONE_META[tone] || STATUS_META[status] || STATUS_META.draft;
+  return h(
+    "span",
+    {
+      style: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        fontSize: 10.5,
+        lineHeight: "16px",
+        padding: "0 7px",
+        borderRadius: 999,
+        color: meta.color,
+        border: `1px solid ${meta.color}55`,
+        background: `${meta.color}14`,
+        whiteSpace: "nowrap"
+      }
+    },
+    h("span", { style: { width: 5, height: 5, borderRadius: 999, background: meta.color } }),
+    children != null ? children : meta.label
+  );
 }
 function Button({ children, onClick, tone = "default", disabled, title, style }) {
+  const errorRed = "var(--dsw-alias-state-error-primary, #B23A32)";
   const tones = {
     default: { color: TOKENS.text, background: TOKENS.bg, border: `1px solid ${TOKENS.border}` },
     primary: { color: "#fff", background: TOKENS.brand, border: `1px solid ${TOKENS.brand}` },
-    danger: { color: "#fff", background: "#dc2626", border: "1px solid #dc2626" },
+    danger: { color: "#fff", background: errorRed, border: `1px solid ${errorRed}` },
     ghost: { color: TOKENS.text, background: "transparent", border: "1px solid transparent" }
   };
   return h("button", {
@@ -237,7 +257,7 @@ function Empty({ text, action }) {
 }
 function Toast({ toast }) {
   if (!toast) return null;
-  const color = toast.kind === "error" ? "#dc2626" : toast.kind === "success" ? "#16a34a" : toast.kind === "warn" ? "#d97706" : "#3b82f6";
+  const color = toast.kind === "error" ? TOKENS.danger : toast.kind === "success" ? TOKENS.ok : toast.kind === "warn" ? TOKENS.warn : TOKENS.info;
   return h("div", {
     style: {
       position: "fixed",
@@ -315,8 +335,46 @@ function localNowIso() {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 var BTN_SM = { height: 26, padding: "0 8px", fontSize: 11 };
-var LOG_OP_OPTIONS = ["\u5168\u90E8", "node.transition", "content.save", "generate.episode", "check.run"];
+var LOG_OP_LABELS = {
+  "node.transition": "\u8282\u70B9\u6D41\u8F6C",
+  "content.save": "\u6B63\u6587\u4FDD\u5B58",
+  "generate.episode": "\u5206\u96C6\u751F\u6210",
+  "check.run": "\u8D28\u68C0\u8FD0\u884C"
+};
+var LOG_OP_OPTIONS = [{ value: "\u5168\u90E8", label: "\u5168\u90E8\u64CD\u4F5C" }].concat(
+  Object.keys(LOG_OP_LABELS).map((op) => ({ value: op, label: LOG_OP_LABELS[op] }))
+);
+var opLabel = (op) => op === "\u5168\u90E8" ? "\u5168\u90E8\u64CD\u4F5C" : LOG_OP_LABELS[op] || op;
 var EXPORT_FORMATS = ["docx", "md", "txt"];
+function jobScope(job) {
+  const s = job && job.scope;
+  if (s && Array.isArray(s.episodes) && s.episodes.length) {
+    const eps2 = [...new Set(s.episodes.map(Number))].sort((a, b) => a - b);
+    return { episodes: eps2, dense: !!s.dense };
+  }
+  const eps = [...new Set((job && job.episodes || []).map((e) => Number(e && e.ep)).filter((n) => Number.isInteger(n) && n > 0))].sort((a, b) => a - b);
+  if (eps.length) return { episodes: eps, dense: eps.length === eps[eps.length - 1] - eps[0] + 1 };
+  const from = Number(job && job.from);
+  const to = Number(job && job.to);
+  if (Number.isInteger(from) && from > 0 && Number.isInteger(to) && to >= from) {
+    const count = Number(job && job.progress && job.progress.total) || 0;
+    return { from, to, count: count > 0 ? count : to - from + 1 };
+  }
+  return null;
+}
+function fmtScope(scope, job) {
+  if (job && job.mode === "ensure") return "\u6982\u5FF5/\u8D44\u4EA7\u8865\u9F50";
+  if (!scope) return "\u2014";
+  if (!scope.episodes) {
+    const span = scope.to - scope.from + 1;
+    if (scope.count !== span) return `\u7B2C ${scope.from}\u2013${scope.to} \u96C6\uFF08\u5171 ${scope.count} \u96C6\uFF09`;
+    return `\u7B2C ${scope.from}\u2013${scope.to} \u96C6`;
+  }
+  const eps = scope.episodes;
+  if (eps.length === 1) return `\u7B2C ${eps[0]} \u96C6`;
+  if (scope.dense) return `\u7B2C ${eps[0]}\u2013${eps[eps.length - 1]} \u96C6`;
+  return `\u7B2C ${eps.join("\u3001")} \u96C6\uFF08\u5171 ${eps.length} \u96C6\uFF09`;
+}
 function Card({ title, value, hint, tone }) {
   return h(
     "div",
@@ -365,9 +423,9 @@ function ErrorBox({ error, onRetry }) {
         padding: "8px 12px",
         borderRadius: 8,
         fontSize: 12,
-        color: "#dc2626",
-        border: "1px solid #dc262655",
-        background: "#dc26260f"
+        color: TOKENS.danger,
+        border: `1px solid ${TOKENS.danger}55`,
+        background: `${TOKENS.danger}0f`
       }
     },
     h("span", { style: { flex: 1 } }, "\u8BFB\u53D6\u5931\u8D25\uFF1A" + error),
@@ -426,13 +484,21 @@ function Select({ value, onChange, options, style, disabled }) {
 }
 function Progress({ done = 0, total = 0, failed = 0 }) {
   const pct = total > 0 ? Math.min(100, Math.round(done / total * 100)) : 0;
+  if (!(total > 0)) {
+    return h(
+      "div",
+      { style: { minWidth: 110, fontSize: 11.5, opacity: 0.6 } },
+      "\u2014",
+      failed > 0 ? h("span", { style: { color: TOKENS.danger, marginLeft: 8 } }, `\u5931\u8D25 ${failed}`) : null
+    );
+  }
   return h(
     "div",
     { style: { minWidth: 110 } },
     h(
       "div",
       { style: { display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 } },
-      h("span", { style: { fontWeight: 600 } }, `${done}/${total}`),
+      h("span", { style: { fontWeight: 600 } }, `${done}/${total} \u96C6`),
       failed > 0 ? h("span", { style: { color: TOKENS.danger } }, `\u5931\u8D25 ${failed}`) : null
     ),
     h(
@@ -450,14 +516,14 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
   const jobRows = (jobs || []).slice(0, 6);
   const alertCount = (jobs || []).filter((j) => JOB_ALERT_STATUS.has(j.status)).length;
   const kpis = total ? [
-    ["\u9879\u76EE\u6570", fmtNum(total.projects), "\u5168\u90E8\u9879\u76EE\uFF08/stats.total\uFF09", null],
+    ["\u9879\u76EE\u6570", fmtNum(total.projects), "\u5168\u90E8\u9879\u76EE\u5408\u8BA1", null],
     ["\u8282\u70B9\u6570", fmtNum(total.nodes), "\u753B\u5E03\u8282\u70B9\u5408\u8BA1", null],
     ["\u5DF2\u751F\u6210\u96C6\u6570", fmtNum(total.episodes), "\u5404\u9879\u76EE\u5DF2\u751F\u6210\u96C6\u6570\u5408\u8BA1", null],
     ["\u603B\u5B57\u6570", fmtNum(total.words), "\u6B63\u6587\u51C0\u5B57\u6570\uFF08\u53BB\u7A7A\u767D\uFF09", null],
-    ["\u5F85\u5BA1", fmtNum(total.pending), "review + rejected", total.pending ? TOKENS.warn : null],
-    ["\u5DF2\u6279\u51C6", fmtNum(total.approved), "approved", total.approved ? TOKENS.ok : null],
-    ["\u963B\u585E", fmtNum(total.blocked), "blocked", total.blocked ? TOKENS.danger : null],
-    ["\u8349\u7A3F", fmtNum(total.draft), "draft", null]
+    ["\u5F85\u5BA1\u8282\u70B9", fmtNum(total.pending), "\u9001\u5BA1 + \u6253\u56DE", total.pending ? TOKENS.warn : null],
+    ["\u5DF2\u6279\u51C6", fmtNum(total.approved), "\u5DF2\u901A\u8FC7\u8BC4\u5BA1\u7684\u8282\u70B9", total.approved ? TOKENS.ok : null],
+    ["\u963B\u585E", fmtNum(total.blocked), "\u88AB\u963B\u585E\u7684\u8282\u70B9", total.blocked ? TOKENS.danger : null],
+    ["\u8349\u7A3F", fmtNum(total.draft), "\u5C1A\u672A\u9001\u5BA1\u7684\u8282\u70B9", null]
   ] : [];
   return h(
     "div",
@@ -466,13 +532,7 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
     h(
       Section,
       {
-        title: "\u8FD0\u884C\u6982\u89C8",
-        hint: stats ? `\u7EDF\u8BA1\u65F6\u95F4 ${fmtTime(stats.generatedAt)}` : "",
-        extra: h(
-          "div",
-          { style: { display: "flex", gap: 8 } },
-          h(Button, { onClick: onRefresh, disabled: loading.stats || loading.jobs }, loading.stats || loading.jobs ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0")
-        )
+        title: "\u8FD0\u884C\u6982\u89C8"
       },
       loading.stats && !stats ? h(Loading) : h(
         "div",
@@ -484,13 +544,13 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
       Section,
       {
         title: `\u6700\u8FD1\u751F\u6210\u4EFB\u52A1${alertCount ? `\uFF08\u5F02\u5E38 ${alertCount}\uFF09` : ""}`,
-        hint: "\u6765\u6E90 /jobs/list",
+        hint: jobRows.length ? `\u6700\u8FD1 ${jobRows.length} \u6761` : "",
         extra: h(Button, { onClick: onGoJobs }, "\u67E5\u770B\u5168\u90E8\u4EFB\u52A1 \u2192")
       },
       loading.jobs && !jobs ? h(Loading) : h(Table, {
         columns: [
           { key: "projectTitle", title: "\u9879\u76EE", render: (r) => h("span", { style: { fontWeight: 600, whiteSpace: "nowrap" } }, r.projectTitle) },
-          { key: "range", title: "\u96C6\u8303\u56F4", render: (r) => h(Mono, null, `${r.from}\u2013${r.to}`) },
+          { key: "range", title: "\u96C6\u8303\u56F4", render: (r) => h("span", { style: { whiteSpace: "nowrap" } }, fmtScope(jobScope(r), r)) },
           { key: "status", title: "\u72B6\u6001", render: (r) => h(JobBadge, { status: r.status }) },
           { key: "progress", title: "\u8FDB\u5EA6", render: (r) => h(Progress, { ...r.progress || {} }) },
           { key: "model", title: "\u6A21\u578B", render: (r) => h(Mono, null, `${r.provider}/${r.model}`) },
@@ -502,7 +562,7 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
     ),
     h(
       Section,
-      { title: "\u9879\u76EE\u7EDF\u8BA1", hint: "\u6765\u6E90 /stats.projects\uFF08\u540E\u7AEF\u6743\u5A01\u8BA1\u6570\uFF09" },
+      { title: "\u9879\u76EE\u7EDF\u8BA1", hint: "\u6309\u9879\u76EE\u6C47\u603B" },
       loading.stats && !stats ? h(Loading) : h(Table, {
         columns: [
           { key: "title", title: "\u9879\u76EE", render: (r) => h("span", { style: { fontWeight: 600 } }, r.title) },
@@ -513,7 +573,7 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
           { key: "words", title: "\u5B57\u6570", align: "right", render: (r) => fmtNum(r.words) },
           { key: "pending", title: "\u5F85\u5BA1", align: "right", render: (r) => fmtNum(r.pending) },
           { key: "lastJob", title: "\u6700\u8FD1\u4EFB\u52A1", render: (r) => r.lastJob ? h(JobBadge, { status: r.lastJob.status }) : "\u2014" },
-          { key: "rev", title: "\u753B\u5E03 rev", align: "right", render: (r) => h(Mono, null, String(r.rev)) }
+          { key: "rev", title: "\u753B\u5E03\u7248\u672C", align: "right", render: (r) => h(Mono, null, String(r.rev)) }
         ],
         rows: stats && stats.projects || [],
         empty: "\u8FD8\u6CA1\u6709\u9879\u76EE"
@@ -540,13 +600,8 @@ function PageProjects({ projects, stats, loading, errors, busy, onRefresh, onOpe
       Section,
       {
         title: `\u9879\u76EE\uFF08${rows.length}${q ? ` / ${(projects || []).length}` : ""}\uFF09`,
-        hint: "\u8282\u70B9/\u5B57\u6570/\u5DF2\u751F\u6210\u96C6\u6570/\u6700\u8FD1\u4EFB\u52A1\u6765\u81EA /stats",
-        extra: h(
-          "div",
-          { style: { display: "flex", gap: 8 } },
-          h(Input, { value: q, onChange: setQ, placeholder: "\u641C\u7D22\u9879\u76EE\u540D", style: { width: 170 } }),
-          h(Button, { onClick: onRefresh, disabled: loading.projects || loading.stats }, loading.projects || loading.stats ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0")
-        )
+        hint: "\u8282\u70B9\u3001\u5B57\u6570\u3001\u5DF2\u751F\u6210\u96C6\u6570\u4E0E\u6700\u8FD1\u4EFB\u52A1\u4E3A\u540E\u7AEF\u7EDF\u8BA1",
+        extra: h(Input, { value: q, onChange: setQ, placeholder: "\u641C\u7D22\u9879\u76EE\u540D", style: { width: 170 } })
       },
       loading.projects && !projects ? h(Loading) : h(Table, {
         columns: [
@@ -563,7 +618,7 @@ function PageProjects({ projects, stats, loading, errors, busy, onRefresh, onOpe
               "span",
               { style: { display: "inline-flex", alignItems: "center", gap: 6 } },
               h(JobBadge, { status: r.lastJob.status }),
-              h(Mono, null, `${r.lastJob.progress && r.lastJob.progress.done || 0}/${r.lastJob.progress && r.lastJob.progress.total || 0}`)
+              h(Mono, null, `${r.lastJob.progress && r.lastJob.progress.done || 0}/${r.lastJob.progress && r.lastJob.progress.total || 0} \u96C6`)
             ) : "\u2014"
           },
           {
@@ -588,10 +643,10 @@ function PageProjects({ projects, stats, loading, errors, busy, onRefresh, onOpe
                 { style: BTN_SM, tone: "primary", onClick: () => onRelease(r), disabled: !!busy[`release:${r.id}`], title: "\u4EBA\u5DE5\u653E\u884C\uFF1A\u751F\u6210\u5B8C\u6210 \u2260 \u53EF\u4EA4\u4ED8" },
                 busy[`release:${r.id}`] ? "\u653E\u884C\u4E2D\u2026" : "\u653E\u884C"
               ) : null,
-              h(Button, { style: BTN_SM, onClick: () => onOpenCanvas(r), title: "\u5199\u5165 localStorage moxi:lastProject" }, "\u6253\u5F00\u753B\u5E03"),
+              h(Button, { style: BTN_SM, onClick: () => onOpenCanvas(r), title: "\u5728\u58A8\u620F\u753B\u5E03\u4E2D\u6253\u5F00\u8BE5\u9879\u76EE" }, "\u6253\u5F00\u753B\u5E03"),
               h(
                 Button,
-                { style: BTN_SM, onClick: () => onExport(r), disabled: !!busy[`export:${r.id}`], title: "\u8C03 /export \u751F\u6210 docx" },
+                { style: BTN_SM, onClick: () => onExport(r), disabled: !!busy[`export:${r.id}`], title: "\u6309\u9879\u76EE\u5BFC\u51FA docx" },
                 busy[`export:${r.id}`] ? "\u5BFC\u51FA\u4E2D\u2026" : "\u5BFC\u51FA docx"
               ),
               h(Button, { style: BTN_SM, tone: "danger", onClick: () => onDelete(r), title: "\u5220\u9664\u524D\u4E8C\u6B21\u786E\u8BA4\uFF0C\u79FB\u5165\u56DE\u6536\u7AD9" }, "\u5220\u9664")
@@ -619,7 +674,7 @@ function PageRules({ data, loading, scanning, error, onScan }) {
       Section,
       {
         title: "\u89C4\u5219\u5305\u626B\u63CF",
-        hint: "\u6765\u6E90 /admin/rules\uFF08\u53EA\u8BFB\u626B\u63CF rules/v2\uFF09",
+        hint: "\u53EA\u8BFB\u626B\u63CF\u89C4\u5219\u76EE\u5F55",
         extra: h(Button, { onClick: onScan, disabled: scanning || loading }, scanning || loading ? "\u626B\u63CF\u4E2D\u2026" : "\u91CD\u65B0\u626B\u63CF")
       },
       loading && !data ? h(Loading, { text: "\u9996\u6B21\u626B\u63CF\u89C4\u5219\u5305\u2026" }) : h(
@@ -629,7 +684,7 @@ function PageRules({ data, loading, scanning, error, onScan }) {
           "div",
           { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px,1fr))", gap: 12, marginBottom: 12 } },
           h(Card, { title: "\u89C4\u5219\u6587\u4EF6\u6570", value: fmtNum(d.count != null ? d.count : rules.length), hint: "\u540E\u7AEF\u626B\u63CF\u8BA1\u6570" }),
-          h(Card, { title: "pipeline \u6B65\u9AA4", value: fmtNum(steps.length), hint: "\u6765\u81EA pipeline.json" }),
+          h(Card, { title: "\u6D41\u6C34\u7EBF\u6B65\u9AA4", value: fmtNum(steps.length), hint: "\u89C4\u5219\u6D41\u6C34\u7EBF\u5B9A\u4E49" }),
           h(Card, { title: "\u786C\u95E8", value: fmtNum(hardGates.length), hint: hardGates.join(", ") || "\u65E0" }),
           h(Card, { title: "\u6280\u80FD\u6570", value: fmtNum(skills.length), hint: "\u626B\u63CF\u5230\u7684\u6280\u80FD\u76EE\u5F55" })
         ),
@@ -638,7 +693,7 @@ function PageRules({ data, loading, scanning, error, onScan }) {
           { style: { fontSize: 11.5, opacity: 0.6, marginBottom: 10 } },
           "\u6839\u76EE\u5F55\uFF1A",
           h(Mono, null, d.root || "\u2014"),
-          steps.length ? h("span", null, ` \xB7 pipeline.json\uFF1A${steps.length} \u4E2A\u6B65\u9AA4 \xB7 ${hardGates.length} \u4E2A\u786C\u95E8`) : null
+          steps.length ? h("span", null, ` \xB7 \u6D41\u6C34\u7EBF\uFF1A${steps.length} \u4E2A\u6B65\u9AA4 \xB7 ${hardGates.length} \u4E2A\u786C\u95E8`) : null
         ),
         h(Table, {
           columns: [
@@ -647,13 +702,13 @@ function PageRules({ data, loading, scanning, error, onScan }) {
             { key: "words", title: "\u5B57\u6570", align: "right", render: (r) => fmtNum(r.words) }
           ],
           rows: rules,
-          empty: "\u89C4\u5219\u6839\u76EE\u5F55\u4E3A\u7A7A\uFF1A\u628A rules/v2 \u653E\u5230 moxi \u4ED3\u5E93\u6839\u540E\u91CD\u65B0\u626B\u63CF"
+          empty: "\u89C4\u5219\u6839\u76EE\u5F55\u4E3A\u7A7A\uFF1A\u628A\u89C4\u5219\u5305\u653E\u56DE\u4ED3\u5E93\u6839\u76EE\u5F55\u540E\u70B9\u300C\u91CD\u65B0\u626B\u63CF\u300D"
         })
       )
     ),
     h(
       Section,
-      { title: `\u6280\u80FD\uFF08${skills.length}\uFF09`, extra: h(Button, { onClick: onScan, disabled: scanning || loading }, scanning || loading ? "\u626B\u63CF\u4E2D\u2026" : "\u91CD\u65B0\u626B\u63CF") },
+      { title: `\u6280\u80FD\uFF08${skills.length}\uFF09` },
       loading && !data ? h(Loading, { text: "\u626B\u63CF\u6280\u80FD\u76EE\u5F55\u2026" }) : h(Table, {
         columns: [
           { key: "name", title: "\u540D\u79F0" },
@@ -662,7 +717,7 @@ function PageRules({ data, loading, scanning, error, onScan }) {
           { key: "hasSkillMd", title: "SKILL.md", render: (r) => r.hasSkillMd ? "\u2713" : "\u2014" }
         ],
         rows: skills,
-        empty: "\u672A\u626B\u63CF\u5230\u6280\u80FD\u76EE\u5F55\uFF08skills/ \u6216 ~/.dsh/skills\uFF09"
+        empty: "\u672A\u626B\u63CF\u5230\u6280\u80FD\u76EE\u5F55"
       })
     )
   );
@@ -690,13 +745,13 @@ function PageModels({ llmInfo, legacy, jobs, probeRuns, probing, loading, error,
     h(ErrorBox, { error, onRetry: onRefresh }),
     h(
       Section,
-      { title: "\u6A21\u578B\u6982\u89C8", hint: "\u6765\u6E90 /llm/info + /llm/probe", extra: h(Button, { onClick: onRefresh, disabled: loading.llmInfo }, loading.llmInfo ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0") },
+      { title: "\u6A21\u578B\u6982\u89C8", hint: "\u6A21\u578B\u4FE1\u606F\u4E0E\u63A2\u6D4B\u7ED3\u679C" },
       h(
         "div",
         { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px,1fr))", gap: 12 } },
-        h(Card, { title: "\u5F53\u524D provider", value: defaultProvider, hint: "/llm/info" }),
-        h(Card, { title: "\u5F53\u524D\u9ED8\u8BA4\u6A21\u578B", value: defaultModel, hint: latest ? "\u6700\u8FD1\u4E00\u6B21\u63A2\u6D4B\u5B9E\u6D4B" : "\u6765\u6E90\uFF1A\u6700\u8FD1\u4EFB\u52A1\u6A21\u578B\uFF1B\u53EF\u70B9\u63A2\u6D4B\u5668\u5B9E\u6D4B" }),
-        h(Card, { title: "\u53EF\u9009\u6A21\u578B\u6570", value: fmtNum(models.length), hint: "\u6765\u81EA /llm/info.models" }),
+        h(Card, { title: "\u5F53\u524D\u670D\u52A1\u5546", value: defaultProvider, hint: "\u6A21\u578B\u6E05\u5355\u8FD4\u56DE\u7684\u9ED8\u8BA4\u670D\u52A1\u5546" }),
+        h(Card, { title: "\u5F53\u524D\u9ED8\u8BA4\u6A21\u578B", value: defaultModel, hint: latest ? "\u6700\u8FD1\u4E00\u6B21\u63A2\u6D4B\u5B9E\u6D4B" : "\u53D6\u6700\u8FD1\u4EFB\u52A1\u6240\u7528\u6A21\u578B\uFF0C\u53EF\u70B9\u63A2\u6D4B\u5668\u5B9E\u6D4B" }),
+        h(Card, { title: "\u53EF\u9009\u6A21\u578B\u6570", value: fmtNum(models.length), hint: "\u6A21\u578B\u6E05\u5355\u6761\u6570" }),
         h(Card, { title: "\u6700\u8FD1\u63A2\u6D4B\u5EF6\u8FDF", value: latest ? `${latest.ms} ms` : "\u2014", hint: latest ? `${latest.provider}/${latest.model}` : "\u5C1A\u672A\u63A2\u6D4B" })
       )
     ),
@@ -704,57 +759,56 @@ function PageModels({ llmInfo, legacy, jobs, probeRuns, probing, loading, error,
       Section,
       {
         title: `\u6A21\u578B\u5217\u8868\uFF08${models.length}\uFF09`,
-        hint: "/llm/info \xB7 \u53EA\u8BFB\uFF0C\u4E0D\u5728\u540E\u53F0\u4FEE\u6539",
-        extra: h(Button, { onClick: onProbe, disabled: probing }, probing ? "\u63A2\u6D4B\u4E2D\u2026" : "\u63A2\u6D4B\u5668 \u25B8 \u63A2\u6D4B\u9ED8\u8BA4\u6A21\u578B")
+        hint: "\u53EA\u8BFB\uFF0C\u4E0D\u5728\u540E\u53F0\u4FEE\u6539"
       },
       loading.llmInfo && !llmInfo ? h(Loading) : h(Table, {
         columns: [
-          { key: "id", title: "model id", render: (r) => h(Mono, null, r.id) },
+          { key: "id", title: "\u6A21\u578B ID", render: (r) => h(Mono, null, r.id) },
           { key: "name", title: "\u663E\u793A\u540D" },
           { key: "target", title: "\u5F52\u5C5E", render: (r) => r.id === defaultModel ? "\u5F53\u524D\u9ED8\u8BA4" : "\u53EF\u9009" }
         ],
         rows: models,
-        empty: "\u672A\u8BFB\u53D6\u5230\u6A21\u578B\u5217\u8868\uFF08/llm/info \u4E3A\u7A7A\uFF09"
+        empty: "\u672A\u8BFB\u53D6\u5230\u6A21\u578B\u5217\u8868"
       })
     ),
     h(
       Section,
       {
         title: `\u94FE\u8DEF\u63A2\u6D4B\u5668\uFF08\u672C\u6B21\u4F1A\u8BDD ${probeRuns.length} \u6B21\u5B9E\u6D4B\uFF09`,
-        hint: "/llm/probe\uFF08maxTokens=16\uFF09\u9010\u6B21\u5B9E\u6D4B\uFF0C\u5EF6\u8FDF\u4E3A\u540E\u7AEF\u6BEB\u79D2\u6570",
+        hint: "\u9010\u6B21\u5B9E\u6D4B\uFF0C\u5EF6\u8FDF\u4E3A\u540E\u7AEF\u6BEB\u79D2\u6570",
         extra: h(Button, { onClick: onProbe, disabled: probing, tone: "primary" }, probing ? "\u63A2\u6D4B\u4E2D\u2026" : "\u5F00\u59CB\u63A2\u6D4B")
       },
       h(Table, {
         columns: [
           { key: "ts", title: "\u65F6\u95F4", render: (r) => fmtTime(r.ts) },
-          { key: "provider", title: "provider", render: (r) => r.provider ? h(Mono, null, r.provider) : "\u2014" },
-          { key: "model", title: "model", render: (r) => r.model ? h(Mono, null, r.model) : "\u2014" },
+          { key: "provider", title: "\u670D\u52A1\u5546", render: (r) => r.provider ? h(Mono, null, r.provider) : "\u2014" },
+          { key: "model", title: "\u6A21\u578B", render: (r) => r.model ? h(Mono, null, r.model) : "\u2014" },
           { key: "ms", title: "\u5EF6\u8FDF(ms)", align: "right", render: (r) => r.ok === false ? "\u2014" : fmtNum(r.ms) },
-          { key: "ok", title: "\u7ED3\u679C", render: (r) => r.ok === false ? h("span", { style: { color: "#dc2626" } }, "\u5931\u8D25") : h("span", { style: { color: "#16a34a" } }, "\u901A") },
+          { key: "ok", title: "\u7ED3\u679C", render: (r) => r.ok === false ? h("span", { style: { color: TOKENS.danger } }, "\u5931\u8D25") : h("span", { style: { color: TOKENS.ok } }, "\u901A") },
           { key: "chars", title: "\u5B57\u7B26\u6570", align: "right", render: (r) => fmtNum(r.chars) },
           { key: "sample", title: "\u8FD4\u56DE\u6837\u4F8B", render: (r) => h(Mono, null, String(r.sample || "").slice(0, 60)) }
         ],
         rows: probeRuns,
-        empty: "\u70B9\u51FB\u53F3\u4E0A\u300C\u63A2\u6D4B\u5668\u300D\u5B9E\u6D4B\u5F53\u524D\u9ED8\u8BA4\u6A21\u578B\u7684\u94FE\u8DEF\u5EF6\u8FDF"
+        empty: "\u70B9\u51FB\u4E0A\u65B9\u300C\u5F00\u59CB\u63A2\u6D4B\u300D\u5B9E\u6D4B\u5F53\u524D\u9ED8\u8BA4\u6A21\u578B\u7684\u94FE\u8DEF\u5EF6\u8FDF"
       })
     ),
     h(
       Section,
       {
-        title: `\u7528\u91CF\uFF08\u751F\u6210\u4EFB\u52A1\u8D26\u672C\u5408\u8BA1\uFF09`,
-        hint: `\u6765\u6E90 /jobs/list \u7684 usage \u5B57\u6BB5\uFF08${usage.jobs} \u4E2A\u4EFB\u52A1\uFF09`
+        title: "\u7528\u91CF\uFF08\u751F\u6210\u4EFB\u52A1\u5408\u8BA1\uFF09",
+        hint: `\u6309 ${usage.jobs} \u4E2A\u751F\u6210\u4EFB\u52A1\u5408\u8BA1`
       },
       h(
         "div",
         { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px,1fr))", gap: 12 } },
-        h(Card, { title: "LLM \u8C03\u7528\u6B21\u6570", value: fmtNum(usage.calls), hint: "jobs[].usage.calls \u5408\u8BA1" }),
-        h(Card, { title: "\u8F93\u5165 tokens", value: fmtNum(usage.inputTokens), hint: "jobs[].usage.inputTokens \u5408\u8BA1" }),
-        h(Card, { title: "\u8F93\u51FA tokens", value: fmtNum(usage.outputTokens), hint: "jobs[].usage.outputTokens \u5408\u8BA1" })
+        h(Card, { title: "LLM \u8C03\u7528\u6B21\u6570", value: fmtNum(usage.calls), hint: "\u5404\u4EFB\u52A1\u8C03\u7528\u6B21\u6570\u5408\u8BA1" }),
+        h(Card, { title: "\u8F93\u5165 tokens", value: fmtNum(usage.inputTokens), hint: "\u5404\u4EFB\u52A1\u8F93\u5165\u6D88\u8017\u5408\u8BA1" }),
+        h(Card, { title: "\u8F93\u51FA tokens", value: fmtNum(usage.outputTokens), hint: "\u5404\u4EFB\u52A1\u8F93\u51FA\u6D88\u8017\u5408\u8BA1" })
       )
     ),
     h(
       Section,
-      { title: `DSH profile provider \u5168\u91CF\u626B\u63CF\uFF08${legacyProviders.length}\uFF09`, hint: "\u6765\u6E90 /admin/models\uFF08\u53EA\u8BFB\u626B\u63CF cordis.patch.yml\uFF09" },
+      { title: `\u670D\u52A1\u5546\u5168\u91CF\u6E05\u5355\uFF08${legacyProviders.length}\uFF09`, hint: "\u53EA\u8BFB\u6E05\u5355\uFF0C\u4E0D\u5728\u540E\u53F0\u4FEE\u6539" },
       loading.legacy && !legacy ? h(Loading) : h(
         "div",
         { style: { display: "grid", gap: 10 } },
@@ -768,25 +822,25 @@ function PageModels({ llmInfo, legacy, jobs, probeRuns, probing, loading, error,
             (p.models || []).map((m) => h("span", { key: m, style: { fontSize: 11, padding: "2px 8px", borderRadius: 999, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}`, fontFamily: TOKENS.mono } }, m))
           )
         )),
-        legacyProviders.length === 0 ? h(Empty, { text: "\u672A\u89E3\u6790\u5230 provider\uFF08DSH_PROFILE_DIR \u4E0D\u53EF\u7528\uFF1F\uFF09" }) : null,
+        legacyProviders.length === 0 ? h(Empty, { text: "\u672A\u8BFB\u53D6\u5230\u670D\u52A1\u5546\u6E05\u5355" }) : null,
         legacyProbe.length ? h(
           "div",
           null,
           h(
             "div",
             { style: { fontSize: 11.5, opacity: 0.6, margin: "12px 0 8px" } },
-            `\u5386\u53F2\u63A2\u9488\u5FEB\u7167\uFF08${legacy.probeFile || ""}\uFF0C\u975E\u672C\u6B21\u5B9E\u6D4B\uFF09`
+            `\u5386\u53F2\u63A2\u6D4B\u5FEB\u7167\uFF08\u975E\u672C\u6B21\u5B9E\u6D4B\uFF09`
           ),
           h(Table, {
             columns: [
-              { key: "provider", title: "provider", render: (r) => h(Mono, null, r.provider) },
-              { key: "model", title: "model", render: (r) => h(Mono, null, r.model) },
-              { key: "http_status", title: "HTTP", align: "right" },
+              { key: "provider", title: "\u670D\u52A1\u5546", render: (r) => h(Mono, null, r.provider) },
+              { key: "model", title: "\u6A21\u578B", render: (r) => h(Mono, null, r.model) },
+              { key: "http_status", title: "HTTP \u72B6\u6001", align: "right" },
               { key: "latency_ms", title: "\u5EF6\u8FDF(ms)", align: "right" },
               { key: "verdict", title: "\u5224\u5B9A" }
             ],
             rows: legacyProbe,
-            empty: "\u65E0\u5386\u53F2\u63A2\u9488"
+            empty: "\u6682\u65E0\u5386\u53F2\u63A2\u6D4B\u8BB0\u5F55"
           })
         ) : null
       )
@@ -812,14 +866,13 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
       Section,
       {
         title: `\u751F\u6210\u4EFB\u52A1\uFF08${(jobs || []).length}\uFF09`,
-        hint: "\u6765\u6E90 /jobs/list\uFF1B\u53D6\u6D88\u9700\u4E8C\u6B21\u786E\u8BA4",
-        extra: h(Button, { onClick: onRefresh, disabled: loading.jobs }, loading.jobs ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0")
+        hint: "\u53D6\u6D88\u4EFB\u52A1\u9700\u4E8C\u6B21\u786E\u8BA4"
       },
       loading.jobs && !jobs ? h(Loading) : h(Table, {
         columns: [
           { key: "id", title: "\u4EFB\u52A1", render: (r) => h(Mono, null, String(r.id).replace(/^job_/, "").slice(0, 10) + "\u2026") },
           { key: "projectTitle", title: "\u9879\u76EE", render: (r) => h("span", { style: { fontWeight: 600, whiteSpace: "nowrap" } }, r.projectTitle) },
-          { key: "range", title: "\u96C6\u8303\u56F4", render: (r) => h(Mono, null, `${r.from}\u2013${r.to}`) },
+          { key: "range", title: "\u96C6\u8303\u56F4", render: (r) => h("span", { style: { whiteSpace: "nowrap" } }, fmtScope(jobScope(r), r)) },
           { key: "status", title: "\u72B6\u6001", render: (r) => h(JobBadge, { status: r.status }) },
           { key: "progress", title: "\u8FDB\u5EA6", render: (r) => h(Progress, { ...r.progress || {} }) },
           { key: "duration", title: "\u8017\u65F6", render: (r) => h("span", { style: { whiteSpace: "nowrap" } }, fmtDuration(r.startedAt || r.createdAt, r.finishedAt)) },
@@ -841,7 +894,7 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
     ),
     h(
       Section,
-      { title: "\u5BFC\u51FA\uFF08\u6309\u9879\u76EE + \u96C6\u8303\u56F4\uFF09", hint: "\u8C03 /export\uFF0Crange \u751F\u6548\u65F6\u6309\u96C6\u53F7\u8FC7\u6EE4\u8282\u70B9" },
+      { title: "\u5BFC\u51FA\uFF08\u6309\u9879\u76EE \xB7 \u96C6\u8303\u56F4\uFF09", hint: "\u6309\u9879\u76EE\u5BFC\u51FA\uFF1B\u586B\u4E86\u96C6\u8303\u56F4\u5C31\u53EA\u5BFC\u51FA\u8BE5\u8303\u56F4" },
       h(
         "div",
         { style: { display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end", padding: "12px 14px", border: `1px solid ${TOKENS.border}`, borderRadius: 10, background: TOKENS.bg } },
@@ -857,12 +910,12 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
         ),
         h(
           Field,
-          { label: "\u8D77\u59CB\u96C6 from", width: 110 },
+          { label: "\u8D77\u59CB\u96C6", width: 110 },
           h(Input, { value: form.from, type: "number", min: 1, onChange: (v) => set({ from: v }), placeholder: "1" })
         ),
         h(
           Field,
-          { label: "\u7ED3\u675F\u96C6 to", width: 110 },
+          { label: "\u7ED3\u675F\u96C6", width: 110 },
           h(Input, { value: form.to, type: "number", min: 1, onChange: (v) => set({ to: v }), placeholder: "\u7559\u7A7A=\u8D77\u59CB\u96C6" })
         ),
         h(
@@ -871,33 +924,32 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
           h(Select, { value: form.format, onChange: (v) => set({ format: v }), options: EXPORT_FORMATS })
         ),
         h(Button, { tone: "primary", onClick: submitExport, disabled: rangeBusy }, rangeBusy ? "\u5BFC\u51FA\u4E2D\u2026" : "\u5BFC\u51FA"),
-        h("span", { style: { fontSize: 11, color: TOKENS.labelSecondary, paddingBottom: 6 } }, "from/to \u7559\u7A7A = \u6574\u90E8\u9879\u76EE")
+        h("span", { style: { fontSize: 11, color: TOKENS.labelSecondary, paddingBottom: 6 } }, "\u96C6\u8303\u56F4\u7559\u7A7A = \u6574\u90E8\u9879\u76EE")
       )
     ),
     h(
       Section,
       {
         title: `\u5BA1\u8BA1\u65E5\u5FD7\uFF08${filtered.length}/${(logs || []).length}\uFF09`,
-        hint: "\u6765\u6E90 /admin/logs\uFF08\u6700\u8FD1 300 \u6761\uFF09",
+        hint: "\u6700\u8FD1 300 \u6761",
         extra: h(
           "div",
           { style: { display: "flex", gap: 8, alignItems: "center" } },
-          h("span", { style: { fontSize: 11, color: TOKENS.labelSecondary } }, "op \u8FC7\u6EE4"),
-          h(Select, { value: op, onChange: setOp, options: LOG_OP_OPTIONS }),
-          h(Button, { onClick: onRefresh, disabled: loading.logs }, loading.logs ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0")
+          h("span", { style: { fontSize: 11, color: TOKENS.labelSecondary } }, "\u64CD\u4F5C\u7C7B\u578B"),
+          h(Select, { value: op, onChange: setOp, options: LOG_OP_OPTIONS })
         )
       },
       loading.logs && !logs ? h(Loading) : h(Table, {
         columns: [
           { key: "ts", title: "\u65F6\u95F4", render: (r) => fmtTime(r.ts) },
           { key: "projectTitle", title: "\u9879\u76EE" },
-          { key: "actor", title: "actor" },
-          { key: "op", title: "op", render: (r) => h(Mono, null, r.op) },
-          { key: "nodeId", title: "node", render: (r) => r.nodeId ? h(Mono, null, String(r.nodeId).slice(0, 12) + "\u2026") : "\u2014" },
-          { key: "seq", title: "seq", align: "right" }
+          { key: "actor", title: "\u64CD\u4F5C\u4EBA" },
+          { key: "op", title: "\u64CD\u4F5C", render: (r) => opLabel(r.op) },
+          { key: "nodeId", title: "\u8282\u70B9", render: (r) => r.nodeId ? h(Mono, null, String(r.nodeId).slice(0, 12) + "\u2026") : "\u2014" },
+          { key: "seq", title: "\u5E8F\u53F7", align: "right" }
         ],
         rows: filtered,
-        empty: op === "\u5168\u90E8" ? "\u8FD8\u6CA1\u6709\u5BA1\u8BA1\u4E8B\u4EF6" : `\u8BE5 op\uFF08${op}\uFF09\u6682\u65E0\u65E5\u5FD7`
+        empty: op === "\u5168\u90E8" ? "\u8FD8\u6CA1\u6709\u5BA1\u8BA1\u4E8B\u4EF6" : `\u300C${opLabel(op)}\u300D\u6682\u65E0\u65E5\u5FD7`
       })
     )
   );
@@ -910,11 +962,11 @@ var TABS = [
   { id: "logs", label: "\u65E5\u5FD7\u4E0E\u5BFC\u51FA", icon: "\u2630" }
 ];
 var TAB_HINT = {
-  overview: "\u6570\u5B57\u5168\u90E8\u6765\u81EA /stats\uFF08\u540E\u7AEF\u6743\u5A01\uFF09",
-  projects: "\u8282\u70B9/\u5B57\u6570/\u5DF2\u751F\u6210\u96C6\u6570/\u6700\u8FD1\u4EFB\u52A1\u6765\u81EA /stats",
-  rules: "\u89C4\u5219\u4E0E\u6280\u80FD\u626B\u63CF /admin/rules\uFF08\u53EA\u8BFB\uFF09",
-  models: "\u6A21\u578B /llm/info \xB7 \u63A2\u6D4B /llm/probe",
-  logs: "\u65E5\u5FD7 /admin/logs \xB7 \u4EFB\u52A1 /jobs/list \xB7 \u5BFC\u51FA /export"
+  overview: "\u6570\u636E\u81EA\u52A8\u5237\u65B0\uFF0C\u6570\u5B57\u6765\u81EA\u540E\u7AEF\u7EDF\u8BA1",
+  projects: "\u8282\u70B9\u3001\u5B57\u6570\u4E0E\u5DF2\u751F\u6210\u96C6\u6570\u4E3A\u540E\u7AEF\u7EDF\u8BA1",
+  rules: "\u53EA\u8BFB\u626B\u63CF\u89C4\u5219\u4E0E\u6280\u80FD\u76EE\u5F55",
+  models: "\u6A21\u578B\u4FE1\u606F\u4E0E\u94FE\u8DEF\u63A2\u6D4B\uFF08\u53EA\u8BFB\uFF09",
+  logs: "\u4EFB\u52A1\u3001\u65E5\u5FD7\u4E0E\u5BFC\u51FA"
 };
 function App() {
   const [tab, setTab] = useState("overview");
@@ -1057,7 +1109,7 @@ function App() {
     const from = Number(form.from);
     const to = Number(form.to);
     if (Number.isFinite(from) && from > 0 && Number.isFinite(to) && to > 0 && to < from) {
-      showToast({ kind: "error", text: `\u96C6\u8303\u56F4\u975E\u6CD5\uFF1Ato(${to}) < from(${from})` });
+      showToast({ kind: "error", text: `\u96C6\u8303\u56F4\u4E0D\u5408\u6CD5\uFF1A\u7ED3\u675F\u96C6\uFF08${to}\uFF09\u65E9\u4E8E\u8D77\u59CB\u96C6\uFF08${from}\uFF09` });
       return;
     }
     const project = (data.projects || []).find((p) => p.id === form.projectId) || { id: form.projectId, title: form.projectId };
@@ -1074,7 +1126,7 @@ function App() {
 
 \u8282\u70B9\u6570\uFF1A${s.nodes == null ? "\u2014" : s.nodes} \xB7 \u5B57\u6570\uFF1A${s.words == null ? "\u2014" : s.words} \xB7 \u5DF2\u751F\u6210\uFF1A${s.episodes == null ? "\u2014" : s.episodes} \u96C6
 
-\u9879\u76EE\u4F1A\u79FB\u5165\u5DE5\u4F5C\u533A\u56DE\u6536\u7AD9 .trash\uFF0C\u53EF\u4ECE\u78C1\u76D8\u4E0A\u627E\u56DE\u3002`,
+\u9879\u76EE\u4F1A\u79FB\u5165\u5DE5\u4F5C\u533A\u56DE\u6536\u7AD9\uFF0C\u53EF\u4ECE\u78C1\u76D8\u4E0A\u627E\u56DE\u3002`,
       onConfirm: async () => {
         const r = await post(EP.projectDelete, { projectId: project.id });
         showToast({ kind: "success", text: `\u5DF2\u5220\u9664\u300C${project.title}\u300D\u2192 ${r.trashPath}`, duration: 5e3 });
@@ -1092,12 +1144,13 @@ function App() {
       confirmText: "\u786E\u8BA4\u653E\u884C",
       message: `\u786E\u8BA4\u653E\u884C\u9879\u76EE\u300C${project.title}\u300D\uFF1F
 
-\u542B\u4E49\uFF1A\u4F60\u5DF2\u901A\u8BFB/\u62BD\u67E5\u5267\u672C\uFF0C\u786E\u8BA4\u53EF\u4EE5\u4F5C\u4E3A\u4EA4\u4ED8\u7A3F\u3002\u653E\u884C\u540E\u4EA4\u4ED8\u8282\u70B9\u7F6E\u4E3A approved\uFF0C\u5E76\u8BB0\u5F55\u653E\u884C\u65F6\u95F4\u3002`,
+\u542B\u4E49\uFF1A\u4F60\u5DF2\u901A\u8BFB/\u62BD\u67E5\u5267\u672C\uFF0C\u786E\u8BA4\u53EF\u4EE5\u4F5C\u4E3A\u4EA4\u4ED8\u7A3F\u3002\u653E\u884C\u540E\u4EA4\u4ED8\u8282\u70B9\u8F6C\u4E3A\u300C\u5DF2\u6279\u51C6\u300D\uFF0C\u5E76\u8BB0\u5F55\u653E\u884C\u65F6\u95F4\u3002`,
       onConfirm: async () => {
         markBusy(key, true);
         try {
           const r = await post(EP.release, { projectId: project.id });
-          showToast({ kind: "success", text: `\u5DF2\u653E\u884C\u300C${project.title}\u300D\xB7 \u4EA4\u4ED8\u8282\u70B9 ${r.deliveryStatus || "approved"}` });
+          const st = r.deliveryStatus ? statusLabel(r.deliveryStatus) : "\u5DF2\u6279\u51C6";
+          showToast({ kind: "success", text: `\u5DF2\u653E\u884C\u300C${project.title}\u300D\xB7 \u4EA4\u4ED8\u8282\u70B9${st}` });
           loadProjects();
           loadStats();
         } finally {
@@ -1112,6 +1165,7 @@ function App() {
       return;
     }
     const p = job.progress || {};
+    const scopeText = fmtScope(jobScope(job), job);
     openConfirm({
       tone: "danger",
       title: "\u53D6\u6D88\u751F\u6210\u4EFB\u52A1",
@@ -1119,13 +1173,13 @@ function App() {
       message: `\u786E\u8BA4\u53D6\u6D88\u4EFB\u52A1 ${job.id}\uFF1F
 
 \u9879\u76EE\uFF1A${job.projectTitle}
-\u96C6\u8303\u56F4\uFF1A\u7B2C ${job.from}\u2013${job.to} \u96C6
-\u8FDB\u5EA6\uFF1A${p.done || 0}/${p.total || 0}\uFF08\u5931\u8D25 ${p.failed || 0}\uFF09
+\u96C6\u8303\u56F4\uFF1A${scopeText}
+\u8FDB\u5EA6\uFF1A${p.done || 0}/${p.total || 0} \u96C6\uFF08\u5931\u8D25 ${p.failed || 0} \u96C6\uFF09
 
 \u5DF2\u751F\u6210\u7684\u96C6\u4E0E\u6B63\u6587\u4F1A\u4FDD\u7559\uFF0C\u53EF\u7A0D\u540E\u7EED\u8DD1\u3002`,
       onConfirm: async () => {
         const r = await post("/jobs/cancel", { jobId: job.id });
-        showToast({ kind: "success", text: `\u5DF2\u53D6\u6D88\u4EFB\u52A1 ${r.id}\uFF08${r.status}\uFF09` });
+        showToast({ kind: "success", text: `\u5DF2\u53D6\u6D88\u4EFB\u52A1 ${r.id}\uFF08${jobStatusLabel(r.status)}\uFF09` });
         loadJobs();
         loadStats();
       }
@@ -1199,12 +1253,13 @@ function App() {
     })
   };
   const title = (TABS.find((t) => t.id === tab) || {}).label;
-  const statsTime = data.stats && data.stats.generatedAt ? `\u7EDF\u8BA1\u65F6\u95F4 ${fmtTime(data.stats.generatedAt)}` : "";
+  const statsTime = (tab === "overview" || tab === "projects") && data.stats && data.stats.generatedAt ? `\u7EDF\u8BA1\u65F6\u95F4 ${fmtTime(data.stats.generatedAt)}` : "";
+  const tabLoading = tab === "overview" ? !!(loading.stats || loading.jobs || loading.projects) : tab === "projects" ? !!(loading.projects || loading.stats || loading.jobs) : tab === "rules" ? !!loading.rules : tab === "models" ? !!(loading.llmInfo || loading.legacy) : !!(loading.logs || loading.jobs || loading.projects);
   return h(
     "div",
     {
+      className: "moxi-app moxi-paper-bg",
       style: {
-        className: "moxi-app moxi-paper-bg",
         height: "100%",
         width: "100%",
         display: "flex",
@@ -1264,7 +1319,7 @@ function App() {
         h("span", { style: { fontSize: 11, opacity: 0.5 } }, TAB_HINT[tab] || ""),
         h("span", { style: { flex: 1 } }),
         statsTime ? h("span", { style: { fontSize: 11, opacity: 0.5 } }, statsTime) : null,
-        h(Button, { onClick: refreshCurrent }, "\u5237\u65B0")
+        h(Button, { onClick: refreshCurrent, disabled: tabLoading }, "\u5237\u65B0")
       ),
       pages[tab]
     ),

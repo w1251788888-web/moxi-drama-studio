@@ -6,41 +6,49 @@ import React from 'react'
 
 export const h = React.createElement
 
+/*
+ * 类型色收敛到墨稿色系：墨灰 / 朱砂 / 赭金 / 墨绿 四个色相族，
+ * 只靠明度与色相微差区分（对应 skin.js 的 INK：ink=#252A2B、inkSoft=#5B6163、
+ * inkFaint=#8C9194、accent=#A44736、accentSoft=#C4705C、gold=#B08A4A）。
+ * 取值刻意留在中等明度：宣纸底（#FBF8F1）与墨稿暗色（#232628）两种皮肤下都能看清。
+ * 字面色仅用于类型点/状态点等数据可视化，不覆盖主题 token。
+ */
 export const NODE_TYPES = {
-  project_root: { label: '项目根', glyph: '◆', accent: '#8b5cf6' },
-  settings: { label: '设定集', glyph: '▤', accent: '#0ea5e9' },
-  asset: { label: '资产', glyph: '◈', accent: '#14b8a6' },
-  beat_sheet: { label: '分集节拍', glyph: '▦', accent: '#f59e0b' },
-  scene_list: { label: '分场表', glyph: '☰', accent: '#eab308' },
-  script_scene: { label: '剧本场次', glyph: '✎', accent: '#ef4444' },
-  quality: { label: '质检', glyph: '✓', accent: '#22c55e' },
-  compliance: { label: '合规', glyph: '⚖', accent: '#6366f1' },
-  delivery: { label: '分镜·导出', glyph: '⤓', accent: '#ec4899' },
+  project_root: { label: '项目根', glyph: '◆', accent: '#A44736' },
+  settings: { label: '设定集', glyph: '▤', accent: '#5B6163' },
+  asset: { label: '资产', glyph: '◈', accent: '#8C9194' },
+  beat_sheet: { label: '分集节拍', glyph: '▦', accent: '#A87E3C' },
+  scene_list: { label: '分场表', glyph: '☰', accent: '#C9A46A' },
+  script_scene: { label: '剧本场次', glyph: '✎', accent: '#C4705C' },
+  quality: { label: '质检', glyph: '✓', accent: '#4E7A4B' },
+  compliance: { label: '合规', glyph: '⚖', accent: '#5C8A57' },
+  delivery: { label: '分镜·导出', glyph: '⤓', accent: '#6B7376' },
 }
 
+/* 状态色统一四档：成功 #4E7A4B / 警示 #B08A4A / 错误 #B23A32 / 中性 #8C9194 */
 export const STATUS_META = {
-  draft: { label: '草稿', color: '#94a3b8' },
-  generating: { label: '生成中', color: '#3b82f6' },
-  review: { label: '待审', color: '#f59e0b' },
-  rejected: { label: '打回', color: '#ef4444' },
-  approved: { label: '已批准', color: '#22c55e' },
-  blocked: { label: '阻塞', color: '#a1a1aa' },
+  draft: { label: '草稿', color: '#8C9194' },
+  generating: { label: '生成中', color: '#B08A4A' },
+  review: { label: '待审', color: '#B08A4A' },
+  rejected: { label: '打回', color: '#B23A32' },
+  approved: { label: '已批准', color: '#4E7A4B' },
+  blocked: { label: '阻塞', color: '#8C9194' },
 }
 
 export const JOB_STATUS_META = {
-  queued: { label: '排队中', color: '#94a3b8' },
-  running: { label: '运行中', color: '#3b82f6' },
-  done: { label: '已完成', color: '#22c55e' },
-  done_with_errors: { label: '完成但有失败', color: '#f97316' },
-  cancelled: { label: '已取消', color: '#a1a1aa' },
-  failed: { label: '失败', color: '#ef4444' },
+  queued: { label: '排队中', color: '#8C9194' },
+  running: { label: '运行中', color: '#B08A4A' },
+  done: { label: '已完成', color: '#4E7A4B' },
+  done_with_errors: { label: '完成但有失败', color: '#B23A32' },
+  cancelled: { label: '已取消', color: '#8C9194' },
+  failed: { label: '失败', color: '#B23A32' },
 }
 
 export const EP_STATUS_META = {
-  pending: { label: '待生成', color: '#94a3b8' },
-  running: { label: '生成中', color: '#3b82f6' },
-  done: { label: '完成', color: '#22c55e' },
-  failed: { label: '失败', color: '#ef4444' },
+  pending: { label: '待生成', color: '#8C9194' },
+  running: { label: '生成中', color: '#B08A4A' },
+  done: { label: '完成', color: '#4E7A4B' },
+  failed: { label: '失败', color: '#B23A32' },
 }
 
 export const EP_STAGE_LABEL = {
@@ -70,6 +78,15 @@ export const TOKENS = {
   dim: 'var(--dsw-alias-label-secondary, rgba(127,127,127,1))',
   brand: 'var(--dsw-alias-brand-primary, #247bbf)',
   mono: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  /* 语义色：墨稿皮肤下由 skin.js 覆盖为朱砂/墨绿/赭金/灰墨；名字固定，语义不随皮肤漂移 */
+  success: 'var(--dsw-alias-state-success-primary, #4E7A4B)',
+  warn: 'var(--dsw-alias-state-warn-primary, #B08A4A)',
+  error: 'var(--dsw-alias-state-error-primary, #B23A32)',
+  neutral: 'var(--dsw-alias-state-idle-primary, #8C9194)',
+  /* 数据可视化用的字面色（与 skin.js 的 INK 对齐） */
+  accent: '#A44736',
+  gold: '#B08A4A',
+  goldSoft: '#C9A46A',
 }
 
 /* ---------------- 基础件 ---------------- */
@@ -103,8 +120,9 @@ export function EpBadge({ status }) {
 export function Button({ children, onClick, tone = 'default', disabled, title, style, ...rest }) {
   const tones = {
     default: { color: TOKENS.text, background: TOKENS.bg, border: `1px solid ${TOKENS.border}` },
-    primary: { color: '#fff', background: '#247bbf', border: '1px solid #247bbf' },
-    danger: { color: '#fff', background: '#dc2626', border: '1px solid #dc2626' },
+    // 主操作 = 品牌色（墨稿皮肤下是朱砂）；危险操作 = 语义错误红，保持填充态
+    primary: { color: '#fff', background: TOKENS.brand, border: `1px solid ${TOKENS.brand}` },
+    danger: { color: '#fff', background: TOKENS.error, border: `1px solid ${TOKENS.error}` },
     ghost: { color: TOKENS.text, background: 'transparent', border: '1px solid transparent' },
   }
   return h('button', {
@@ -151,7 +169,7 @@ export function Checkbox({ checked, onChange, label, ...rest }) {
       type: 'checkbox', checked: !!checked,
       onChange: (e) => onChange && onChange(e.target.checked),
       ...rest,
-      style: { width: 14, height: 14, accentColor: '#247bbf', cursor: 'pointer' },
+      style: { width: 14, height: 14, accentColor: TOKENS.brand, cursor: 'pointer' },
     }),
     label
   )
@@ -180,8 +198,8 @@ export function ProgressBar({ done = 0, total = 0, failed = 0, height = 8 }) {
   return h('div', {
     style: { height, borderRadius: 999, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}`, overflow: 'hidden', display: 'flex' },
   },
-    h('div', { style: { width: `${donePct}%`, background: '#22c55e', transition: 'width .3s' } }),
-    h('div', { style: { width: `${failPct}%`, background: '#ef4444', transition: 'width .3s' } })
+    h('div', { style: { width: `${donePct}%`, background: TOKENS.success, transition: 'width .3s' } }),
+    h('div', { style: { width: `${failPct}%`, background: TOKENS.error, transition: 'width .3s' } })
   )
 }
 
@@ -285,7 +303,7 @@ export function Empty({ text, action }) {
 
 export function Toast({ toast }) {
   if (!toast) return null
-  const color = toast.kind === 'error' ? '#dc2626' : toast.kind === 'success' ? '#16a34a' : '#3b82f6'
+  const color = toast.kind === 'error' ? TOKENS.error : toast.kind === 'success' ? TOKENS.success : TOKENS.brand
   return h('div', {
     'data-testid': 'toast',
     style: {

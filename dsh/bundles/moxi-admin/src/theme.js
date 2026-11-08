@@ -6,25 +6,27 @@ import React from 'react'
 
 export const h = React.createElement
 
+/* 节点类型色：收敛到墨稿色系（墨 / 朱砂 / 赭金 / 青绿 四个色相族，靠明度区分） */
 export const NODE_TYPES = {
-  project_root: { label: '项目根', glyph: '◆', accent: '#8b5cf6' },
-  settings: { label: '设定集', glyph: '▤', accent: '#0ea5e9' },
-  asset: { label: '资产', glyph: '◈', accent: '#14b8a6' },
-  beat_sheet: { label: '分集节拍', glyph: '▦', accent: '#f59e0b' },
-  scene_list: { label: '分场表', glyph: '☰', accent: '#eab308' },
-  script_scene: { label: '剧本场次', glyph: '✎', accent: '#ef4444' },
-  quality: { label: '质检', glyph: '✓', accent: '#22c55e' },
-  compliance: { label: '合规', glyph: '⚖', accent: '#6366f1' },
-  delivery: { label: '分镜·导出', glyph: '⤓', accent: '#ec4899' },
+  project_root: { label: '项目根', glyph: '◆', accent: '#A44736' },
+  settings: { label: '设定集', glyph: '▤', accent: '#5B6163' },
+  asset: { label: '资产', glyph: '◈', accent: '#8C9194' },
+  beat_sheet: { label: '分集节拍', glyph: '▦', accent: '#A87E3C' },
+  scene_list: { label: '分场表', glyph: '☰', accent: '#C9A46A' },
+  script_scene: { label: '剧本场次', glyph: '✎', accent: '#C4705C' },
+  quality: { label: '质检', glyph: '✓', accent: '#4E7A4B' },
+  compliance: { label: '合规', glyph: '⚖', accent: '#5C8A57' },
+  delivery: { label: '分镜·导出', glyph: '⤓', accent: '#6B7376' },
 }
 
+/* 节点状态色：成功 / 警示 / 错误 / 中性 四类语义色（与画布端同一套） */
 export const STATUS_META = {
-  draft: { label: '草稿', color: '#94a3b8' },
-  generating: { label: '生成中', color: '#3b82f6' },
-  review: { label: '待审', color: '#f59e0b' },
-  rejected: { label: '打回', color: '#ef4444' },
-  approved: { label: '已批准', color: '#22c55e' },
-  blocked: { label: '阻塞', color: '#a1a1aa' },
+  draft: { label: '草稿', color: '#8C9194' },
+  generating: { label: '生成中', color: '#A44736' },
+  review: { label: '待审', color: '#B08A4A' },
+  rejected: { label: '打回', color: '#B23A32' },
+  approved: { label: '已批准', color: '#4E7A4B' },
+  blocked: { label: '阻塞', color: '#5B6163' },
 }
 
 export const TRANSITION_LABEL = {
@@ -36,6 +38,12 @@ export const TRANSITION_LABEL = {
   blocked: '置为阻塞',
 }
 
+/** 状态码 → 中文标签（交付节点状态等展示用） */
+export function statusLabel(status) {
+  const meta = STATUS_META[status]
+  return meta ? meta.label : (status || '—')
+}
+
 export const TOKENS = {
   border: 'var(--dsw-alias-border-l1, rgba(127,127,127,.25))',
   bg: 'var(--dsw-alias-bg-layer-1, #fff)',
@@ -44,8 +52,8 @@ export const TOKENS = {
   labelSecondary: 'var(--dsw-alias-label-secondary, rgba(24,24,27,.62))',
   brand: 'var(--dsw-alias-brand-primary, #247bbf)',
   mono: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  // 状态语义色（数据/状态可视化允许字面色；随主题不变，暗色下对比度足够）
-  ok: '#22c55e', info: '#3b82f6', warn: '#f59e0b', danger: '#ef4444', muted: '#94a3b8',
+  // 状态语义色（数据/状态可视化允许字面色；与画布端收敛为同一套）
+  ok: '#4E7A4B', info: '#A44736', warn: '#B08A4A', danger: '#B23A32', muted: '#8C9194',
 }
 
 /** 生成任务状态（契约 §2 Job.status） */
@@ -53,13 +61,19 @@ export const JOB_STATUS_META = {
   queued: { label: '排队中', color: TOKENS.muted },
   running: { label: '生成中', color: TOKENS.info },
   done: { label: '已完成', color: TOKENS.ok },
-  done_with_errors: { label: '部分失败', color: TOKENS.danger },
-  cancelled: { label: '已取消', color: TOKENS.danger },
+  done_with_errors: { label: '部分失败', color: TOKENS.warn },
+  cancelled: { label: '已取消', color: TOKENS.muted },
   failed: { label: '失败', color: TOKENS.danger },
 }
 
 /** 异常任务状态：展示为红色（P1 最近生成任务） */
 export const JOB_ALERT_STATUS = new Set(['done_with_errors', 'cancelled', 'failed'])
+
+/** 任务状态码 → 中文标签 */
+export function jobStatusLabel(status) {
+  const meta = JOB_STATUS_META[status]
+  return meta ? meta.label : (status || '—')
+}
 
 export function JobBadge({ status }) {
   const meta = JOB_STATUS_META[status] || { label: status || '未知', color: TOKENS.muted }
@@ -104,8 +118,17 @@ export function fmtDuration(startIso, endIso) {
   return `${Math.floor(m / 60)}h ${m % 60}m`
 }
 
-export function Badge({ status }) {
-  const meta = STATUS_META[status] || STATUS_META.draft
+/** 徽章语义色调（沿用同一套状态语义色） */
+const TONE_META = {
+  success: { color: TOKENS.ok },
+  warn: { color: TOKENS.warn },
+  danger: { color: TOKENS.danger },
+  neutral: { color: TOKENS.muted },
+}
+
+/* 徽章底色/描边用 hex + alpha 叠加，因此状态色保持字面色（不用 CSS var 拼接） */
+export function Badge({ status, tone, children }) {
+  const meta = (tone && TONE_META[tone]) || STATUS_META[status] || STATUS_META.draft
   return h('span', {
     style: {
       display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -113,14 +136,16 @@ export function Badge({ status }) {
       color: meta.color, border: `1px solid ${meta.color}55`,
       background: `${meta.color}14`, whiteSpace: 'nowrap',
     },
-  }, h('span', { style: { width: 5, height: 5, borderRadius: 999, background: meta.color } }), meta.label)
+  }, h('span', { style: { width: 5, height: 5, borderRadius: 999, background: meta.color } }),
+  children != null ? children : meta.label)
 }
 
 export function Button({ children, onClick, tone = 'default', disabled, title, style }) {
+  const errorRed = 'var(--dsw-alias-state-error-primary, #B23A32)'
   const tones = {
     default: { color: TOKENS.text, background: TOKENS.bg, border: `1px solid ${TOKENS.border}` },
     primary: { color: '#fff', background: TOKENS.brand, border: `1px solid ${TOKENS.brand}` },
-    danger: { color: '#fff', background: '#dc2626', border: '1px solid #dc2626' },
+    danger: { color: '#fff', background: errorRed, border: `1px solid ${errorRed}` },
     ghost: { color: TOKENS.text, background: 'transparent', border: '1px solid transparent' },
   }
   return h('button', {
@@ -183,10 +208,10 @@ export function Empty({ text, action }) {
 
 export function Toast({ toast }) {
   if (!toast) return null
-  const color = toast.kind === 'error' ? '#dc2626'
-    : toast.kind === 'success' ? '#16a34a'
-    : toast.kind === 'warn' ? '#d97706'
-    : '#3b82f6'
+  const color = toast.kind === 'error' ? TOKENS.danger
+    : toast.kind === 'success' ? TOKENS.ok
+    : toast.kind === 'warn' ? TOKENS.warn
+    : TOKENS.info
   return h('div', {
     style: {
       position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 3000,

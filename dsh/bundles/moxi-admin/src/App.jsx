@@ -9,7 +9,7 @@
 import React from 'react'
 import {
   h, TOKENS, Badge, JobBadge, JOB_ALERT_STATUS, Button, Input, Empty, Toast, Confirm, Field,
-  fmtBytes, fmtTime, fmtNum, fmtDuration,
+  fmtBytes, fmtTime, fmtNum, fmtDuration, statusLabel, jobStatusLabel,
 } from './theme.js'
 
 const { useState, useEffect, useCallback, useMemo, useRef } = React
@@ -49,8 +49,54 @@ function localNowIso() {
 }
 
 const BTN_SM = { height: 26, padding: '0 8px', fontSize: 11 }
-const LOG_OP_OPTIONS = ['全部', 'node.transition', 'content.save', 'generate.episode', 'check.run']
+const LOG_OP_LABELS = {
+  'node.transition': '节点流转',
+  'content.save': '正文保存',
+  'generate.episode': '分集生成',
+  'check.run': '质检运行',
+}
+const LOG_OP_OPTIONS = [{ value: '全部', label: '全部操作' }].concat(
+  Object.keys(LOG_OP_LABELS).map((op) => ({ value: op, label: LOG_OP_LABELS[op] }))
+)
+const opLabel = (op) => (op === '全部' ? '全部操作' : (LOG_OP_LABELS[op] || op))
 const EXPORT_FORMATS = ['docx', 'md', 'txt']
+
+/* 任务集范围：优先用后端 scope（{from,to,count,episodes,dense}），历史任务用 episodes 兜底。
+   from/to 只是首末集号，polish 任务可能只含其中几集（例：第 1、6、8、10 集），不能直接写成「1–10 集」。 */
+function jobScope(job) {
+  const s = job && job.scope
+  if (s && Array.isArray(s.episodes) && s.episodes.length) {
+    const eps = [...new Set(s.episodes.map(Number))].sort((a, b) => a - b)
+    return { episodes: eps, dense: !!s.dense }
+  }
+  const eps = [...new Set(((job && job.episodes) || []).map((e) => Number(e && e.ep)).filter((n) => Number.isInteger(n) && n > 0))]
+    .sort((a, b) => a - b)
+  if (eps.length) return { episodes: eps, dense: eps.length === eps[eps.length - 1] - eps[0] + 1 }
+  // 再兜底：只有首末集号的历史任务，用进度总数说明实际集数，避免又写成「1—10 集」
+  const from = Number(job && job.from)
+  const to = Number(job && job.to)
+  if (Number.isInteger(from) && from > 0 && Number.isInteger(to) && to >= from) {
+    const count = Number(job && job.progress && job.progress.total) || 0
+    return { from, to, count: count > 0 ? count : to - from + 1 }
+  }
+  return null
+}
+
+/** 集范围文案：连续 →「第 1–10 集」；跳集 →「第 1、6、8、10 集（共 4 集）」 */
+function fmtScope(scope, job) {
+  // 补齐类任务没有集范围，直接说明任务性质，不留一个空破折号
+  if (job && job.mode === 'ensure') return '概念/资产补齐'
+  if (!scope) return '—'
+  if (!scope.episodes) {
+    const span = scope.to - scope.from + 1
+    if (scope.count !== span) return `第 ${scope.from}–${scope.to} 集（共 ${scope.count} 集）`
+    return `第 ${scope.from}–${scope.to} 集`
+  }
+  const eps = scope.episodes
+  if (eps.length === 1) return `第 ${eps[0]} 集`
+  if (scope.dense) return `第 ${eps[0]}–${eps[eps.length - 1]} 集`
+  return `第 ${eps.join('、')} 集（共 ${eps.length} 集）`
+}
 
 /* ======================================================================== *
  * 通用小组件
@@ -89,8 +135,8 @@ function ErrorBox({ error, onRetry }) {
   return h('div', {
     style: {
       display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10,
-      padding: '8px 12px', borderRadius: 8, fontSize: 12, color: '#dc2626',
-      border: '1px solid #dc262655', background: '#dc26260f',
+      padding: '8px 12px', borderRadius: 8, fontSize: 12, color: TOKENS.danger,
+      border: `1px solid ${TOKENS.danger}55`, background: `${TOKENS.danger}0f`,
     },
   },
     h('span', { style: { flex: 1 } }, '读取失败：' + error),
@@ -133,9 +179,16 @@ function Select({ value, onChange, options, style, disabled }) {
 
 function Progress({ done = 0, total = 0, failed = 0 }) {
   const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
+  // 补齐类任务（concept/assets）本来就没有集数：显示「—」，不要写成 0/0 集让人以为没跑
+  if (!(total > 0)) {
+    return h('div', { style: { minWidth: 110, fontSize: 11.5, opacity: 0.6 } },
+      '—',
+      failed > 0 ? h('span', { style: { color: TOKENS.danger, marginLeft: 8 } }, `失败 ${failed}`) : null
+    )
+  }
   return h('div', { style: { minWidth: 110 } },
     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5 } },
-      h('span', { style: { fontWeight: 600 } }, `${done}/${total}`),
+      h('span', { style: { fontWeight: 600 } }, `${done}/${total} 集`),
       failed > 0 ? h('span', { style: { color: TOKENS.danger } }, `失败 ${failed}`) : null
     ),
     h('div', { style: { marginTop: 4, height: 5, borderRadius: 999, background: TOKENS.bgSoft, overflow: 'hidden' } },
@@ -156,23 +209,20 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
   const jobRows = (jobs || []).slice(0, 6)
   const alertCount = (jobs || []).filter((j) => JOB_ALERT_STATUS.has(j.status)).length
   const kpis = total ? [
-    ['项目数', fmtNum(total.projects), '全部项目（/stats.total）', null],
+    ['项目数', fmtNum(total.projects), '全部项目合计', null],
     ['节点数', fmtNum(total.nodes), '画布节点合计', null],
     ['已生成集数', fmtNum(total.episodes), '各项目已生成集数合计', null],
     ['总字数', fmtNum(total.words), '正文净字数（去空白）', null],
-    ['待审', fmtNum(total.pending), 'review + rejected', total.pending ? TOKENS.warn : null],
-    ['已批准', fmtNum(total.approved), 'approved', total.approved ? TOKENS.ok : null],
-    ['阻塞', fmtNum(total.blocked), 'blocked', total.blocked ? TOKENS.danger : null],
-    ['草稿', fmtNum(total.draft), 'draft', null],
+    ['待审节点', fmtNum(total.pending), '送审 + 打回', total.pending ? TOKENS.warn : null],
+    ['已批准', fmtNum(total.approved), '已通过评审的节点', total.approved ? TOKENS.ok : null],
+    ['阻塞', fmtNum(total.blocked), '被阻塞的节点', total.blocked ? TOKENS.danger : null],
+    ['草稿', fmtNum(total.draft), '尚未送审的节点', null],
   ] : []
 
   return h('div', null,
     h(ErrorBox, { error: errors.stats, onRetry: onRefresh }),
     h(Section, {
       title: '运行概览',
-      hint: stats ? `统计时间 ${fmtTime(stats.generatedAt)}` : '',
-      extra: h('div', { style: { display: 'flex', gap: 8 } },
-        h(Button, { onClick: onRefresh, disabled: loading.stats || loading.jobs }, (loading.stats || loading.jobs) ? '刷新中…' : '刷新')),
     },
       loading.stats && !stats ? h(Loading) :
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px,1fr))', gap: 12 } },
@@ -182,14 +232,14 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
 
     h(Section, {
       title: `最近生成任务${alertCount ? `（异常 ${alertCount}）` : ''}`,
-      hint: '来源 /jobs/list',
+      hint: jobRows.length ? `最近 ${jobRows.length} 条` : '',
       extra: h(Button, { onClick: onGoJobs }, '查看全部任务 →'),
     },
       loading.jobs && !jobs ? h(Loading) :
         h(Table, {
           columns: [
             { key: 'projectTitle', title: '项目', render: (r) => h('span', { style: { fontWeight: 600, whiteSpace: 'nowrap' } }, r.projectTitle) },
-            { key: 'range', title: '集范围', render: (r) => h(Mono, null, `${r.from}–${r.to}`) },
+            { key: 'range', title: '集范围', render: (r) => h('span', { style: { whiteSpace: 'nowrap' } }, fmtScope(jobScope(r), r)) },
             { key: 'status', title: '状态', render: (r) => h(JobBadge, { status: r.status }) },
             { key: 'progress', title: '进度', render: (r) => h(Progress, { ...(r.progress || {}) }) },
             { key: 'model', title: '模型', render: (r) => h(Mono, null, `${r.provider}/${r.model}`) },
@@ -200,7 +250,7 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
         })
     ),
 
-    h(Section, { title: '项目统计', hint: '来源 /stats.projects（后端权威计数）' },
+    h(Section, { title: '项目统计', hint: '按项目汇总' },
       loading.stats && !stats ? h(Loading) :
         h(Table, {
           columns: [
@@ -212,7 +262,7 @@ function PageOverview({ stats, jobs, loading, errors, onRefresh, onGoJobs }) {
             { key: 'words', title: '字数', align: 'right', render: (r) => fmtNum(r.words) },
             { key: 'pending', title: '待审', align: 'right', render: (r) => fmtNum(r.pending) },
             { key: 'lastJob', title: '最近任务', render: (r) => (r.lastJob ? h(JobBadge, { status: r.lastJob.status }) : '—') },
-            { key: 'rev', title: '画布 rev', align: 'right', render: (r) => h(Mono, null, String(r.rev)) },
+            { key: 'rev', title: '画布版本', align: 'right', render: (r) => h(Mono, null, String(r.rev)) },
           ],
           rows: (stats && stats.projects) || [],
           empty: '还没有项目',
@@ -242,10 +292,8 @@ function PageProjects({ projects, stats, loading, errors, busy, onRefresh, onOpe
     h(ErrorBox, { error: errors.projects, onRetry: onRefresh }),
     h(Section, {
       title: `项目（${rows.length}${q ? ` / ${(projects || []).length}` : ''}）`,
-      hint: '节点/字数/已生成集数/最近任务来自 /stats',
-      extra: h('div', { style: { display: 'flex', gap: 8 } },
-        h(Input, { value: q, onChange: setQ, placeholder: '搜索项目名', style: { width: 170 } }),
-        h(Button, { onClick: onRefresh, disabled: loading.projects || loading.stats }, (loading.projects || loading.stats) ? '刷新中…' : '刷新')),
+      hint: '节点、字数、已生成集数与最近任务为后端统计',
+      extra: h(Input, { value: q, onChange: setQ, placeholder: '搜索项目名', style: { width: 170 } }),
     },
       loading.projects && !projects ? h(Loading) :
         h(Table, {
@@ -260,7 +308,7 @@ function PageProjects({ projects, stats, loading, errors, busy, onRefresh, onOpe
               key: 'lastJob', title: '最近任务', render: (r) => (r.lastJob
                 ? h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } },
                   h(JobBadge, { status: r.lastJob.status }),
-                  h(Mono, null, `${(r.lastJob.progress && r.lastJob.progress.done) || 0}/${(r.lastJob.progress && r.lastJob.progress.total) || 0}`))
+                  h(Mono, null, `${(r.lastJob.progress && r.lastJob.progress.done) || 0}/${(r.lastJob.progress && r.lastJob.progress.total) || 0} 集`))
                 : '—'),
             },
             {
@@ -278,8 +326,8 @@ function PageProjects({ projects, stats, loading, errors, busy, onRefresh, onOpe
                   ? h(Button, { style: BTN_SM, tone: 'primary', onClick: () => onRelease(r), disabled: !!busy[`release:${r.id}`], title: '人工放行：生成完成 ≠ 可交付' },
                     busy[`release:${r.id}`] ? '放行中…' : '放行')
                   : null,
-                h(Button, { style: BTN_SM, onClick: () => onOpenCanvas(r), title: '写入 localStorage moxi:lastProject' }, '打开画布'),
-                h(Button, { style: BTN_SM, onClick: () => onExport(r), disabled: !!busy[`export:${r.id}`], title: '调 /export 生成 docx' },
+                h(Button, { style: BTN_SM, onClick: () => onOpenCanvas(r), title: '在墨戏画布中打开该项目' }, '打开画布'),
+                h(Button, { style: BTN_SM, onClick: () => onExport(r), disabled: !!busy[`export:${r.id}`], title: '按项目导出 docx' },
                   busy[`export:${r.id}`] ? '导出中…' : '导出 docx'),
                 h(Button, { style: BTN_SM, tone: 'danger', onClick: () => onDelete(r), title: '删除前二次确认，移入回收站' }, '删除'))
             },
@@ -306,20 +354,20 @@ function PageRules({ data, loading, scanning, error, onScan }) {
     h(ErrorBox, { error, onRetry: onScan }),
     h(Section, {
       title: '规则包扫描',
-      hint: '来源 /admin/rules（只读扫描 rules/v2）',
+      hint: '只读扫描规则目录',
       extra: h(Button, { onClick: onScan, disabled: scanning || loading }, scanning || loading ? '扫描中…' : '重新扫描'),
     },
       loading && !data ? h(Loading, { text: '首次扫描规则包…' }) :
         h('div', null,
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px,1fr))', gap: 12, marginBottom: 12 } },
             h(Card, { title: '规则文件数', value: fmtNum(d.count != null ? d.count : rules.length), hint: '后端扫描计数' }),
-            h(Card, { title: 'pipeline 步骤', value: fmtNum(steps.length), hint: '来自 pipeline.json' }),
+            h(Card, { title: '流水线步骤', value: fmtNum(steps.length), hint: '规则流水线定义' }),
             h(Card, { title: '硬门', value: fmtNum(hardGates.length), hint: hardGates.join(', ') || '无' }),
             h(Card, { title: '技能数', value: fmtNum(skills.length), hint: '扫描到的技能目录' }),
           ),
           h('div', { style: { fontSize: 11.5, opacity: 0.6, marginBottom: 10 } },
             '根目录：', h(Mono, null, d.root || '—'),
-            steps.length ? h('span', null, ` · pipeline.json：${steps.length} 个步骤 · ${hardGates.length} 个硬门`) : null
+            steps.length ? h('span', null, ` · 流水线：${steps.length} 个步骤 · ${hardGates.length} 个硬门`) : null
           ),
           h(Table, {
             columns: [
@@ -328,12 +376,12 @@ function PageRules({ data, loading, scanning, error, onScan }) {
               { key: 'words', title: '字数', align: 'right', render: (r) => fmtNum(r.words) },
             ],
             rows: rules,
-            empty: '规则根目录为空：把 rules/v2 放到 moxi 仓库根后重新扫描',
+            empty: '规则根目录为空：把规则包放回仓库根目录后点「重新扫描」',
           })
         )
     ),
 
-    h(Section, { title: `技能（${skills.length}）`, extra: h(Button, { onClick: onScan, disabled: scanning || loading }, scanning || loading ? '扫描中…' : '重新扫描') },
+    h(Section, { title: `技能（${skills.length}）` },
       loading && !data ? h(Loading, { text: '扫描技能目录…' }) :
         h(Table, {
           columns: [
@@ -343,7 +391,7 @@ function PageRules({ data, loading, scanning, error, onScan }) {
             { key: 'hasSkillMd', title: 'SKILL.md', render: (r) => (r.hasSkillMd ? '✓' : '—') },
           ],
           rows: skills,
-          empty: '未扫描到技能目录（skills/ 或 ~/.dsh/skills）',
+          empty: '未扫描到技能目录',
         })
     )
   )
@@ -372,66 +420,65 @@ function PageModels({ llmInfo, legacy, jobs, probeRuns, probing, loading, error,
 
   return h('div', null,
     h(ErrorBox, { error, onRetry: onRefresh }),
-    h(Section, { title: '模型概览', hint: '来源 /llm/info + /llm/probe', extra: h(Button, { onClick: onRefresh, disabled: loading.llmInfo }, loading.llmInfo ? '刷新中…' : '刷新') },
+    h(Section, { title: '模型概览', hint: '模型信息与探测结果' },
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 12 } },
-        h(Card, { title: '当前 provider', value: defaultProvider, hint: '/llm/info' }),
-        h(Card, { title: '当前默认模型', value: defaultModel, hint: latest ? '最近一次探测实测' : '来源：最近任务模型；可点探测器实测' }),
-        h(Card, { title: '可选模型数', value: fmtNum(models.length), hint: '来自 /llm/info.models' }),
+        h(Card, { title: '当前服务商', value: defaultProvider, hint: '模型清单返回的默认服务商' }),
+        h(Card, { title: '当前默认模型', value: defaultModel, hint: latest ? '最近一次探测实测' : '取最近任务所用模型，可点探测器实测' }),
+        h(Card, { title: '可选模型数', value: fmtNum(models.length), hint: '模型清单条数' }),
         h(Card, { title: '最近探测延迟', value: latest ? `${latest.ms} ms` : '—', hint: latest ? `${latest.provider}/${latest.model}` : '尚未探测' }),
       )
     ),
 
     h(Section, {
       title: `模型列表（${models.length}）`,
-      hint: '/llm/info · 只读，不在后台修改',
-      extra: h(Button, { onClick: onProbe, disabled: probing }, probing ? '探测中…' : '探测器 ▸ 探测默认模型'),
+      hint: '只读，不在后台修改',
     },
       loading.llmInfo && !llmInfo ? h(Loading) :
         h(Table, {
           columns: [
-            { key: 'id', title: 'model id', render: (r) => h(Mono, null, r.id) },
+            { key: 'id', title: '模型 ID', render: (r) => h(Mono, null, r.id) },
             { key: 'name', title: '显示名' },
             { key: 'target', title: '归属', render: (r) => (r.id === defaultModel ? '当前默认' : '可选') },
           ],
           rows: models,
-          empty: '未读取到模型列表（/llm/info 为空）',
+          empty: '未读取到模型列表',
         })
     ),
 
     h(Section, {
       title: `链路探测器（本次会话 ${probeRuns.length} 次实测）`,
-      hint: '/llm/probe（maxTokens=16）逐次实测，延迟为后端毫秒数',
+      hint: '逐次实测，延迟为后端毫秒数',
       extra: h(Button, { onClick: onProbe, disabled: probing, tone: 'primary' }, probing ? '探测中…' : '开始探测'),
     },
       h(Table, {
         columns: [
           { key: 'ts', title: '时间', render: (r) => fmtTime(r.ts) },
-          { key: 'provider', title: 'provider', render: (r) => (r.provider ? h(Mono, null, r.provider) : '—') },
-          { key: 'model', title: 'model', render: (r) => (r.model ? h(Mono, null, r.model) : '—') },
+          { key: 'provider', title: '服务商', render: (r) => (r.provider ? h(Mono, null, r.provider) : '—') },
+          { key: 'model', title: '模型', render: (r) => (r.model ? h(Mono, null, r.model) : '—') },
           { key: 'ms', title: '延迟(ms)', align: 'right', render: (r) => (r.ok === false ? '—' : fmtNum(r.ms)) },
           { key: 'ok', title: '结果', render: (r) => (r.ok === false
-            ? h('span', { style: { color: '#dc2626' } }, '失败')
-            : h('span', { style: { color: '#16a34a' } }, '通')) },
+            ? h('span', { style: { color: TOKENS.danger } }, '失败')
+            : h('span', { style: { color: TOKENS.ok } }, '通')) },
           { key: 'chars', title: '字符数', align: 'right', render: (r) => fmtNum(r.chars) },
           { key: 'sample', title: '返回样例', render: (r) => h(Mono, null, String(r.sample || '').slice(0, 60)) },
         ],
         rows: probeRuns,
-        empty: '点击右上「探测器」实测当前默认模型的链路延迟',
+        empty: '点击上方「开始探测」实测当前默认模型的链路延迟',
       })
     ),
 
     h(Section, {
-      title: `用量（生成任务账本合计）`,
-      hint: `来源 /jobs/list 的 usage 字段（${usage.jobs} 个任务）`,
+      title: '用量（生成任务合计）',
+      hint: `按 ${usage.jobs} 个生成任务合计`,
     },
       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 12 } },
-        h(Card, { title: 'LLM 调用次数', value: fmtNum(usage.calls), hint: 'jobs[].usage.calls 合计' }),
-        h(Card, { title: '输入 tokens', value: fmtNum(usage.inputTokens), hint: 'jobs[].usage.inputTokens 合计' }),
-        h(Card, { title: '输出 tokens', value: fmtNum(usage.outputTokens), hint: 'jobs[].usage.outputTokens 合计' }),
+        h(Card, { title: 'LLM 调用次数', value: fmtNum(usage.calls), hint: '各任务调用次数合计' }),
+        h(Card, { title: '输入 tokens', value: fmtNum(usage.inputTokens), hint: '各任务输入消耗合计' }),
+        h(Card, { title: '输出 tokens', value: fmtNum(usage.outputTokens), hint: '各任务输出消耗合计' }),
       )
     ),
 
-    h(Section, { title: `DSH profile provider 全量扫描（${legacyProviders.length}）`, hint: '来源 /admin/models（只读扫描 cordis.patch.yml）' },
+    h(Section, { title: `服务商全量清单（${legacyProviders.length}）`, hint: '只读清单，不在后台修改' },
       loading.legacy && !legacy ? h(Loading) :
         h('div', { style: { display: 'grid', gap: 10 } },
           legacyProviders.map((p) => h('div', { key: p.provider, style: { padding: '10px 12px', borderRadius: 8, border: `1px solid ${TOKENS.border}`, background: TOKENS.bg } },
@@ -439,20 +486,20 @@ function PageModels({ llmInfo, legacy, jobs, probeRuns, probing, loading, error,
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               (p.models || []).map((m) => h('span', { key: m, style: { fontSize: 11, padding: '2px 8px', borderRadius: 999, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}`, fontFamily: TOKENS.mono } }, m)))
           )),
-          legacyProviders.length === 0 ? h(Empty, { text: '未解析到 provider（DSH_PROFILE_DIR 不可用？）' }) : null,
+          legacyProviders.length === 0 ? h(Empty, { text: '未读取到服务商清单' }) : null,
           legacyProbe.length ? h('div', null,
             h('div', { style: { fontSize: 11.5, opacity: 0.6, margin: '12px 0 8px' } },
-              `历史探针快照（${legacy.probeFile || ''}，非本次实测）`),
+              `历史探测快照（非本次实测）`),
             h(Table, {
               columns: [
-                { key: 'provider', title: 'provider', render: (r) => h(Mono, null, r.provider) },
-                { key: 'model', title: 'model', render: (r) => h(Mono, null, r.model) },
-                { key: 'http_status', title: 'HTTP', align: 'right' },
+                { key: 'provider', title: '服务商', render: (r) => h(Mono, null, r.provider) },
+                { key: 'model', title: '模型', render: (r) => h(Mono, null, r.model) },
+                { key: 'http_status', title: 'HTTP 状态', align: 'right' },
                 { key: 'latency_ms', title: '延迟(ms)', align: 'right' },
                 { key: 'verdict', title: '判定' },
               ],
               rows: legacyProbe,
-              empty: '无历史探针',
+              empty: '暂无历史探测记录',
             })) : null
         )
     )
@@ -480,15 +527,14 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
 
     h(Section, {
       title: `生成任务（${(jobs || []).length}）`,
-      hint: '来源 /jobs/list；取消需二次确认',
-      extra: h(Button, { onClick: onRefresh, disabled: loading.jobs }, loading.jobs ? '刷新中…' : '刷新'),
+      hint: '取消任务需二次确认',
     },
       loading.jobs && !jobs ? h(Loading) :
         h(Table, {
           columns: [
             { key: 'id', title: '任务', render: (r) => h(Mono, null, String(r.id).replace(/^job_/, '').slice(0, 10) + '…') },
             { key: 'projectTitle', title: '项目', render: (r) => h('span', { style: { fontWeight: 600, whiteSpace: 'nowrap' } }, r.projectTitle) },
-            { key: 'range', title: '集范围', render: (r) => h(Mono, null, `${r.from}–${r.to}`) },
+            { key: 'range', title: '集范围', render: (r) => h('span', { style: { whiteSpace: 'nowrap' } }, fmtScope(jobScope(r), r)) },
             { key: 'status', title: '状态', render: (r) => h(JobBadge, { status: r.status }) },
             { key: 'progress', title: '进度', render: (r) => h(Progress, { ...(r.progress || {}) }) },
             { key: 'duration', title: '耗时', render: (r) => h('span', { style: { whiteSpace: 'nowrap' } }, fmtDuration(r.startedAt || r.createdAt, r.finishedAt)) },
@@ -507,7 +553,7 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
         })
     ),
 
-    h(Section, { title: '导出（按项目 + 集范围）', hint: '调 /export，range 生效时按集号过滤节点' },
+    h(Section, { title: '导出（按项目 · 集范围）', hint: '按项目导出；填了集范围就只导出该范围' },
       h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end', padding: '12px 14px', border: `1px solid ${TOKENS.border}`, borderRadius: 10, background: TOKENS.bg } },
         h(Field, { label: '项目', width: 220 },
           h(Select, {
@@ -516,37 +562,36 @@ function PageLogs({ logs, jobs, projects, loading, errors, busy, onRefresh, onCa
             options: [{ value: '', label: '请选择项目…' }].concat((projects || []).map((p) => ({ value: p.id, label: p.title }))),
             style: { width: '100%' },
           })),
-        h(Field, { label: '起始集 from', width: 110 },
+        h(Field, { label: '起始集', width: 110 },
           h(Input, { value: form.from, type: 'number', min: 1, onChange: (v) => set({ from: v }), placeholder: '1' })),
-        h(Field, { label: '结束集 to', width: 110 },
+        h(Field, { label: '结束集', width: 110 },
           h(Input, { value: form.to, type: 'number', min: 1, onChange: (v) => set({ to: v }), placeholder: '留空=起始集' })),
         h(Field, { label: '格式', width: 100 },
           h(Select, { value: form.format, onChange: (v) => set({ format: v }), options: EXPORT_FORMATS })),
         h(Button, { tone: 'primary', onClick: submitExport, disabled: rangeBusy }, rangeBusy ? '导出中…' : '导出'),
-        h('span', { style: { fontSize: 11, color: TOKENS.labelSecondary, paddingBottom: 6 } }, 'from/to 留空 = 整部项目')
+        h('span', { style: { fontSize: 11, color: TOKENS.labelSecondary, paddingBottom: 6 } }, '集范围留空 = 整部项目')
       )
     ),
 
     h(Section, {
       title: `审计日志（${filtered.length}/${(logs || []).length}）`,
-      hint: '来源 /admin/logs（最近 300 条）',
+      hint: '最近 300 条',
       extra: h('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
-        h('span', { style: { fontSize: 11, color: TOKENS.labelSecondary } }, 'op 过滤'),
-        h(Select, { value: op, onChange: setOp, options: LOG_OP_OPTIONS }),
-        h(Button, { onClick: onRefresh, disabled: loading.logs }, loading.logs ? '刷新中…' : '刷新')),
+        h('span', { style: { fontSize: 11, color: TOKENS.labelSecondary } }, '操作类型'),
+        h(Select, { value: op, onChange: setOp, options: LOG_OP_OPTIONS })),
     },
       loading.logs && !logs ? h(Loading) :
         h(Table, {
           columns: [
             { key: 'ts', title: '时间', render: (r) => fmtTime(r.ts) },
             { key: 'projectTitle', title: '项目' },
-            { key: 'actor', title: 'actor' },
-            { key: 'op', title: 'op', render: (r) => h(Mono, null, r.op) },
-            { key: 'nodeId', title: 'node', render: (r) => (r.nodeId ? h(Mono, null, String(r.nodeId).slice(0, 12) + '…') : '—') },
-            { key: 'seq', title: 'seq', align: 'right' },
+            { key: 'actor', title: '操作人' },
+            { key: 'op', title: '操作', render: (r) => opLabel(r.op) },
+            { key: 'nodeId', title: '节点', render: (r) => (r.nodeId ? h(Mono, null, String(r.nodeId).slice(0, 12) + '…') : '—') },
+            { key: 'seq', title: '序号', align: 'right' },
           ],
           rows: filtered,
-          empty: op === '全部' ? '还没有审计事件' : `该 op（${op}）暂无日志`,
+          empty: op === '全部' ? '还没有审计事件' : `「${opLabel(op)}」暂无日志`,
         })
     )
   )
@@ -564,11 +609,11 @@ const TABS = [
 ]
 
 const TAB_HINT = {
-  overview: '数字全部来自 /stats（后端权威）',
-  projects: '节点/字数/已生成集数/最近任务来自 /stats',
-  rules: '规则与技能扫描 /admin/rules（只读）',
-  models: '模型 /llm/info · 探测 /llm/probe',
-  logs: '日志 /admin/logs · 任务 /jobs/list · 导出 /export',
+  overview: '数据自动刷新，数字来自后端统计',
+  projects: '节点、字数与已生成集数为后端统计',
+  rules: '只读扫描规则与技能目录',
+  models: '模型信息与链路探测（只读）',
+  logs: '任务、日志与导出',
 }
 
 export default function App() {
@@ -693,7 +738,7 @@ export default function App() {
     const from = Number(form.from)
     const to = Number(form.to)
     if (Number.isFinite(from) && from > 0 && Number.isFinite(to) && to > 0 && to < from) {
-      showToast({ kind: 'error', text: `集范围非法：to(${to}) < from(${from})` })
+      showToast({ kind: 'error', text: `集范围不合法：结束集（${to}）早于起始集（${from}）` })
       return
     }
     const project = (data.projects || []).find((p) => p.id === form.projectId) || { id: form.projectId, title: form.projectId }
@@ -709,7 +754,7 @@ export default function App() {
       tone: 'danger',
       title: '删除项目',
       confirmText: '删除项目',
-      message: `确认删除项目「${project.title}」？\n\n节点数：${s.nodes == null ? '—' : s.nodes} · 字数：${s.words == null ? '—' : s.words} · 已生成：${s.episodes == null ? '—' : s.episodes} 集\n\n项目会移入工作区回收站 .trash，可从磁盘上找回。`,
+      message: `确认删除项目「${project.title}」？\n\n节点数：${s.nodes == null ? '—' : s.nodes} · 字数：${s.words == null ? '—' : s.words} · 已生成：${s.episodes == null ? '—' : s.episodes} 集\n\n项目会移入工作区回收站，可从磁盘上找回。`,
       onConfirm: async () => {
         const r = await post(EP.projectDelete, { projectId: project.id })
         showToast({ kind: 'success', text: `已删除「${project.title}」→ ${r.trashPath}`, duration: 5000 })
@@ -724,12 +769,13 @@ export default function App() {
       tone: 'primary',
       title: '人工放行',
       confirmText: '确认放行',
-      message: `确认放行项目「${project.title}」？\n\n含义：你已通读/抽查剧本，确认可以作为交付稿。放行后交付节点置为 approved，并记录放行时间。`,
+      message: `确认放行项目「${project.title}」？\n\n含义：你已通读/抽查剧本，确认可以作为交付稿。放行后交付节点转为「已批准」，并记录放行时间。`,
       onConfirm: async () => {
         markBusy(key, true)
         try {
           const r = await post(EP.release, { projectId: project.id })
-          showToast({ kind: 'success', text: `已放行「${project.title}」· 交付节点 ${r.deliveryStatus || 'approved'}` })
+          const st = r.deliveryStatus ? statusLabel(r.deliveryStatus) : '已批准'
+          showToast({ kind: 'success', text: `已放行「${project.title}」· 交付节点${st}` })
           loadProjects(); loadStats()
         } finally {
           markBusy(key, false)
@@ -744,14 +790,15 @@ export default function App() {
       return
     }
     const p = job.progress || {}
+    const scopeText = fmtScope(jobScope(job), job)
     openConfirm({
       tone: 'danger',
       title: '取消生成任务',
       confirmText: '取消任务',
-      message: `确认取消任务 ${job.id}？\n\n项目：${job.projectTitle}\n集范围：第 ${job.from}–${job.to} 集\n进度：${p.done || 0}/${p.total || 0}（失败 ${p.failed || 0}）\n\n已生成的集与正文会保留，可稍后续跑。`,
+      message: `确认取消任务 ${job.id}？\n\n项目：${job.projectTitle}\n集范围：${scopeText}\n进度：${p.done || 0}/${p.total || 0} 集（失败 ${p.failed || 0} 集）\n\n已生成的集与正文会保留，可稍后续跑。`,
       onConfirm: async () => {
         const r = await post('/jobs/cancel', { jobId: job.id })
-        showToast({ kind: 'success', text: `已取消任务 ${r.id}（${r.status}）` })
+        showToast({ kind: 'success', text: `已取消任务 ${r.id}（${jobStatusLabel(r.status)}）` })
         loadJobs(); loadStats()
       },
     })
@@ -799,11 +846,18 @@ export default function App() {
   }
 
   const title = (TABS.find((t) => t.id === tab) || {}).label
-  const statsTime = data.stats && data.stats.generatedAt ? `统计时间 ${fmtTime(data.stats.generatedAt)}` : ''
+  // 统计时间只在真正拉过统计数据的页展示（工作台 / 项目），避免别的页挂着旧时间
+  const statsTime = (tab === 'overview' || tab === 'projects') && data.stats && data.stats.generatedAt
+    ? `统计时间 ${fmtTime(data.stats.generatedAt)}` : ''
+  const tabLoading = tab === 'overview' ? !!(loading.stats || loading.jobs || loading.projects)
+    : tab === 'projects' ? !!(loading.projects || loading.stats || loading.jobs)
+    : tab === 'rules' ? !!loading.rules
+    : tab === 'models' ? !!(loading.llmInfo || loading.legacy)
+    : !!(loading.logs || loading.jobs || loading.projects)
 
   return h('div', {
+    className: 'moxi-app moxi-paper-bg',
     style: {
-      className: 'moxi-app moxi-paper-bg',
       height: '100%', width: '100%', display: 'flex', boxSizing: 'border-box',
       background: TOKENS.bg, color: TOKENS.text,
     },
@@ -835,7 +889,7 @@ export default function App() {
         h('span', { style: { fontSize: 11, opacity: 0.5 } }, TAB_HINT[tab] || ''),
         h('span', { style: { flex: 1 } }),
         statsTime ? h('span', { style: { fontSize: 11, opacity: 0.5 } }, statsTime) : null,
-        h(Button, { onClick: refreshCurrent }, '刷新')
+        h(Button, { onClick: refreshCurrent, disabled: tabLoading }, '刷新')
       ),
       pages[tab]
     ),

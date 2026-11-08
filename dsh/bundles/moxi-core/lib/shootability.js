@@ -159,6 +159,10 @@ export function buildReport({ project, canvas, contents, signoffs = {}, pacing }
 
   const durationAll = episodes.reduce((a, e) => a + e.durationSeconds, 0)
   const signed = episodes.filter((e) => e.signoff && !e.signoff.stale).length
+  // 逐集签收状态三分：有效签收 / 改稿失效（stale）/ 从未签收；unsigned 为待签收合计（含失效）
+  const staleSignoffs = episodes.filter((e) => e.signoff && e.signoff.stale).length
+  const unsignedOnly = episodes.filter((e) => !e.signoff).length
+  const needsSignoff = episodes.length - signed
   return {
     generatedAt: new Date().toISOString(),
     project: {
@@ -179,8 +183,10 @@ export function buildReport({ project, canvas, contents, signoffs = {}, pacing }
       unknownSpeakerEpisodes: episodes.filter((e) => e.unknownSpeakers.length).length,
       issueCount: episodes.reduce((a, e) => a + e.issues.length, 0),
       signedOff: signed,
-      unsigned: episodes.length - signed,
-      staleSignoffs: episodes.filter((e) => e.signoff && e.signoff.stale).length,
+      unsigned: needsSignoff,
+      needsSignoff,
+      unsignedOnly,
+      staleSignoffs,
     },
   }
 }
@@ -188,20 +194,22 @@ export function buildReport({ project, canvas, contents, signoffs = {}, pacing }
 /** 报告转 Markdown（给人工审读/归档） */
 export function reportToMarkdown(report) {
   const s = report.summary
+  const needsSignoff = s.needsSignoff ?? (s.episodes - s.signedOff)
+  const unsignedOnly = s.unsignedOnly ?? Math.max(0, needsSignoff - (s.staleSignoffs || 0))
   const lines = []
   lines.push(`# 可拍性报告 · ${report.project.title}`)
   lines.push('')
   lines.push(`- 生成时间：${report.generatedAt}`)
   lines.push(`- 集数：${s.episodes} ｜ 目标单集时长：${report.project.episodeSeconds}s ｜ 平均估算：${s.avgDurationSeconds}s`)
   lines.push(`- 缺钩子集数：${s.hooksMissing} ｜ 不在设定集的角色集数：${s.unknownSpeakerEpisodes} ｜ 问题项：${s.issueCount}`)
-  lines.push(`- 已签收：${s.signedOff}/${s.episodes}（失效签收 ${s.staleSignoffs}）`)
+  lines.push(`- 已签收 ${s.signedOff}/${s.episodes} 集；待签收 ${needsSignoff} 集（未签收 ${unsignedOnly} 集、改稿失效 ${s.staleSignoffs || 0} 集）`)
   lines.push('')
   lines.push('## 逐集')
   lines.push('')
   lines.push('| 集 | 场次 | 估算时长 | 角色 | 钩子 | 签收 | 问题 |')
   lines.push('| --- | --- | --- | --- | --- | --- | --- |')
   for (const e of report.episodes) {
-    const sg = e.signoff ? (e.signoff.stale ? '已签收(失效)' : `已签收 ${String(e.signoff.at || '').slice(0, 16)}`) : '未签收'
+    const sg = e.signoff ? (e.signoff.stale ? '待重签（改稿失效）' : `已签收 ${String(e.signoff.at || '').slice(0, 16)}`) : '未签收'
     const issues = e.issues.length ? e.issues.map((i) => i.message).join('；').slice(0, 120) : '—'
     lines.push(`| ${e.episode} | ${e.scenes} | ${e.durationSeconds}s | ${e.speakers.slice(0, 4).join('、') || '—'} | ${e.hook.has ? '有' : '缺'} | ${sg} | ${issues} |`)
   }

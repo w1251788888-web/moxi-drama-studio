@@ -299,25 +299,27 @@ function buildRoutes(store, projectsRoot, extra = {}) {
       const requireHook = cfg.releaseGateRequireHook !== false
       if (requireSignoff || requireHook) {
         const report = await buildShootabilityFor(p.projectId)
+        // 签收三态：有效签收 / 改稿失效（stale）/ 从未签收；unsigned 为待签收合计（含失效）
         const unsigned = report.episodes.filter((e) => !e.signoff || e.signoff.stale).map((e) => e.episode)
+        const unsignedOnly = report.episodes.filter((e) => !e.signoff).map((e) => e.episode)
         const stale = report.episodes.filter((e) => e.signoff && e.signoff.stale).map((e) => e.episode)
         const noHook = report.episodes.filter((e) => !e.hook.has).map((e) => e.episode)
         const problems = []
-        if (requireSignoff && unsigned.length) problems.push(`${unsigned.length} 集未签收（或改稿后失效）：${unsigned.slice(0, 12).join('、')}${unsigned.length > 12 ? ' 等' : ''}`)
+        if (requireSignoff && unsigned.length) problems.push(`${unsigned.length} 集待签收（其中未签收 ${unsignedOnly.length} 集、改稿失效 ${stale.length} 集）：${unsigned.slice(0, 12).join('、')}${unsigned.length > 12 ? ' 等' : ''}`)
         if (requireHook && noHook.length) problems.push(`${noHook.length} 集缺集末钩子：${noHook.slice(0, 12).join('、')}${noHook.length > 12 ? ' 等' : ''}`)
         if (problems.length) {
           const forced = p.force === true
           const reason = String(p.forceReason || '').trim()
           if (!forced || !reason) {
             throw new MoxiError('E_RELEASE_GATE', `可拍性闸门未通过：${problems.join('；')}`, {
-              unsigned, stale, noHook,
+              unsigned, needsSignoff: unsigned, unsignedOnly, stale, noHook,
               policy: { requireSignoff, requireHook },
               hint: '在画布「可拍性」里逐集签收、补齐钩子后再放行；如确需跳过，传 force=true + forceReason（会记录审计）。',
             })
           }
           await store.appendEvents(p.projectId, [{
             actor: 'user', op: 'project.release.forced', nodeId: null,
-            data: { reason, waived: { unsigned: unsigned.length, noHook: noHook.length } },
+            data: { reason, waived: { unsigned: unsigned.length, unsignedOnly: unsignedOnly.length, stale: stale.length, noHook: noHook.length } },
           }]).catch(() => {})
           projNow.__forceNote = reason
         }
@@ -355,7 +357,7 @@ function buildRoutes(store, projectsRoot, extra = {}) {
       if (live) return live
       const saved = await jobs.load(p.jobId, p.projectId).catch(() => null)
       if (!saved) throw new MoxiError('E_NOT_FOUND', `任务不存在：${p.jobId}`)
-      return saved
+      return jobs.publicJob(saved)
     }),
     '/api/moxi/jobs/cancel': envelope((p) => jobs.cancel(p.jobId)),
     '/api/moxi/jobs/resume': envelope((p) => jobs.resume({ projectId: p.projectId, jobId: p.jobId })),
@@ -784,7 +786,7 @@ function registerTools(ctx, store, projectsRoot, extra = {}) {
       const live = jobs.get(args.jobId)
       if (live) return live
       const saved = await jobs.load(args.jobId, args.projectId)
-      return saved
+      return jobs.publicJob(saved)
     },
   })
 

@@ -117,37 +117,37 @@ function isJobTerminal(job) {
 var import_react = __toESM(require("react"), 1);
 var h = import_react.default.createElement;
 var NODE_TYPES = {
-  project_root: { label: "\u9879\u76EE\u6839", glyph: "\u25C6", accent: "#8b5cf6" },
-  settings: { label: "\u8BBE\u5B9A\u96C6", glyph: "\u25A4", accent: "#0ea5e9" },
-  asset: { label: "\u8D44\u4EA7", glyph: "\u25C8", accent: "#14b8a6" },
-  beat_sheet: { label: "\u5206\u96C6\u8282\u62CD", glyph: "\u25A6", accent: "#f59e0b" },
-  scene_list: { label: "\u5206\u573A\u8868", glyph: "\u2630", accent: "#eab308" },
-  script_scene: { label: "\u5267\u672C\u573A\u6B21", glyph: "\u270E", accent: "#ef4444" },
-  quality: { label: "\u8D28\u68C0", glyph: "\u2713", accent: "#22c55e" },
-  compliance: { label: "\u5408\u89C4", glyph: "\u2696", accent: "#6366f1" },
-  delivery: { label: "\u5206\u955C\xB7\u5BFC\u51FA", glyph: "\u2913", accent: "#ec4899" }
+  project_root: { label: "\u9879\u76EE\u6839", glyph: "\u25C6", accent: "#A44736" },
+  settings: { label: "\u8BBE\u5B9A\u96C6", glyph: "\u25A4", accent: "#5B6163" },
+  asset: { label: "\u8D44\u4EA7", glyph: "\u25C8", accent: "#8C9194" },
+  beat_sheet: { label: "\u5206\u96C6\u8282\u62CD", glyph: "\u25A6", accent: "#A87E3C" },
+  scene_list: { label: "\u5206\u573A\u8868", glyph: "\u2630", accent: "#C9A46A" },
+  script_scene: { label: "\u5267\u672C\u573A\u6B21", glyph: "\u270E", accent: "#C4705C" },
+  quality: { label: "\u8D28\u68C0", glyph: "\u2713", accent: "#4E7A4B" },
+  compliance: { label: "\u5408\u89C4", glyph: "\u2696", accent: "#5C8A57" },
+  delivery: { label: "\u5206\u955C\xB7\u5BFC\u51FA", glyph: "\u2913", accent: "#6B7376" }
 };
 var STATUS_META = {
-  draft: { label: "\u8349\u7A3F", color: "#94a3b8" },
-  generating: { label: "\u751F\u6210\u4E2D", color: "#3b82f6" },
-  review: { label: "\u5F85\u5BA1", color: "#f59e0b" },
-  rejected: { label: "\u6253\u56DE", color: "#ef4444" },
-  approved: { label: "\u5DF2\u6279\u51C6", color: "#22c55e" },
-  blocked: { label: "\u963B\u585E", color: "#a1a1aa" }
+  draft: { label: "\u8349\u7A3F", color: "#8C9194" },
+  generating: { label: "\u751F\u6210\u4E2D", color: "#B08A4A" },
+  review: { label: "\u5F85\u5BA1", color: "#B08A4A" },
+  rejected: { label: "\u6253\u56DE", color: "#B23A32" },
+  approved: { label: "\u5DF2\u6279\u51C6", color: "#4E7A4B" },
+  blocked: { label: "\u963B\u585E", color: "#8C9194" }
 };
 var JOB_STATUS_META = {
-  queued: { label: "\u6392\u961F\u4E2D", color: "#94a3b8" },
-  running: { label: "\u8FD0\u884C\u4E2D", color: "#3b82f6" },
-  done: { label: "\u5DF2\u5B8C\u6210", color: "#22c55e" },
-  done_with_errors: { label: "\u5B8C\u6210\u4F46\u6709\u5931\u8D25", color: "#f97316" },
-  cancelled: { label: "\u5DF2\u53D6\u6D88", color: "#a1a1aa" },
-  failed: { label: "\u5931\u8D25", color: "#ef4444" }
+  queued: { label: "\u6392\u961F\u4E2D", color: "#8C9194" },
+  running: { label: "\u8FD0\u884C\u4E2D", color: "#B08A4A" },
+  done: { label: "\u5DF2\u5B8C\u6210", color: "#4E7A4B" },
+  done_with_errors: { label: "\u5B8C\u6210\u4F46\u6709\u5931\u8D25", color: "#B23A32" },
+  cancelled: { label: "\u5DF2\u53D6\u6D88", color: "#8C9194" },
+  failed: { label: "\u5931\u8D25", color: "#B23A32" }
 };
 var EP_STATUS_META = {
-  pending: { label: "\u5F85\u751F\u6210", color: "#94a3b8" },
-  running: { label: "\u751F\u6210\u4E2D", color: "#3b82f6" },
-  done: { label: "\u5B8C\u6210", color: "#22c55e" },
-  failed: { label: "\u5931\u8D25", color: "#ef4444" }
+  pending: { label: "\u5F85\u751F\u6210", color: "#8C9194" },
+  running: { label: "\u751F\u6210\u4E2D", color: "#B08A4A" },
+  done: { label: "\u5B8C\u6210", color: "#4E7A4B" },
+  failed: { label: "\u5931\u8D25", color: "#B23A32" }
 };
 var EP_STAGE_LABEL = {
   pending: "\u5F85\u751F\u6210",
@@ -173,7 +173,16 @@ var TOKENS = {
   text: "var(--dsw-alias-label-primary, #18181b)",
   dim: "var(--dsw-alias-label-secondary, rgba(127,127,127,1))",
   brand: "var(--dsw-alias-brand-primary, #247bbf)",
-  mono: "ui-monospace, SFMono-Regular, Menlo, monospace"
+  mono: "ui-monospace, SFMono-Regular, Menlo, monospace",
+  /* 语义色：墨稿皮肤下由 skin.js 覆盖为朱砂/墨绿/赭金/灰墨；名字固定，语义不随皮肤漂移 */
+  success: "var(--dsw-alias-state-success-primary, #4E7A4B)",
+  warn: "var(--dsw-alias-state-warn-primary, #B08A4A)",
+  error: "var(--dsw-alias-state-error-primary, #B23A32)",
+  neutral: "var(--dsw-alias-state-idle-primary, #8C9194)",
+  /* 数据可视化用的字面色（与 skin.js 的 INK 对齐） */
+  accent: "#A44736",
+  gold: "#B08A4A",
+  goldSoft: "#C9A46A"
 };
 function Pill({ color, children, title }) {
   return h("span", {
@@ -208,8 +217,9 @@ function EpBadge({ status }) {
 function Button({ children, onClick, tone = "default", disabled, title, style, ...rest }) {
   const tones = {
     default: { color: TOKENS.text, background: TOKENS.bg, border: `1px solid ${TOKENS.border}` },
-    primary: { color: "#fff", background: "#247bbf", border: "1px solid #247bbf" },
-    danger: { color: "#fff", background: "#dc2626", border: "1px solid #dc2626" },
+    // 主操作 = 品牌色（墨稿皮肤下是朱砂）；危险操作 = 语义错误红，保持填充态
+    primary: { color: "#fff", background: TOKENS.brand, border: `1px solid ${TOKENS.brand}` },
+    danger: { color: "#fff", background: TOKENS.error, border: `1px solid ${TOKENS.error}` },
     ghost: { color: TOKENS.text, background: "transparent", border: "1px solid transparent" }
   };
   return h("button", {
@@ -287,7 +297,7 @@ function Checkbox({ checked, onChange, label, ...rest }) {
       checked: !!checked,
       onChange: (e) => onChange && onChange(e.target.checked),
       ...rest,
-      style: { width: 14, height: 14, accentColor: "#247bbf", cursor: "pointer" }
+      style: { width: 14, height: 14, accentColor: TOKENS.brand, cursor: "pointer" }
     }),
     label
   );
@@ -319,8 +329,8 @@ function ProgressBar({ done = 0, total = 0, failed = 0, height = 8 }) {
     {
       style: { height, borderRadius: 999, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}`, overflow: "hidden", display: "flex" }
     },
-    h("div", { style: { width: `${donePct}%`, background: "#22c55e", transition: "width .3s" } }),
-    h("div", { style: { width: `${failPct}%`, background: "#ef4444", transition: "width .3s" } })
+    h("div", { style: { width: `${donePct}%`, background: TOKENS.success, transition: "width .3s" } }),
+    h("div", { style: { width: `${failPct}%`, background: TOKENS.error, transition: "width .3s" } })
   );
 }
 function Spinner({ size = 12 }) {
@@ -454,7 +464,7 @@ function Empty({ text, action }) {
 }
 function Toast({ toast }) {
   if (!toast) return null;
-  const color = toast.kind === "error" ? "#dc2626" : toast.kind === "success" ? "#16a34a" : "#3b82f6";
+  const color = toast.kind === "error" ? TOKENS.error : toast.kind === "success" ? TOKENS.success : TOKENS.brand;
   return h(
     "div",
     {
@@ -548,14 +558,153 @@ var jobDone = (job) => {
   const p = job && job.progress || {};
   return { done: Number(p.done) || 0, failed: Number(p.failed) || 0, total: Number(p.total) || 0, current: p.current };
 };
-function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh, error }) {
+var reportNeedsSignoff = (s) => {
+  if (!s) return 0;
+  if (Array.isArray(s.needsSignoff)) return s.needsSignoff.length;
+  const n = Number(s.needsSignoff);
+  if (Number.isFinite(n)) return n;
+  return Number(s.unsigned) || 0;
+};
+var reportStaleCount = (s) => Number(s && s.staleSignoffs || 0);
+var reportUnsignedOnly = (s) => {
+  if (!s) return 0;
+  if (Array.isArray(s.unsignedOnly)) return s.unsignedOnly.length;
+  const n = Number(s.unsignedOnly);
+  if (Number.isFinite(n)) return n;
+  return Math.max(0, reportNeedsSignoff(s) - reportStaleCount(s));
+};
+var epLabel = (ep) => `\u7B2C ${ep} \u96C6`;
+var jobScopeText = (job) => {
+  if (!job) return "";
+  const sc = job.scope || null;
+  const from = Number(job.from) || 0;
+  const to = Number(job.to) || 0;
+  let eps = [];
+  if (sc && Array.isArray(sc.episodes) && sc.episodes.length) eps = sc.episodes.map(Number);
+  else eps = (job.episodes || []).map((e) => Number(e && e.ep));
+  eps = [...new Set(eps.filter((n) => Number.isFinite(n) && n > 0))].sort((a, b) => a - b);
+  if (eps.length === 1) return `\u7B2C ${eps[0]} \u96C6`;
+  if (eps.length) {
+    const dense = sc ? !!sc.dense : from > 0 && to > 0 && eps.length === to - from + 1 && eps[0] === from && eps[eps.length - 1] === to;
+    return dense ? `\u7B2C ${eps[0]}\u2013${eps[eps.length - 1]} \u96C6` : `\u7B2C ${eps.join("\u3001")} \u96C6\uFF08\u5171 ${eps.length} \u96C6\uFF09`;
+  }
+  if (from > 0 && to > 0) return `\u7B2C ${from}\u2013${to} \u96C6`;
+  return "\u8303\u56F4\u672A\u8BB0\u5F55";
+};
+function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh, error, stats, jobs }) {
   const [skin, setSkin] = useState(() => typeof window !== "undefined" && window.__moxiSkin ? window.__moxiSkin.getSkin() : "ink");
   const toggleSkin = () => {
     const next = skin === "ink" ? "host" : "ink";
     setSkin(next);
     if (window.__moxiSkin) window.__moxiSkin.setSkin(next);
   };
-  const pendingOf = (p) => ((p.byStatus || {}).review || 0) + ((p.byStatus || {}).rejected || 0);
+  const [shootMap, setShootMap] = useState({});
+  const statsById = useMemo(() => {
+    const m = /* @__PURE__ */ new Map();
+    for (const row of stats && stats.projects || []) if (row && row.id) m.set(row.id, row);
+    return m;
+  }, [stats]);
+  const jobById = useMemo(() => {
+    const m = /* @__PURE__ */ new Map();
+    for (const j of jobs || []) {
+      if (!j || !j.projectId) continue;
+      if (!m.has(j.projectId)) m.set(j.projectId, j);
+    }
+    return m;
+  }, [jobs]);
+  const pendingOf = (p) => {
+    const st = statsById.get(p.id);
+    if (st) return Number(st.pending) || 0;
+    return ((p.byStatus || {}).review || 0) + ((p.byStatus || {}).rejected || 0);
+  };
+  const projectSignature = projects.map((p) => `${p.id}:${p.reviewState || ""}:${p.updatedAt || ""}`).join("|");
+  useEffect(() => {
+    const targets = projects.filter((p) => p.reviewState === "generated").slice(0, 12);
+    if (!targets.length) {
+      setShootMap({});
+      return void 0;
+    }
+    let alive = true;
+    Promise.all(targets.map((p) => api.shootability(p.id, "json").then((r) => [p.id, r && r.summary || null]).catch(() => null))).then((rows) => {
+      if (!alive) return;
+      const m = {};
+      for (const row of rows) if (row && row[1]) m[row[0]] = row[1];
+      setShootMap(m);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [projectSignature]);
+  const stageBar = (byStatus) => {
+    const st = byStatus || {};
+    const segs = [
+      { key: "approved", n: Number(st.approved) || 0, color: TOKENS.success, label: "\u5DF2\u6279\u51C6" },
+      { key: "pending", n: (Number(st.review) || 0) + (Number(st.rejected) || 0), color: TOKENS.warn, label: "\u5F85\u5BA1" },
+      { key: "generating", n: Number(st.generating) || 0, color: TOKENS.goldSoft, label: "\u751F\u6210\u4E2D" },
+      { key: "draft", n: (Number(st.draft) || 0) + (Number(st.blocked) || 0), color: TOKENS.neutral, label: "\u8349\u7A3F" }
+    ].filter((s) => s.n > 0);
+    const total = segs.reduce((a, s) => a + s.n, 0);
+    if (!total) return null;
+    return h(
+      "div",
+      { style: { marginBottom: 9 } },
+      h(
+        "div",
+        { style: { display: "flex", height: 6, borderRadius: 999, overflow: "hidden", background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` } },
+        segs.map((s) => h("div", { key: s.key, title: `${s.label} ${s.n} \u4E2A\u5DE5\u4F4D`, style: { width: `${s.n / total * 100}%`, background: s.color } }))
+      ),
+      h(
+        "div",
+        { style: { marginTop: 4, fontSize: 10.5, opacity: 0.6, display: "flex", gap: 9, flexWrap: "wrap" } },
+        segs.map((s) => h("span", { key: s.key }, `${s.label} ${s.n}`))
+      )
+    );
+  };
+  const jobLine = (p, st) => {
+    const job = jobById.get(p.id) || null;
+    const last = st && st.lastJob || null;
+    if (!job && !last) return null;
+    const status = job && job.status || last && last.status;
+    const pr = job && job.progress || last && last.progress || {};
+    const rawRange = job ? jobScopeText(job) : "";
+    const range = job && job.mode === "ensure" ? "\u6982\u5FF5/\u8D44\u4EA7\u8865\u9F50" : rawRange === "\u8303\u56F4\u672A\u8BB0\u5F55" ? "" : rawRange;
+    const total = Number(pr.total) || 0;
+    const count = total > 0 ? `${Number(pr.done) || 0}/${total} \u96C6` : "";
+    const tail = [range, count].filter(Boolean).join(" \xB7 ");
+    return h(
+      "div",
+      { style: { display: "flex", alignItems: "center", gap: 6, marginBottom: 7, fontSize: 11 } },
+      h("span", { style: { opacity: 0.6 } }, "\u6700\u8FD1\u4EFB\u52A1"),
+      h(JobBadge, { status }),
+      tail ? h("span", { style: { opacity: 0.72 } }, tail) : null
+    );
+  };
+  const nextStep = (p, st, shoot) => {
+    if (p.reviewState === "released") return null;
+    if (shoot) {
+      const need = reportNeedsSignoff(shoot);
+      const hooks = Number(shoot.hooksMissing) || 0;
+      const parts = [];
+      if (hooks > 0) parts.push(`${hooks} \u96C6\u7F3A\u94A9\u5B50`);
+      if (need > 0) parts.push(`${need} \u96C6\u5F85\u7B7E\u6536`);
+      if (parts.length) return { color: TOKENS.warn, text: `${parts.join(" \xB7 ")} \u2192 \u53BB\u53EF\u62CD\u6027` };
+    }
+    const last = st && st.lastJob;
+    if (last && (last.status === "failed" || last.status === "done_with_errors")) {
+      const failed = Number(last.progress && last.progress.failed) || 0;
+      return { color: TOKENS.error, text: `\u6700\u8FD1\u4EFB\u52A1\u6709 ${failed || 1} \u96C6\u5931\u8D25 \u2192 \u7EED\u8DD1\u6216\u4FEE\u590D` };
+    }
+    const pending = pendingOf(p);
+    if (pending > 0) return { color: TOKENS.warn, text: `${pending} \u4E2A\u5DE5\u4F4D\u5F85\u5BA1 \u2192 \u8FDB\u5165\u753B\u5E03` };
+    return null;
+  };
+  const overviewItems = [];
+  if (stats && stats.total) {
+    if (Number.isFinite(Number(stats.total.projects))) overviewItems.push(`${Number(stats.total.projects)} \u90E8\u5267`);
+    if (Number.isFinite(Number(stats.total.episodes))) overviewItems.push(`\u5DF2\u751F\u6210 ${Number(stats.total.episodes)} \u96C6`);
+  }
+  const shootRows = Object.values(shootMap || {});
+  if (shootRows.length) overviewItems.push(`\u5F85\u7B7E\u6536 ${shootRows.reduce((a, s) => a + reportNeedsSignoff(s), 0)} \u96C6`);
   return h(
     "div",
     {
@@ -582,64 +731,79 @@ function ProjectsView({ projects, loading, onCreate, onOpen, onDelete, onRefresh
       { style: { fontSize: 13, opacity: 0.68, margin: "0 0 22px" } },
       "\u4E00\u5F20\u753B\u5E03\u5199\u4E00\u90E8\u5267\uFF1A\u5BF9\u8BDD\u662F\u5BFC\u6F14\uFF0C\u753B\u5E03\u662F\u7247\u573A\uFF0C\u5DE5\u4F4D\u662F\u62CD\u6444\u73B0\u573A\u3002"
     ),
-    error ? h("div", { style: { marginBottom: 14, padding: "8px 12px", borderRadius: 8, fontSize: 12, background: "#fef2f2", color: "#b91c1c", border: "1px solid #fecaca" } }, error) : null,
+    error ? h("div", { style: { marginBottom: 14, padding: "8px 12px", borderRadius: 8, fontSize: 12, background: "rgba(178,58,50,.07)", color: "#b91c1c", border: "1px solid #fecaca" } }, error) : null,
     h(
       "div",
-      { style: { display: "flex", gap: 8, marginBottom: 18 } },
+      { style: { display: "flex", gap: 8, marginBottom: 12 } },
       h(Button, { tone: "primary", onClick: onCreate, "data-testid": "btn-new-project" }, "+ \u65B0\u5F00\u4E00\u90E8\u5267"),
       h(Button, { onClick: onRefresh, "data-testid": "btn-refresh-projects" }, "\u5237\u65B0")
     ),
+    overviewItems.length ? h("div", {
+      "data-testid": "projects-overview",
+      style: { fontSize: 12, opacity: 0.66, marginBottom: 16, display: "flex", gap: 14, flexWrap: "wrap" }
+    }, overviewItems.map((t) => h("span", { key: t }, t))) : h("div", { style: { height: 4 } }),
     loading ? h("div", { style: { fontSize: 12, opacity: 0.6 } }, "\u52A0\u8F7D\u4E2D\u2026") : projects.length === 0 ? h(Empty, { text: "\u8FD8\u6CA1\u6709\u5267\u4F5C", action: h(Button, { tone: "primary", onClick: onCreate }, "\u65B0\u5F00\u7B2C\u4E00\u90E8\u5267") }) : h(
       "div",
-      { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14, maxWidth: 1240 } },
-      projects.map((p) => h(
-        "div",
-        {
-          key: p.id,
-          "data-testid": `project-card-${p.id}`,
-          onClick: () => onOpen(p.id),
-          className: "moxi-card",
-          style: {
-            cursor: "pointer",
-            padding: "16px 18px",
-            borderRadius: 12,
-            background: TOKENS.bg,
-            border: `1px solid ${TOKENS.border}`
-          }
-        },
-        h(
+      { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 14, maxWidth: 1240 } },
+      projects.map((p) => {
+        const st = statsById.get(p.id) || null;
+        const shoot = shootMap[p.id] || null;
+        const hint = nextStep(p, st, shoot);
+        return h(
           "div",
-          { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 8 } },
-          h("div", { className: "moxi-serif", style: { flex: 1, fontSize: 17, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, p.title),
-          h("button", {
-            "data-testid": `btn-delete-project-${p.id}`,
-            onClick: (e) => {
+          {
+            key: p.id,
+            "data-testid": `project-card-${p.id}`,
+            onClick: () => onOpen(p.id),
+            className: "moxi-card",
+            style: {
+              cursor: "pointer",
+              padding: "16px 18px",
+              borderRadius: 12,
+              background: TOKENS.bg,
+              border: `1px solid ${TOKENS.border}`
+            }
+          },
+          h(
+            "div",
+            { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 8 } },
+            h("div", { className: "moxi-serif", style: { flex: 1, fontSize: 17, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" } }, p.title),
+            h("button", {
+              "data-testid": `btn-delete-project-${p.id}`,
+              onClick: (e) => {
+                e.stopPropagation();
+                onDelete(p);
+              },
+              title: "\u5220\u9664\u5230\u56DE\u6536\u7AD9",
+              style: { border: 0, background: "transparent", cursor: "pointer", opacity: 0.4, fontSize: 13, color: "inherit" }
+            }, "\u{1F5D1}")
+          ),
+          h(
+            "div",
+            { style: { fontSize: 11.5, opacity: 0.62, display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 } },
+            h("span", null, `${p.episodeCount ?? "\u96C6\u6570\u672A\u786E\u8BA4"} \u96C6`),
+            p.audience ? h("span", null, p.audience) : null,
+            p.genre && p.genre.main ? h("span", null, p.genre.main) : null,
+            h("span", null, "\u66F4\u65B0\u4E8E " + fmtTs(p.updatedAt))
+          ),
+          stageBar(st && st.byStatus || p.byStatus),
+          jobLine(p, st),
+          hint ? h("div", {
+            "data-testid": `project-hint-${p.id}`,
+            style: { fontSize: 11, lineHeight: 1.55, marginBottom: 8, color: hint.color }
+          }, hint.text) : null,
+          h(
+            "div",
+            { style: { display: "flex", alignItems: "center", gap: 8 } },
+            p.reviewState === "generated" ? h("span", { className: "moxi-stamp" }, "\u5F85\u653E\u884C") : p.reviewState === "released" ? h("span", { className: "moxi-stamp", style: { color: TOKENS.success || "var(--moxi-accent)", borderColor: TOKENS.success || "var(--moxi-accent)" } }, "\u5DF2\u653E\u884C") : p.reviewState === "has_errors" ? h("span", { className: "moxi-stamp", style: { color: "#b91c1c", borderColor: "#b91c1c" } }, "\u6709\u5931\u8D25\u96C6") : pendingOf(p) > 0 ? h("span", { className: "moxi-stamp" }, `\u5F85\u5BA1 ${pendingOf(p)}`) : h("span", { style: { fontSize: 11, opacity: 0.5 } }, "\u6682\u65E0\u5F85\u5BA1"),
+            h("span", { style: { flex: 1 } }),
+            h(Button, { tone: "primary", onClick: (e) => {
               e.stopPropagation();
-              onDelete(p);
-            },
-            title: "\u5220\u9664\u5230\u56DE\u6536\u7AD9",
-            style: { border: 0, background: "transparent", cursor: "pointer", opacity: 0.4, fontSize: 13, color: "inherit" }
-          }, "\u{1F5D1}")
-        ),
-        h(
-          "div",
-          { style: { fontSize: 11.5, opacity: 0.62, display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 } },
-          h("span", null, `${p.episodeCount ?? "\u96C6\u6570\u672A\u786E\u8BA4"} \u96C6`),
-          p.audience ? h("span", null, p.audience) : null,
-          p.genre && p.genre.main ? h("span", null, p.genre.main) : null,
-          h("span", null, "\u66F4\u65B0\u4E8E " + fmtTs(p.updatedAt))
-        ),
-        h(
-          "div",
-          { style: { display: "flex", alignItems: "center", gap: 8 } },
-          p.reviewState === "generated" ? h("span", { className: "moxi-stamp" }, "\u5F85\u653E\u884C") : p.reviewState === "released" ? h("span", { className: "moxi-stamp", style: { color: TOKENS.success || "var(--moxi-accent)", borderColor: TOKENS.success || "var(--moxi-accent)" } }, "\u5DF2\u653E\u884C") : p.reviewState === "has_errors" ? h("span", { className: "moxi-stamp", style: { color: "#b91c1c", borderColor: "#b91c1c" } }, "\u6709\u5931\u8D25\u96C6") : pendingOf(p) > 0 ? h("span", { className: "moxi-stamp" }, `\u5F85\u5BA1 ${pendingOf(p)}`) : h("span", { style: { fontSize: 11, opacity: 0.5 } }, "\u6682\u65E0\u5F85\u5BA1"),
-          h("span", { style: { flex: 1 } }),
-          h(Button, { tone: "primary", onClick: (e) => {
-            e.stopPropagation();
-            onOpen(p.id);
-          }, "data-testid": `btn-continue-${p.id}` }, "\u7EE7\u7EED\u521B\u4F5C")
-        )
-      ))
+              onOpen(p.id);
+            }, "data-testid": `btn-continue-${p.id}` }, "\u7EE7\u7EED\u521B\u4F5C")
+          )
+        );
+      })
     )
   );
 }
@@ -685,7 +849,7 @@ function NewProjectModal({ onClose, onSubmit, busy }) {
     )
   );
 }
-function NodeCard({ node, selected, onPointerDown, onClick, findings, editing, editingText, onStartRename, onEditText, onCommitRename, onCancelRename }) {
+function NodeCard({ node, selected, onPointerDown, onClick, findings, editing, editingText, onStartRename, onEditText, onCommitRename, onCancelRename, summary }) {
   const meta = NODE_TYPES[node.type] || NODE_TYPES.settings;
   const errs = findings ? findings.filter((f) => f.severity === "error").length : 0;
   const warns = findings ? findings.filter((f) => f.severity === "warning").length : 0;
@@ -761,11 +925,17 @@ function NodeCard({ node, selected, onPointerDown, onClick, findings, editing, e
       },
       style: { fontSize: 13, fontWeight: 600, lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }
     }, node.title),
+    // 卡片摘要行：剧本卡看「字数 · 钩子 · 角色数」，节拍/分场看集号与状态，资产卡看角色/类型
+    summary ? h("div", {
+      "data-testid": `node-summary-${node.id}`,
+      title: summary,
+      style: { marginTop: 5, fontSize: 10.5, lineHeight: 1.5, opacity: 0.62, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }
+    }, summary) : null,
     errs || warns ? h(
       "div",
       { style: { marginTop: 6, fontSize: 10.5, display: "flex", gap: 8 } },
-      errs ? h("span", { style: { color: "#dc2626" } }, `\u2715 ${errs}`) : null,
-      warns ? h("span", { style: { color: "#d97706" } }, `! ${warns}`) : null
+      errs ? h("span", { style: { color: TOKENS.error } }, `\u2715 ${errs}`) : null,
+      warns ? h("span", { style: { color: TOKENS.warn } }, `! ${warns}`) : null
     ) : null
   );
 }
@@ -953,7 +1123,7 @@ function Inspector({ project, node, onClose, onSaved, onTransition, onCheck, onD
             padding: "8px 10px",
             borderRadius: 8,
             fontSize: 12,
-            background: f.severity === "error" ? "#fef2f2" : f.severity === "warning" ? "#fffbeb" : TOKENS.bgSoft,
+            background: f.severity === "error" ? "rgba(178,58,50,.07)" : f.severity === "warning" ? "#fffbeb" : TOKENS.bgSoft,
             border: `1px solid ${f.severity === "error" ? "#fecaca" : f.severity === "warning" ? "#fde68a" : TOKENS.border}`
           }
         },
@@ -995,7 +1165,7 @@ function Inspector({ project, node, onClose, onSaved, onTransition, onCheck, onD
       { style: { padding: "8px 14px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" } },
       h(Badge, { status: node.status }),
       h("span", { style: { fontSize: 11, opacity: 0.6 } }, meta.label),
-      dirty ? h("span", { style: { fontSize: 11, color: "#d97706" } }, "\u25CF \u672A\u4FDD\u5B58") : null
+      dirty ? h("span", { style: { fontSize: 11, color: TOKENS.warn } }, "\u25CF \u672A\u4FDD\u5B58") : null
     ),
     tabs,
     tab === "content" ? contentTab : tab === "meta" ? metaTab : eventsTab
@@ -1045,7 +1215,7 @@ function GenerateModal({ project, onClose, onStarted, toast }) {
         model: model || void 0,
         skipConcept
       });
-      toast({ kind: "success", text: `\u751F\u6210\u4EFB\u52A1\u5DF2\u542F\u52A8\uFF1A\u7B2C ${job.from}\u2013${job.to} \u96C6` });
+      toast({ kind: "success", text: `\u751F\u6210\u4EFB\u52A1\u5DF2\u542F\u52A8\uFF1A${jobScopeText(job)}` });
       onStarted(job);
     } catch (e) {
       const hint = e.code === "E_JOB_RUNNING" ? "\u8BE5\u9879\u76EE\u5DF2\u6709\u4EFB\u52A1\u5728\u8DD1\uFF0C\u5148\u5230\u300C\u4EFB\u52A1\u300D\u91CC\u67E5\u770B/\u53D6\u6D88\u3002" : e.message;
@@ -1162,10 +1332,10 @@ function GenerateModal({ project, onClose, onStarted, toast }) {
         h(
           "div",
           { style: { fontSize: 11.5, lineHeight: 1.5, opacity: 0.8, flex: 1 } },
-          probing ? h("span", null, h(Spinner, { size: 10 }), " \u6B63\u5728\u8C03\u7528 /llm/probe\u2026") : probe ? probe.error ? h("span", { style: { color: "#dc2626" } }, `\u63A2\u6D4B\u5931\u8D25\uFF1A${probe.error}`) : h("span", null, `\u2713 ${probe.provider}/${probe.model} \xB7 ${probe.ms}ms \xB7 ${probe.chars} \u5B57\u7B26 \xB7 \u6837\u4F8B\u300C${String(probe.sample || "").slice(0, 20)}\u300D`) : "\u70B9\u51FB\u63A2\u6D4B\u5F53\u524D provider/model \u94FE\u8DEF\u662F\u5426\u53EF\u7528\uFF08\u4F1A\u771F\u5B9E\u8C03\u7528\u4E00\u6B21\u6A21\u578B\uFF09"
+          probing ? h("span", null, h(Spinner, { size: 10 }), " \u6B63\u5728\u8C03\u7528\u6A21\u578B\u63A2\u6D4B\u2026") : probe ? probe.error ? h("span", { style: { color: TOKENS.error } }, `\u63A2\u6D4B\u5931\u8D25\uFF1A${probe.error}`) : h("span", null, `\u2713 ${probe.provider}/${probe.model} \xB7 ${probe.ms}ms \xB7 ${probe.chars} \u5B57\u7B26 \xB7 \u6837\u4F8B\u300C${String(probe.sample || "").slice(0, 20)}\u300D`) : "\u70B9\u51FB\u63A2\u6D4B\u5F53\u524D provider/model \u94FE\u8DEF\u662F\u5426\u53EF\u7528\uFF08\u4F1A\u771F\u5B9E\u8C03\u7528\u4E00\u6B21\u6A21\u578B\uFF09"
         )
       ),
-      invalid ? h("div", { style: { fontSize: 11.5, color: "#dc2626" } }, `\u96C6\u6570\u8303\u56F4\u975E\u6CD5\uFF1A\u8981\u6C42 1 \u2264 \u8D77\u59CB \u2264 \u7ED3\u675F \u2264 ${maxTo}`) : null
+      invalid ? h("div", { style: { fontSize: 11.5, color: TOKENS.error } }, `\u96C6\u6570\u8303\u56F4\u975E\u6CD5\uFF1A\u8981\u6C42 1 \u2264 \u8D77\u59CB \u2264 \u7ED3\u675F \u2264 ${maxTo}`) : null
     )
   );
 }
@@ -1189,7 +1359,7 @@ function EpisodeRows({ job }) {
       h("span", { style: { opacity: 0.8 } }, EP_STAGE_LABEL[ep.stage] || ep.stage || "\u2014"),
       h(EpBadge, { status: ep.status }),
       h("span", { style: { fontFamily: TOKENS.mono, opacity: 0.8 } }, String(ep.words || 0)),
-      h("span", { style: { fontFamily: TOKENS.mono, opacity: ep.findings ? 0.9 : 0.5, color: ep.findings ? "#d97706" : "inherit" } }, String(ep.findings || 0)),
+      h("span", { style: { fontFamily: TOKENS.mono, opacity: ep.findings ? 0.9 : 0.5, color: ep.findings ? TOKENS.warn : "inherit" } }, String(ep.findings || 0)),
       h("span", { style: { opacity: 0.65, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, title: ep.error || "" }, ep.error || "")
     ))
   );
@@ -1197,7 +1367,7 @@ function EpisodeRows({ job }) {
 function JobLog({ log }) {
   const rows = (log || []).slice(-20);
   if (!rows.length) return h("div", { style: { fontSize: 11.5, opacity: 0.6 } }, "\u6682\u65E0\u65E5\u5FD7");
-  const color = (level) => level === "error" ? "#dc2626" : level === "warn" ? "#d97706" : TOKENS.dim;
+  const color = (level) => level === "error" ? TOKENS.error : level === "warn" ? TOKENS.warn : TOKENS.dim;
   return h(
     "div",
     { style: { display: "grid", gap: 2, maxHeight: 150, overflow: "auto", fontFamily: TOKENS.mono, fontSize: 10.5, lineHeight: 1.5 } },
@@ -1250,7 +1420,7 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
   const cancel = async () => {
     const ok = await confirm({
       title: "\u53D6\u6D88\u751F\u6210\u4EFB\u52A1",
-      message: `\u786E\u8BA4\u53D6\u6D88\u4EFB\u52A1 ${job.id}\uFF08\u7B2C ${job.from}\u2013${job.to} \u96C6\uFF09\uFF1F\u5DF2\u5B8C\u6210\u7684\u96C6\u4F1A\u4FDD\u7559\u3002`,
+      message: `\u786E\u8BA4\u53D6\u6D88\u4EFB\u52A1 ${job.id}\uFF08${jobScopeText(job)}\uFF09\uFF1F\u5DF2\u5B8C\u6210\u7684\u96C6\u4F1A\u4FDD\u7559\u3002`,
       detail: "\u53D6\u6D88\u540E\u53EF\u7528\u300C\u7EED\u8DD1\u300D\u4ECE\u7B2C\u4E00\u4E2A\u672A\u5B8C\u6210\u96C6\u7EE7\u7EED\u3002",
       danger: true,
       confirmText: "\u53D6\u6D88\u4EFB\u52A1",
@@ -1303,7 +1473,7 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
     }
   };
   const progress = jobDone(job);
-  const pctText = `${progress.done}/${progress.total}`;
+  const pctText = `${progress.done}/${progress.total} \u96C6`;
   const canResume = terminal && ["cancelled", "failed", "done_with_errors"].includes(String(status));
   const failedEps = (job && job.episodes || []).filter((e) => e && e.status === "failed").map((e) => Number(e.ep)).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
   const failedCount = progress.failed || failedEps.length;
@@ -1333,20 +1503,20 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
         h(Button, { key: "close", onClick: onClose, "data-testid": "btn-job-close" }, "\u5173\u95ED")
       ]
     },
-    loading ? h("div", { style: { display: "flex", alignItems: "center", gap: 8, fontSize: 12 } }, h(Spinner), "\u52A0\u8F7D\u4EFB\u52A1\u2026") : err ? h("div", { style: { fontSize: 12.5, color: "#dc2626", lineHeight: 1.6 } }, err) : !job ? h("div", { style: { fontSize: 12 } }, "\u4EFB\u52A1\u4E0D\u5B58\u5728") : h(
+    loading ? h("div", { style: { display: "flex", alignItems: "center", gap: 8, fontSize: 12 } }, h(Spinner), "\u52A0\u8F7D\u4EFB\u52A1\u2026") : err ? h("div", { style: { fontSize: 12.5, color: TOKENS.error, lineHeight: 1.6 } }, err) : !job ? h("div", { style: { fontSize: 12 } }, "\u4EFB\u52A1\u4E0D\u5B58\u5728") : h(
       "div",
       { style: { display: "grid", gap: 12 } },
       h(
         "div",
         { style: { display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" } },
         h("div", { style: { fontSize: 13, fontWeight: 650, flex: 1 } }, job.projectTitle || "\u672A\u77E5\u9879\u76EE"),
-        h("div", { style: { fontSize: 11.5, opacity: 0.65 } }, `\u7B2C ${job.from}\u2013${job.to} \u96C6 \xB7 ${job.provider}/${job.model}`)
+        h("div", { style: { fontSize: 11.5, opacity: 0.65 } }, `${jobScopeText(job)} \xB7 ${job.provider}/${job.model}`)
       ),
       status === "done_with_errors" ? h(
         "div",
         {
           "data-testid": "drawer-job-alert",
-          style: { padding: "9px 11px", borderRadius: 8, background: "#fef2f2", border: "1px solid #fca5a5", color: "#991b1b", fontSize: 12.5, lineHeight: 1.6 }
+          style: { padding: "9px 11px", borderRadius: 8, background: "rgba(178,58,50,.07)", border: "1px solid #fca5a5", color: "#991b1b", fontSize: 12.5, lineHeight: 1.6 }
         },
         h("div", { style: { fontWeight: 700, marginBottom: 2 } }, `${failedCount} \u96C6\u5931\u8D25\uFF1A\u5BFC\u51FA\u524D\u8BF7\u5148\u7EED\u8DD1\u6216\u4FEE\u590D`),
         h(
@@ -1424,37 +1594,36 @@ function JobDrawer({ projectId, jobId, onClose, onJobChanged, toast, confirm }) 
     )
   );
 }
-function ShootabilityDrawer({ project, onClose, toast, confirm }) {
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
+function ShootabilityDrawer({ project, report, loading, onReload, onClose, toast, confirm }) {
   const [busyEp, setBusyEp] = useState(null);
   const [signEp, setSignEp] = useState(null);
   const [notes, setNotes] = useState("");
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const r = await api.shootability(project.id, "json");
-      setReport(r);
-    } catch (e) {
-      toast({ kind: "error", text: "\u53EF\u62CD\u6027\u62A5\u544A\u5931\u8D25\uFF1A" + e.message });
-    } finally {
-      setLoading(false);
-    }
-  }, [project.id, toast]);
-  useEffect(() => {
-    load();
-  }, [load]);
+  const load = async () => {
+    await onReload();
+  };
   const doSign = async () => {
     if (!signEp) return;
     setBusyEp(signEp.episode);
     try {
       await api.signoff(project.id, signEp.episode, "sign", notes);
-      toast({ kind: "success", text: `\u7B2C ${signEp.episode} \u96C6\u5DF2\u7B7E\u6536` });
+      toast({ kind: "success", text: `${epLabel(signEp.episode)}\u5DF2\u7B7E\u6536` });
       setSignEp(null);
       setNotes("");
-      await load();
+      await onReload();
     } catch (e) {
       toast({ kind: "error", text: "\u7B7E\u6536\u5931\u8D25\uFF1A" + e.message });
+    } finally {
+      setBusyEp(null);
+    }
+  };
+  const reSign = async (ep) => {
+    setBusyEp(ep.episode);
+    try {
+      await api.signoff(project.id, ep.episode, "sign", notes);
+      toast({ kind: "success", text: `${epLabel(ep.episode)}\u5DF2\u6309\u5F53\u524D\u7A3F\u4EF6\u7248\u672C\u91CD\u65B0\u7B7E\u6536` });
+      await onReload();
+    } catch (e) {
+      toast({ kind: "error", text: "\u91CD\u65B0\u7B7E\u6536\u5931\u8D25\uFF1A" + e.message });
     } finally {
       setBusyEp(null);
     }
@@ -1462,7 +1631,7 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
   const revoke = async (ep) => {
     const ok = await confirm({
       title: "\u64A4\u56DE\u7B7E\u6536",
-      message: `\u64A4\u56DE\u7B2C ${ep.episode} \u96C6\u7684\u7B7E\u6536\u8BB0\u5F55\uFF1F`,
+      message: `\u64A4\u56DE${epLabel(ep.episode)}\u7684\u7B7E\u6536\u8BB0\u5F55\uFF1F`,
       confirmText: "\u64A4\u56DE",
       cancelText: "\u4FDD\u7559"
     });
@@ -1470,8 +1639,8 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
     setBusyEp(ep.episode);
     try {
       await api.signoff(project.id, ep.episode, "revoke");
-      toast({ kind: "success", text: `\u7B2C ${ep.episode} \u96C6\u7B7E\u6536\u5DF2\u64A4\u56DE` });
-      await load();
+      toast({ kind: "success", text: `${epLabel(ep.episode)}\u7B7E\u6536\u5DF2\u64A4\u56DE` });
+      await onReload();
     } catch (e) {
       toast({ kind: "error", text: "\u64A4\u56DE\u5931\u8D25\uFF1A" + e.message });
     } finally {
@@ -1495,15 +1664,97 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
     }
   };
   const s = report ? report.summary : null;
-  const card = (label, value, hint) => h(
+  const needSignoff = reportNeedsSignoff(s);
+  const staleCount = reportStaleCount(s);
+  const unsignedOnly = reportUnsignedOnly(s);
+  const card = (label, value, hint, opts = {}) => h(
     "div",
     {
+      title: opts.title || void 0,
       style: { padding: "9px 11px", borderRadius: 8, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` }
     },
     h("div", { style: { fontSize: 11, opacity: 0.6, marginBottom: 2 } }, label),
-    h("div", { className: "moxi-serif", style: { fontSize: 19, fontWeight: 600 } }, value),
+    h("div", {
+      className: "moxi-serif",
+      style: { fontSize: 19, fontWeight: 600, color: opts.danger && Number(value) > 0 ? TOKENS.error : void 0 }
+    }, value),
     hint ? h("div", { style: { fontSize: 10.5, opacity: 0.55 } }, hint) : null
   );
+  const rowKind = (e) => {
+    if (!e.signoff || e.signoff.stale) return 0;
+    if (e.hook && !e.hook.has) return 1;
+    return 2;
+  };
+  const sortedEpisodes = [...report && report.episodes || []].sort((a, b) => rowKind(a) - rowKind(b) || Number(a.episode) - Number(b.episode));
+  const pendingRows = sortedEpisodes.filter((e) => rowKind(e) < 2);
+  const signedRows = sortedEpisodes.filter((e) => rowKind(e) === 2);
+  const cellStyle = { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}` };
+  const sectionRow = (key, title, count) => h(
+    "tr",
+    { key },
+    h("td", {
+      colSpan: 7,
+      style: {
+        padding: "8px 8px 4px",
+        fontSize: 11,
+        fontWeight: 650,
+        opacity: 0.72,
+        borderBottom: `1px solid ${TOKENS.border}`,
+        background: TOKENS.bg,
+        position: "sticky",
+        top: 28
+      }
+    }, `${title} \xB7 ${count} \u96C6`)
+  );
+  const episodeRow = (e) => {
+    const stale = !!(e.signoff && e.signoff.stale);
+    return h(
+      "tr",
+      {
+        key: `row-${e.episode}`,
+        "data-testid": `shoot-row-${e.episode}`,
+        style: stale ? { background: "rgba(176,138,74,.12)" } : void 0
+      },
+      h("td", { style: cellStyle }, epLabel(e.episode)),
+      h("td", { style: cellStyle }, e.scenes),
+      h("td", { style: cellStyle }, `${e.durationSeconds}s`),
+      h(
+        "td",
+        { style: { ...cellStyle, maxWidth: 180 } },
+        e.speakers.length ? e.speakers.slice(0, 4).join("\u3001") : "\u2014",
+        e.unknownSpeakers.length ? h("span", { style: { color: TOKENS.warn }, title: `\u4E0D\u5728\u8BBE\u5B9A\u96C6\uFF1A${e.unknownSpeakers.join("\u3001")}` }, ` \u26A0${e.unknownSpeakers.length}`) : null
+      ),
+      h("td", { style: cellStyle }, e.hook.has ? "\u6709" : h("span", { style: { color: TOKENS.warn } }, "\u7F3A")),
+      h(
+        "td",
+        { style: cellStyle },
+        e.signoff ? stale ? h("span", { style: { color: TOKENS.warn } }, "\u5DF2\u7B7E\u6536\uFF08\u6539\u7A3F\u5931\u6548\uFF09") : `\u5DF2\u7B7E\u6536 ${String(e.signoff.at || "").slice(5, 16)}` : h("span", { style: { opacity: 0.7 } }, "\u672A\u7B7E\u6536")
+      ),
+      h(
+        "td",
+        { style: { ...cellStyle, whiteSpace: "nowrap" } },
+        !e.signoff ? h(Button, { onClick: () => {
+          setSignEp(e);
+          setNotes("");
+        }, disabled: busyEp === e.episode, title: "\u6211\u8BFB\u8FC7\u8FD9\u4E00\u96C6\uFF0C\u7B7E\u5B57" }, "\u7B7E\u6536") : h(
+          "span",
+          { style: { display: "inline-flex", gap: 4 } },
+          stale ? h(Button, {
+            tone: "primary",
+            onClick: () => reSign(e),
+            disabled: busyEp === e.episode,
+            title: "\u6309\u5F53\u524D\u7A3F\u4EF6\u7248\u672C\u91CD\u65B0\u7B7E\u6536\uFF08\u6539\u7A3F\u540E\u539F\u7B7E\u6536\u5DF2\u5931\u6548\uFF09"
+          }, busyEp === e.episode ? "\u5904\u7406\u4E2D\u2026" : "\u91CD\u65B0\u7B7E\u6536") : null,
+          h(Button, { onClick: () => revoke(e), disabled: busyEp === e.episode, title: "\u64A4\u56DE\u7B7E\u6536" }, "\u64A4\u56DE")
+        )
+      )
+    );
+  };
+  const tableRows = [];
+  if (pendingRows.length) tableRows.push(sectionRow("sec-pending", "\u5F85\u5904\u7406", pendingRows.length));
+  for (const e of pendingRows) tableRows.push(episodeRow(e));
+  if (signedRows.length) tableRows.push(sectionRow("sec-signed", "\u5DF2\u7B7E\u6536", signedRows.length));
+  for (const e of signedRows) tableRows.push(episodeRow(e));
   return h(
     Drawer,
     {
@@ -1522,7 +1773,11 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
         h(Button, { key: "c", tone: "primary", onClick: onClose }, "\u5173\u95ED")
       ]
     },
-    loading && !report ? h("div", { style: { display: "flex", alignItems: "center", gap: 8, fontSize: 12 } }, h(Spinner), "\u6B63\u5728\u4F30\u7B97\u2026") : !report ? h("div", { style: { fontSize: 12 } }, "\u6682\u65E0\u6570\u636E") : h(
+    loading && !report ? h("div", { style: { display: "flex", alignItems: "center", gap: 8, fontSize: 12 } }, h(Spinner), "\u6B63\u5728\u4F30\u7B97\u2026") : !report ? h(
+      "div",
+      { style: { fontSize: 12, lineHeight: 1.7, opacity: 0.8 } },
+      "\u6682\u65E0\u6570\u636E\uFF1A\u62A5\u544A\u8FD8\u6CA1\u8BFB\u5230\uFF0C\u6216\u8FD9\u4E2A\u9879\u76EE\u8FD8\u6CA1\u6709\u5267\u672C\u6B63\u6587\u3002\u53EF\u70B9\u300C\u5237\u65B0\u300D\u91CD\u8BD5\u3002"
+    ) : h(
       "div",
       { style: { display: "grid", gap: 12 } },
       h(
@@ -1530,9 +1785,12 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
         { style: { display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 } },
         card("\u96C6\u6570", s.episodes),
         card("\u5E73\u5747\u4F30\u7B97", `${s.avgDurationSeconds}s`, `\u76EE\u6807 ${report.project.episodeSeconds}s`),
-        card("\u7F3A\u94A9\u5B50", s.hooksMissing),
-        card("\u964C\u751F\u89D2\u8272", s.unknownSpeakerEpisodes, "\u5BF9\u767D\u4EBA\u7269\u4E0D\u5728\u8BBE\u5B9A\u96C6"),
-        card("\u5DF2\u7B7E\u6536", `${s.signedOff}/${s.episodes}`, s.staleSignoffs ? `\u5931\u6548 ${s.staleSignoffs}` : "\u9010\u96C6\u4EBA\u5DE5\u7B7E\u6536")
+        card("\u5F85\u7B7E\u6536", needSignoff, `\u672A\u7B7E\u6536 ${unsignedOnly} \u96C6 + \u6539\u7A3F\u5931\u6548 ${staleCount} \u96C6`, {
+          danger: true,
+          title: `\u5F85\u7B7E\u6536 ${needSignoff} \u96C6 \uFF1D \u672A\u7B7E\u6536 ${unsignedOnly} \u96C6 + \u6539\u7A3F\u5931\u6548 ${staleCount} \u96C6\uFF08\u6539\u7A3F\u5931\u6548\u5DF2\u5305\u542B\u5728\u5F85\u7B7E\u6536\u5185\uFF0C\u4E0D\u91CD\u590D\u8BA1\u6570\uFF09`
+        }),
+        card("\u7F3A\u94A9\u5B50", s.hooksMissing, `\u964C\u751F\u89D2\u8272 ${s.unknownSpeakerEpisodes} \u96C6`),
+        card("\u5DF2\u7B7E\u6536", `${s.signedOff}/${s.episodes}`, staleCount ? `\u53E6\u6709\u6539\u7A3F\u5931\u6548 ${staleCount} \u96C6\u5F85\u91CD\u7B7E` : "\u9010\u96C6\u4EBA\u5DE5\u7B7E\u6536")
       ),
       h(
         "div",
@@ -1553,44 +1811,34 @@ function ShootabilityDrawer({ project, onClose, toast, confirm }) {
               style: { textAlign: "left", padding: "7px 8px", borderBottom: `1px solid ${TOKENS.border}`, fontSize: 11, opacity: 0.7, position: "sticky", top: 0, background: TOKENS.bg }
             }, t))
           )),
-          h("tbody", null, report.episodes.map((e) => h(
-            "tr",
-            { key: e.episode, "data-testid": `shoot-row-${e.episode}` },
-            h("td", { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}` } }, `\u7B2C ${e.episode} \u96C6`),
-            h("td", { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}` } }, e.scenes),
-            h("td", { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}` } }, `${e.durationSeconds}s`),
-            h(
-              "td",
-              { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}`, maxWidth: 180 } },
-              e.speakers.length ? e.speakers.slice(0, 4).join("\u3001") : "\u2014",
-              e.unknownSpeakers.length ? h("span", { style: { color: "#b45309" }, title: `\u4E0D\u5728\u8BBE\u5B9A\u96C6\uFF1A${e.unknownSpeakers.join("\u3001")}` }, ` \u26A0${e.unknownSpeakers.length}`) : null
-            ),
-            h("td", { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}` } }, e.hook.has ? "\u6709" : h("span", { style: { color: "#b45309" } }, "\u7F3A")),
-            h(
-              "td",
-              { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}` } },
-              e.signoff ? e.signoff.stale ? h("span", { style: { color: "#b45309" } }, "\u5DF2\u7B7E\u6536\uFF08\u6539\u7A3F\u5931\u6548\uFF09") : `\u5DF2\u7B7E\u6536 ${String(e.signoff.at || "").slice(5, 16)}` : "\u672A\u7B7E\u6536"
-            ),
-            h(
-              "td",
-              { style: { padding: "6px 8px", borderBottom: `1px solid ${TOKENS.border}`, whiteSpace: "nowrap" } },
-              e.signoff ? h(Button, { onClick: () => revoke(e), disabled: busyEp === e.episode, title: "\u64A4\u56DE\u7B7E\u6536" }, "\u64A4\u56DE") : h(Button, { onClick: () => {
-                setSignEp(e);
-                setNotes("");
-              }, disabled: busyEp === e.episode, title: "\u6211\u8BFB\u8FC7\u8FD9\u4E00\u96C6\uFF0C\u7B7E\u5B57" }, "\u7B7E\u6536")
-            )
-          )))
+          h("tbody", null, tableRows)
         )
       ),
+      h("div", { style: { fontSize: 11, opacity: 0.55 } }, `\u95EE\u9898\u9879 ${s.issueCount} \u4E2A`),
+      // 角色出场分布默认折叠，避免抢走「待处理」表格的注意力
       h(
-        "div",
-        { style: { fontSize: 11, opacity: 0.55 } },
-        `\u95EE\u9898\u9879 ${s.issueCount} \u4E2A\uFF1B\u89D2\u8272\u51FA\u573A\u5206\u5E03\uFF1A` + Object.entries(report.presence || {}).map(([k, v]) => `${k}(${v.length}\u96C6)`).join(" \xB7 ").slice(0, 160)
+        "details",
+        { style: { fontSize: 11, opacity: 0.72 } },
+        h(
+          "summary",
+          { style: { cursor: "pointer", lineHeight: 1.7 } },
+          `\u89D2\u8272\u51FA\u573A\u5206\u5E03\uFF08${Object.keys(report.presence || {}).length} \u4F4D\uFF09`
+        ),
+        h(
+          "div",
+          { style: { marginTop: 6, display: "grid", gap: 3, paddingLeft: 2 } },
+          Object.entries(report.presence || {}).map(([name, eps]) => h(
+            "div",
+            { key: name },
+            h("span", { style: { fontWeight: 600 } }, name),
+            `\uFF1A${eps.join("\u3001")} \u96C6`
+          ))
+        )
       ),
       signEp ? h(
         Modal,
         {
-          title: `\u7B7E\u6536\u7B2C ${signEp.episode} \u96C6`,
+          title: `\u7B7E\u6536${epLabel(signEp.episode)}`,
           onClose: () => setSignEp(null),
           width: 460,
           testid: "modal-signoff",
@@ -1642,7 +1890,7 @@ function JobListModal({ project, onClose, onOpenJob, toast, confirm }) {
   const cancel = async (job) => {
     const ok = await confirm({
       title: "\u53D6\u6D88\u751F\u6210\u4EFB\u52A1",
-      message: `\u786E\u8BA4\u53D6\u6D88\u4EFB\u52A1 ${job.id}\uFF08\u7B2C ${job.from}\u2013${job.to} \u96C6\uFF09\uFF1F\u5DF2\u5B8C\u6210\u7684\u96C6\u4FDD\u7559\u3002`,
+      message: `\u786E\u8BA4\u53D6\u6D88\u4EFB\u52A1 ${job.id}\uFF08${jobScopeText(job)}\uFF09\uFF1F\u5DF2\u5B8C\u6210\u7684\u96C6\u4FDD\u7559\u3002`,
       danger: true,
       confirmText: "\u53D6\u6D88\u4EFB\u52A1",
       cancelText: "\u7EE7\u7EED\u8DD1"
@@ -1700,10 +1948,10 @@ function JobListModal({ project, onClose, onOpenJob, toast, confirm }) {
             "div",
             null,
             h("div", { style: { fontFamily: TOKENS.mono, fontSize: 11 } }, job.id),
-            h("div", { style: { opacity: 0.65 } }, `\u7B2C ${job.from}\u2013${job.to} \u96C6 \xB7 ${job.provider}/${job.model}`)
+            h("div", { style: { opacity: 0.65 } }, `${jobScopeText(job)} \xB7 ${job.provider}/${job.model}`)
           ),
           h(JobBadge, { status: job.status }),
-          h("div", { style: { fontFamily: TOKENS.mono } }, `${p.done}/${p.total}${p.failed ? ` \xB7 \u2715${p.failed}` : ""}`),
+          h("div", { style: { fontFamily: TOKENS.mono } }, `${p.done}/${p.total} \u96C6${p.failed ? ` \xB7 \u2715${p.failed}` : ""}`),
           h("div", { style: { opacity: 0.65, fontFamily: TOKENS.mono } }, fmtTs(job.createdAt)),
           h(
             "div",
@@ -1909,7 +2157,7 @@ function ImportModal({ project, canvas, onClose, onImported, toast }) {
         "div",
         { style: { fontSize: 12.5, lineHeight: 1.65, opacity: 0.85 } },
         `\u628A\u672C\u5730 v2 \u5DE5\u4F5C\u533A\uFF08project.json + canvas.json + content/*.md\uFF09\u5BFC\u5165\u5230\u5F53\u524D\u9879\u76EE\u300C${project.title}\u300D\u3002`,
-        "\u5BFC\u5165\u4F1A\u6309 \u226450 \u4E2A\u64CD\u4F5C/\u6279\u8D70 /canvas/apply\uFF0C\u5206\u6279\u5199\u5165\uFF1B\u540C id \u8282\u70B9\u4F1A\u81EA\u52A8\u6539\u540D\u907F\u514D\u51B2\u7A81\u3002"
+        "\u5BFC\u5165\u4F1A\u6309\u6BCF\u6279 \u226450 \u4E2A\u64CD\u4F5C\u5206\u6279\u5199\u5165\uFF1B\u540C id \u8282\u70B9\u4F1A\u81EA\u52A8\u6539\u540D\u907F\u514D\u51B2\u7A81\u3002"
       ),
       h(
         "div",
@@ -1953,7 +2201,7 @@ function ImportModal({ project, canvas, onClose, onImported, toast }) {
         { style: { fontSize: 11.5, opacity: 0.6, lineHeight: 1.6 } },
         "\u8BF4\u660E\uFF1A\u6D4F\u89C8\u5668\u5B89\u5168\u9650\u5236\u4E0B\u65E0\u6CD5\u76F4\u63A5\u6309\u7EDD\u5BF9\u8DEF\u5F84\u8BFB\u76D8\uFF0C\u56E0\u6B64\u300C\u9010\u4E2A\u9009\u6587\u4EF6\u300D\u662F\u515C\u5E95\u65B9\u5F0F\uFF08\u9009 project.json\u3001canvas.json \u548C content \u4E0B\u7684 .md \u5373\u53EF\uFF09\u3002"
       ),
-      error ? h("div", { style: { fontSize: 12, color: "#dc2626", lineHeight: 1.6 } }, error) : null
+      error ? h("div", { style: { fontSize: 12, color: TOKENS.error, lineHeight: 1.6 } }, error) : null
     ) : phase === "preview" && source ? h(
       "div",
       { style: { display: "grid", gap: 12 } },
@@ -1970,7 +2218,7 @@ function ImportModal({ project, canvas, onClose, onImported, toast }) {
         { style: { padding: "8px 10px", borderRadius: 8, background: "#fffbeb", border: "1px solid #fde68a", fontSize: 11.5, lineHeight: 1.6, color: "#92400e" } },
         ...warnings.map((w, i) => h("div", { key: i }, `\u26A0 ${w}`))
       ) : null,
-      error ? h("div", { style: { fontSize: 12, color: "#dc2626", lineHeight: 1.6 } }, error) : null
+      error ? h("div", { style: { fontSize: 12, color: TOKENS.error, lineHeight: 1.6 } }, error) : null
     ) : h(
       "div",
       { style: { display: "grid", gap: 10 } },
@@ -2003,7 +2251,8 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
   const [releasing, setReleasing] = useState(false);
   const [gateInfo, setGateInfo] = useState(null);
   const [forceReason, setForceReason] = useState("");
-  const [gateSummary, setGateSummary] = useState(null);
+  const [shootReport, setShootReport] = useState(null);
+  const [shootLoading, setShootLoading] = useState(false);
   const [reviewState, setReviewState] = useState(project.reviewState || null);
   const inspectorSaveRef = useRef(null);
   const handleSaveReady = useCallback((fn) => {
@@ -2213,6 +2462,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       forward: [{ op: "node.write", nodeId: selected, text: after }],
       inverse: [{ op: "node.write", nodeId: selected, text: before }]
     });
+    reloadShootReport();
   };
   const onDeleteNode = async (node) => {
     const ok = await confirm({
@@ -2413,35 +2663,158 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       setReleasing(false);
     }
   };
+  const reloadShootReport = useCallback(async () => {
+    if (!project || !project.id) return null;
+    setShootLoading(true);
+    try {
+      const r = await api.shootability(project.id, "json");
+      setShootReport(r || null);
+      return r || null;
+    } catch {
+      return null;
+    } finally {
+      setShootLoading(false);
+    }
+  }, [project && project.id]);
   useEffect(() => {
-    if (reviewState !== "generated") {
-      setGateSummary(null);
+    reloadShootReport();
+  }, [reloadShootReport, reviewState]);
+  const reportJobRef = useRef("");
+  const onDrawerJobChanged = useCallback((j) => {
+    refreshActiveJobs();
+    if (!j || !isJobTerminal(j)) return;
+    const sig = `${j.id}:${j.status}:${j.progress && j.progress.done || 0}`;
+    if (reportJobRef.current === sig) return;
+    reportJobRef.current = sig;
+    reloadShootReport();
+  }, [refreshActiveJobs, reloadShootReport]);
+  useEffect(() => {
+    if (project && project.reviewState !== void 0) setReviewState(project.reviewState || null);
+  }, [project && project.reviewState]);
+  const gateSummary = useMemo(() => {
+    const s = shootReport && shootReport.summary;
+    if (!s) return null;
+    return {
+      episodes: Number(s.episodes) || 0,
+      signedOff: Number(s.signedOff) || 0,
+      needsSignoff: reportNeedsSignoff(s),
+      unsignedOnly: reportUnsignedOnly(s),
+      staleSignoffs: reportStaleCount(s),
+      hooksMissing: Number(s.hooksMissing) || 0
+    };
+  }, [shootReport]);
+  const epInfoByEp = useMemo(() => {
+    const m = /* @__PURE__ */ new Map();
+    for (const e of shootReport && shootReport.episodes || []) m.set(Number(e.episode), e);
+    return m;
+  }, [shootReport]);
+  const scriptEpisodes = useMemo(() => {
+    const eps = nodes.filter((n) => n.type === "script_scene").map((n) => Number(n.ref && n.ref.episode)).filter((n) => Number.isInteger(n) && n > 0);
+    return [...new Set(eps)].sort((a, b) => a - b);
+  }, [nodes]);
+  const nodeSummary = (node) => {
+    if (!node) return "";
+    const ep = node.ref && node.ref.episode != null ? Number(node.ref.episode) : null;
+    const statusLabel = (STATUS_META[node.status] || STATUS_META.draft).label;
+    if (node.type === "script_scene" && ep) {
+      const info = epInfoByEp.get(ep);
+      if (info) {
+        const hook = info.hook && info.hook.has ? "\u6709\u94A9\u5B50" : "\u7F3A\u94A9\u5B50";
+        return `${Number(info.bodyChars) || 0} \u5B57 \xB7 ${hook} \xB7 ${(info.speakers || []).length} \u89D2\u8272`;
+      }
+      return `${epLabel(ep)} \xB7 ${statusLabel}`;
+    }
+    if ((node.type === "beat_sheet" || node.type === "scene_list") && ep) return `${epLabel(ep)} \xB7 ${statusLabel}`;
+    if (node.type === "asset") {
+      const f = node.meta && node.meta.fields || {};
+      const titleParts = String(node.title || "").split(/[·・:：]/);
+      const titleName = titleParts.length > 1 ? String(titleParts.pop()).trim() : "";
+      const name = String(f.name || "").trim() || titleName;
+      const kind = String(f.role || f.kind || "").trim() || (node.meta && node.meta.assetKind === "character" ? "\u89D2\u8272" : NODE_TYPES[node.type].label);
+      return name ? `${name} \xB7 ${kind}` : statusLabel;
+    }
+    if (ep) return `${epLabel(ep)} \xB7 ${statusLabel}`;
+    return statusLabel;
+  };
+  const focusEpisode = useCallback((ep) => {
+    const n = nodes.find((x) => x.type === "script_scene" && Number(x.ref && x.ref.episode) === Number(ep));
+    if (!n) {
+      toast({ kind: "error", text: `\u6CA1\u627E\u5230${epLabel(ep)}\u7684\u5267\u672C\u8282\u70B9` });
       return;
     }
-    let alive = true;
-    api.shootability(project.id, "json").then((r) => {
-      if (alive) setGateSummary(r.summary);
-    }).catch(() => {
+    const inspectorOpening = !selected;
+    selectNode(n.id);
+    const el = surfaceRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const usableWidth = inspectorOpening ? Math.max(320, rect.width - 380) : rect.width;
+    setViewport((vp) => {
+      const zoom = vp.zoom || 0.85;
+      return {
+        ...vp,
+        x: Math.round(usableWidth / 2 - (n.x + n.w / 2) * zoom),
+        y: Math.round(rect.height / 2 - (n.y + n.h / 2) * zoom)
+      };
     });
-    return () => {
-      alive = false;
-    };
-  }, [reviewState, project.id, rev]);
+  }, [nodes, selected, selectNode, toast]);
   const zoomBy = (k) => setViewport((vp) => ({ ...vp, zoom: Math.min(2.5, Math.max(0.2, vp.zoom * k)) }));
   const maxX = nodes.reduce((m, n) => Math.max(m, n.x + n.w), 800);
   const maxY = nodes.reduce((m, n) => Math.max(m, n.y + n.h), 600);
   const canUndo = history.undo.length > 0;
   const canRedo = history.redo.length > 0;
+  const gateDetails = gateInfo && gateInfo.details || {};
+  const gateUnsignedAll = Array.isArray(gateDetails.unsigned) ? gateDetails.unsigned.map(Number) : [];
+  const gateStale = Array.isArray(gateDetails.stale) ? gateDetails.stale.map(Number) : [];
+  const gateStaleSet = new Set(gateStale);
+  const gateUnsignedOnly = Array.isArray(gateDetails.unsignedOnly) ? gateDetails.unsignedOnly.map(Number) : gateUnsignedAll.filter((n) => !gateStaleSet.has(n));
+  const gateNoHook = Array.isArray(gateDetails.noHook) ? gateDetails.noHook.map(Number) : [];
+  const gateNeeds = Array.isArray(gateDetails.needsSignoff) ? gateDetails.needsSignoff.length : Number.isFinite(Number(gateDetails.needsSignoff)) ? Number(gateDetails.needsSignoff) : gateUnsignedAll.length;
+  const gateEpChip = (ep) => h("button", {
+    key: `gate-ep-${ep}`,
+    "data-testid": `gate-ep-${ep}`,
+    onClick: () => {
+      setGateInfo(null);
+      focusEpisode(ep);
+    },
+    title: `\u5B9A\u4F4D\u5230${epLabel(ep)}\u7684\u5267\u672C\u8282\u70B9`,
+    style: {
+      border: 0,
+      background: "transparent",
+      cursor: "pointer",
+      padding: "0 1px",
+      color: TOKENS.brand,
+      fontSize: 11.5,
+      fontFamily: "inherit",
+      textDecoration: "underline dotted"
+    }
+  }, epLabel(ep));
+  const gateEpLine = (label, list) => list.length ? h(
+    "div",
+    { key: label, style: { fontSize: 11.5, lineHeight: 1.8, opacity: 0.9 } },
+    h("span", { style: { opacity: 0.7 } }, `${label} ${list.length} \u96C6\uFF1A`),
+    h("span", null, list.slice(0, 30).map((ep, i) => h(import_react2.default.Fragment, { key: `f-${ep}` }, i ? "\u3001" : "", gateEpChip(ep)))),
+    list.length > 30 ? h("span", { style: { opacity: 0.6 } }, ` \u7B49 ${list.length} \u96C6`) : null
+  ) : null;
   const edgePath = (a, b) => {
     const from = { x: a.x + a.w, y: a.y + a.h / 2 };
     const to = { x: b.x, y: b.y + b.h / 2 };
     const dx = Math.max(40, Math.abs(to.x - from.x) * 0.45);
     return `M ${from.x} ${from.y} C ${from.x + dx} ${from.y}, ${to.x - dx} ${to.y}, ${to.x} ${to.y}`;
   };
+  const weakBtnStyle = { height: 24, padding: "0 6px", fontSize: 11.5, opacity: 0.82 };
+  const gateNeedSignoff = reportNeedsSignoff(gateSummary);
+  const gateUnsignedOnlyN = reportUnsignedOnly(gateSummary);
+  const gateStaleN = reportStaleCount(gateSummary);
+  const gateSignoffText = gateNeedSignoff > 0 ? `\u5F85\u7B7E\u6536 ${gateNeedSignoff} \u96C6\uFF08\u672A\u7B7E\u6536 ${gateUnsignedOnlyN} \u96C6\u3001\u6539\u7A3F\u5931\u6548 ${gateStaleN} \u96C6\uFF09` : null;
+  const gateParts = gateSummary ? [
+    gateSignoffText,
+    Number(gateSummary.hooksMissing) > 0 ? `\u7F3A\u94A9\u5B50 ${Number(gateSummary.hooksMissing)} \u96C6` : null
+  ].filter(Boolean) : [];
+  const gatePassed = !!gateSummary && gateParts.length === 0;
   return h(
     "div",
     { className: "moxi-panel", style: { height: "100%", display: "flex", flexDirection: "column", background: TOKENS.bg, color: TOKENS.text } },
-    /* 工具栏 */
+    /* 工具栏：左侧按阶段排主操作（生成 → 可拍性 → 导出），其余收进右侧弱化区 */
     h(
       "div",
       { "data-testid": "toolbar", style: { flex: "0 0 auto", minHeight: 44, display: "flex", alignItems: "center", gap: 6, padding: "0 12px", borderBottom: `1px solid ${TOKENS.border}`, overflowX: "auto" } },
@@ -2449,13 +2822,8 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       h("span", { style: { fontSize: 13, fontWeight: 650, whiteSpace: "nowrap" } }, project.title),
       h("span", { style: { fontSize: 11, opacity: 0.55, whiteSpace: "nowrap" } }, `${project.episodeCount ?? "\u96C6\u6570\u672A\u786E\u8BA4"} \u96C6${project.audience ? " \xB7 " + project.audience : ""}`),
       h("span", { style: { width: 1, height: 18, background: TOKENS.border, margin: "0 2px" } }),
-      h(Button, { onClick: () => setCreateOpen(true), "data-testid": "btn-add-node" }, "+ \u5DE5\u4F4D"),
       h(Button, { tone: "primary", onClick: () => setGenOpen(true), "data-testid": "btn-generate" }, "\u26A1 \u751F\u6210"),
-      h(Button, { onClick: () => setJobsOpen(true), "data-testid": "btn-jobs" }, activeJobs ? `\u521B\u4F5C\u8BB0\u5F55 (${activeJobs})` : "\u521B\u4F5C\u8BB0\u5F55"),
-      h(Button, { onClick: () => setImportOpen(true), "data-testid": "btn-import" }, "\u5BFC\u5165"),
       h(Button, { onClick: () => setShootOpen(true), "data-testid": "btn-shootability", title: "\u53EF\u62CD\u6027\u62A5\u544A\uFF1A\u65F6\u957F/\u89D2\u8272/\u94A9\u5B50/\u9010\u96C6\u7B7E\u6536" }, "\u53EF\u62CD\u6027"),
-      h(Button, { onClick: undo, disabled: !canUndo || historyBusy, title: canUndo ? `\u64A4\u9500\uFF1A${history.undo[history.undo.length - 1].label}\uFF08Cmd+Z\uFF09` : "\u6CA1\u6709\u53EF\u64A4\u9500\u7684\u64CD\u4F5C", "data-testid": "btn-undo" }, "\u21B6 \u64A4\u9500"),
-      h(Button, { onClick: redo, disabled: !canRedo || historyBusy, title: canRedo ? `\u91CD\u505A\uFF1A${history.redo[history.redo.length - 1].label}\uFF08Shift+Cmd+Z\uFF09` : "\u6CA1\u6709\u53EF\u91CD\u505A\u7684\u64CD\u4F5C", "data-testid": "btn-redo" }, "\u21B7 \u91CD\u505A"),
       h(
         Button,
         {
@@ -2468,17 +2836,67 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
           "span",
           { style: { display: "inline-flex", alignItems: "center", gap: 5 } },
           exporting ? "\u5BFC\u51FA\u4E2D\u2026" : "\u5BFC\u51FA",
-          latestJob && latestJob.status === "done_with_errors" ? h("span", { "data-testid": "export-warn-dot", title: "\u6700\u8FD1\u4EFB\u52A1\u6709\u5931\u8D25\u96C6\uFF0C\u5BFC\u51FA\u524D\u8BF7\u5148\u7EED\u8DD1\u6216\u4FEE\u590D", style: { width: 7, height: 7, borderRadius: 999, background: "#ef4444", display: "inline-block" } }) : null
+          latestJob && latestJob.status === "done_with_errors" ? h("span", { "data-testid": "export-warn-dot", title: "\u6700\u8FD1\u4EFB\u52A1\u6709\u5931\u8D25\u96C6\uFF0C\u5BFC\u51FA\u524D\u8BF7\u5148\u7EED\u8DD1\u6216\u4FEE\u590D", style: { width: 7, height: 7, borderRadius: 999, background: TOKENS.error, display: "inline-block" } }) : null
         )
       ),
       h("span", { style: { flex: 1 } }),
-      h("span", { style: { fontSize: 11, opacity: 0.5, whiteSpace: "nowrap" } }, `rev ${rev}`),
-      h(Button, { onClick: () => zoomBy(1 / 1.2), "data-testid": "btn-zoom-out" }, "\uFF0D"),
-      h("span", { style: { fontSize: 11, width: 42, textAlign: "center", opacity: 0.7 } }, `${Math.round(viewport.zoom * 100)}%`),
-      h(Button, { onClick: () => zoomBy(1.2), "data-testid": "btn-zoom-in" }, "\uFF0B"),
-      h(Button, { onClick: () => setViewport({ x: 0, y: 0, zoom: 0.85 }), "data-testid": "btn-zoom-reset" }, "\u590D\u4F4D"),
-      h(Button, { onClick: () => setShowGrid((v) => !v), "data-testid": "btn-grid" }, showGrid ? "\u7F51\u683C\u5F00" : "\u7F51\u683C\u5173")
+      // —— 右侧弱化区：次级操作与视图控制 ——
+      h("span", { style: { width: 1, height: 18, background: TOKENS.border, margin: "0 2px" } }),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => setCreateOpen(true), "data-testid": "btn-add-node" }, "+ \u5DE5\u4F4D"),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => setJobsOpen(true), "data-testid": "btn-jobs" }, activeJobs ? `\u521B\u4F5C\u8BB0\u5F55 (${activeJobs})` : "\u521B\u4F5C\u8BB0\u5F55"),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => setImportOpen(true), "data-testid": "btn-import" }, "\u5BFC\u5165"),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: undo, disabled: !canUndo || historyBusy, title: canUndo ? `\u64A4\u9500\uFF1A${history.undo[history.undo.length - 1].label}\uFF08Cmd+Z\uFF09` : "\u6CA1\u6709\u53EF\u64A4\u9500\u7684\u64CD\u4F5C", "data-testid": "btn-undo" }, "\u21B6 \u64A4\u9500"),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: redo, disabled: !canRedo || historyBusy, title: canRedo ? `\u91CD\u505A\uFF1A${history.redo[history.redo.length - 1].label}\uFF08Shift+Cmd+Z\uFF09` : "\u6CA1\u6709\u53EF\u91CD\u505A\u7684\u64CD\u4F5C", "data-testid": "btn-redo" }, "\u21B7 \u91CD\u505A"),
+      h("span", { style: { fontSize: 10.5, opacity: 0.45, whiteSpace: "nowrap", fontFamily: TOKENS.mono } }, `rev ${rev}`),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => zoomBy(1 / 1.2), "data-testid": "btn-zoom-out" }, "\uFF0D"),
+      h("span", { style: { fontSize: 10.5, minWidth: 34, textAlign: "center", opacity: 0.62 } }, `${Math.round(viewport.zoom * 100)}%`),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => zoomBy(1.2), "data-testid": "btn-zoom-in" }, "\uFF0B"),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => setViewport({ x: 0, y: 0, zoom: 0.85 }), "data-testid": "btn-zoom-reset" }, "\u590D\u4F4D"),
+      h(Button, { tone: "ghost", style: weakBtnStyle, onClick: () => setShowGrid((v) => !v), "data-testid": "btn-grid" }, showGrid ? "\u7F51\u683C\u5F00" : "\u7F51\u683C\u5173")
     ),
+    /* 集导航条：剧本集 > 6 才出现；签收改稿失效（朱砂点）/ 缺钩子（赭金点）做标记 */
+    scriptEpisodes.length > 6 ? h(
+      "div",
+      {
+        "data-testid": "episode-nav",
+        style: { flex: "0 0 auto", display: "flex", alignItems: "center", gap: 4, padding: "5px 12px", borderBottom: `1px solid ${TOKENS.border}`, overflowX: "auto", fontSize: 11 }
+      },
+      h("span", { style: { opacity: 0.5, marginRight: 4, whiteSpace: "nowrap" } }, "\u96C6"),
+      scriptEpisodes.map((ep) => {
+        const info = epInfoByEp.get(ep);
+        const stale = !!(info && info.signoff && info.signoff.stale);
+        const noHook = !!(info && info.hook && !info.hook.has);
+        const active = !!(selectedNode && selectedNode.type === "script_scene" && Number(selectedNode.ref && selectedNode.ref.episode) === ep);
+        return h(
+          "button",
+          {
+            key: `nav-${ep}`,
+            "data-testid": `ep-nav-${ep}`,
+            onClick: () => focusEpisode(ep),
+            title: `${epLabel(ep)}${stale ? " \xB7 \u7B7E\u6536\u5DF2\u6539\u7A3F\u5931\u6548" : ""}${noHook ? " \xB7 \u7F3A\u94A9\u5B50" : ""}`,
+            style: {
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 3,
+              height: 21,
+              padding: "0 7px",
+              borderRadius: 999,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              fontFamily: TOKENS.mono,
+              fontSize: 10.5,
+              color: active ? "#fff" : TOKENS.text,
+              background: active ? TOKENS.brand : "transparent",
+              border: `1px solid ${active ? TOKENS.brand : TOKENS.border}`,
+              opacity: active ? 1 : 0.85
+            }
+          },
+          `\u7B2C${ep}\u96C6`,
+          stale ? h("span", { title: "\u7B7E\u6536\u5DF2\u6539\u7A3F\u5931\u6548", style: { width: 5, height: 5, borderRadius: 999, background: TOKENS.error, display: "inline-block" } }) : null,
+          noHook ? h("span", { title: "\u7F3A\u96C6\u672B\u94A9\u5B50", style: { width: 5, height: 5, borderRadius: 999, background: TOKENS.warn, display: "inline-block" } }) : null
+        );
+      })
+    ) : null,
     // 评审状态条：生成完成 ≠ 可交付
     reviewState === "generated" || reviewState === "has_errors" ? h(
       "div",
@@ -2490,8 +2908,8 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
           alignItems: "center",
           gap: 10,
           padding: "7px 14px",
-          background: reviewState === "generated" ? "rgba(164,71,54,.08)" : "#fef2f2",
-          borderBottom: `1px solid ${reviewState === "generated" ? "rgba(164,71,54,.28)" : "#fca5a5"}`,
+          background: reviewState === "generated" ? "rgba(164,71,54,.08)" : "rgba(178,58,50,.07)",
+          borderBottom: `1px solid ${reviewState === "generated" ? "rgba(164,71,54,.28)" : "rgba(178,58,50,.32)"}`,
           fontSize: 12.5
         }
       },
@@ -2499,7 +2917,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       h(
         "span",
         { style: { flex: 1, opacity: 0.85 } },
-        reviewState === "generated" ? `\u672C\u5267\u5DF2\u751F\u6210\uFF0C\u81EA\u52A8\u8D28\u68C0\u901A\u8FC7\u3002\u653E\u884C\u9700\u901A\u8FC7\u53EF\u62CD\u6027\u95F8\u95E8${gateSummary ? `\uFF08\u672A\u7B7E\u6536 ${gateSummary.unsigned + (gateSummary.staleSignoffs || 0)} \u96C6 \xB7 \u7F3A\u94A9\u5B50 ${gateSummary.hooksMissing} \u96C6\uFF09` : ""}\uFF1A\u9010\u96C6\u7B7E\u6536 + \u8865\u9F50\u94A9\u5B50\u540E\u624D\u53EF\u653E\u884C\u3002` : "\u6700\u8FD1\u4E00\u6B21\u751F\u6210\u6709\u5931\u8D25\u96C6\uFF0C\u8BF7\u6253\u5F00\u300C\u521B\u4F5C\u8BB0\u5F55\u300D\u7EED\u8DD1\u6216\u4FEE\u590D\u540E\u518D\u653E\u884C\u3002"
+        reviewState === "generated" ? gatePassed ? "\u672C\u5267\u5DF2\u751F\u6210\uFF0C\u81EA\u52A8\u8D28\u68C0\u901A\u8FC7\uFF1B\u53EF\u62CD\u6027\u95F8\u95E8\u5DF2\u901A\u8FC7\uFF0C\u53EF\u4EE5\u653E\u884C\u3002" : `\u672C\u5267\u5DF2\u751F\u6210\uFF0C\u81EA\u52A8\u8D28\u68C0\u901A\u8FC7\u3002\u653E\u884C\u9700\u901A\u8FC7\u53EF\u62CD\u6027\u95F8\u95E8${gateParts.length ? `\uFF1A${gateParts.join(" \xB7 ")}` : ""}\u3002\u9010\u96C6\u7B7E\u6536 + \u8865\u9F50\u94A9\u5B50\u540E\u624D\u53EF\u653E\u884C\u3002` : "\u6700\u8FD1\u4E00\u6B21\u751F\u6210\u6709\u5931\u8D25\u96C6\uFF0C\u8BF7\u6253\u5F00\u300C\u521B\u4F5C\u8BB0\u5F55\u300D\u7EED\u8DD1\u6216\u4FEE\u590D\u540E\u518D\u653E\u884C\u3002"
       ),
       reviewState === "generated" ? h(Button, { tone: "primary", onClick: onRelease, disabled: releasing, "data-testid": "btn-release" }, releasing ? "\u653E\u884C\u4E2D\u2026" : "\u4EBA\u5DE5\u653E\u884C") : null
     ) : null,
@@ -2565,6 +2983,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
             node: n,
             selected: selected === n.id,
             findings: n.meta && n.meta.findings,
+            summary: nodeSummary(n),
             editing: editingId === n.id,
             editingText,
             onEditText: setEditingText,
@@ -2624,7 +3043,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
       h("span", null, `\u5DE5\u4F4D ${nodes.length}`),
       h("span", null, `\u8FDE\u7EBF ${edges.length}`),
       h("span", null, `rev ${rev}`),
-      dirty ? h("span", { style: { color: "#d97706", opacity: 1 } }, "\u25CF \u6B63\u6587\u672A\u4FDD\u5B58") : null,
+      dirty ? h("span", { style: { color: TOKENS.warn, opacity: 1 } }, "\u25CF \u6B63\u6587\u672A\u4FDD\u5B58") : null,
       h("span", { style: { flex: 1 } }),
       h("span", null, `\u64A4\u9500 ${history.undo.length} / \u91CD\u505A ${history.redo.length}`),
       h("span", null, "\u62D6\u7A7A\u767D=\u5E73\u79FB \xB7 \u6EDA\u8F6E=\u7F29\u653E \xB7 \u53CC\u51FB\u6807\u9898=\u6539\u540D \xB7 Cmd+Z=\u64A4\u9500")
@@ -2669,6 +3088,9 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
     }) : null,
     shootOpen ? h(ShootabilityDrawer, {
       project,
+      report: shootReport,
+      loading: shootLoading,
+      onReload: reloadShootReport,
       onClose: () => setShootOpen(false),
       toast,
       confirm
@@ -2691,11 +3113,19 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
         width: 640,
         testid: "modal-release-gate",
         footer: [
-          h(Button, { key: "s", onClick: () => {
+          h(Button, { key: "s", tone: "primary", onClick: () => {
             setGateInfo(null);
             setShootOpen(true);
           }, "data-testid": "btn-gate-goto-signoff" }, "\u53BB\u53EF\u62CD\u6027\u9875\u7B7E\u6536"),
-          h(Button, { key: "f", tone: "danger", onClick: forceRelease, disabled: releasing, "data-testid": "btn-gate-force" }, releasing ? "\u5904\u7406\u4E2D\u2026" : "\u5F3A\u5236\u653E\u884C\uFF08\u9700\u7406\u7531\uFF09"),
+          h(Button, {
+            key: "f",
+            tone: "danger",
+            onClick: forceRelease,
+            disabled: releasing,
+            // 强制放行是例外路径：danger 只保留语义色，样式降级为描边，避免被当成主操作
+            style: { background: "transparent", color: TOKENS.error, border: `1px solid ${TOKENS.error}`, opacity: releasing ? 0.5 : 0.9 },
+            "data-testid": "btn-gate-force"
+          }, releasing ? "\u5904\u7406\u4E2D\u2026" : "\u5F3A\u5236\u653E\u884C\uFF08\u9700\u7406\u7531\uFF09"),
           h(Button, { key: "c", onClick: () => setGateInfo(null) }, "\u53D6\u6D88")
         ]
       },
@@ -2704,14 +3134,11 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
         { style: { fontSize: 12.5, lineHeight: 1.8, marginBottom: 10 } },
         gateInfo.message
       ),
+      // 计数卡只放两项：待签收（合计，含改稿失效）与缺钩子；明细拆开列，不重复计数
       h(
         "div",
-        { style: { display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 12, fontSize: 11.5 } },
-        [
-          ["\u672A\u7B7E\u6536", (gateInfo.details.unsigned || []).length],
-          ["\u7B7E\u6536\u5931\u6548", (gateInfo.details.stale || []).length],
-          ["\u7F3A\u94A9\u5B50", (gateInfo.details.noHook || []).length]
-        ].map(
+        { style: { display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 8, marginBottom: 10, fontSize: 11.5 } },
+        [["\u5F85\u7B7E\u6536", gateNeeds], ["\u7F3A\u94A9\u5B50", gateNoHook.length]].map(
           ([k, v]) => h(
             "div",
             {
@@ -2719,24 +3146,22 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
               style: { padding: "8px 10px", borderRadius: 8, background: TOKENS.bgSoft, border: `1px solid ${TOKENS.border}` }
             },
             h("div", { style: { opacity: 0.6 } }, k),
-            h("div", { className: "moxi-serif", style: { fontSize: 20, fontWeight: 600 } }, v)
+            h("div", { className: "moxi-serif", style: { fontSize: 20, fontWeight: 600, color: k === "\u5F85\u7B7E\u6536" && v > 0 ? TOKENS.error : void 0 } }, v)
           )
         )
       ),
-      (gateInfo.details.unsigned || []).length ? h(
-        "div",
-        { style: { fontSize: 11.5, lineHeight: 1.7, opacity: 0.85, marginBottom: 6 } },
-        `\u672A\u7B7E\u6536\u96C6\u6570\uFF1A${(gateInfo.details.unsigned || []).join("\u3001")}${(gateInfo.details.unsigned || []).length > 20 ? " \u7B49" : ""}`
-      ) : null,
-      (gateInfo.details.noHook || []).length ? h(
-        "div",
-        { style: { fontSize: 11.5, lineHeight: 1.7, opacity: 0.85, marginBottom: 10 } },
-        `\u7F3A\u94A9\u5B50\u96C6\u6570\uFF1A${(gateInfo.details.noHook || []).join("\u3001")}${(gateInfo.details.noHook || []).length > 20 ? " \u7B49" : ""}`
-      ) : null,
       h(
         "div",
-        { style: { fontSize: 11.5, opacity: 0.7, marginBottom: 6 } },
-        "\u82E5\u786E\u9700\u8DF3\u8FC7\uFF08\u4F8B\u5982\u94A9\u5B50\u7531\u4EBA\u5DE5\u786E\u8BA4\u8FC7\uFF09\uFF0C\u53EF\u586B\u5199\u7406\u7531\u5F3A\u5236\u653E\u884C\uFF1B\u7406\u7531\u4F1A\u5199\u5165\u5BA1\u8BA1\u4E8B\u4EF6\u3002"
+        { style: { marginBottom: 10 } },
+        gateEpLine("\u672A\u7B7E\u6536", gateUnsignedOnly),
+        gateEpLine("\u6539\u7A3F\u5931\u6548", gateStale),
+        gateEpLine("\u7F3A\u94A9\u5B50", gateNoHook),
+        !gateUnsignedOnly.length && !gateStale.length && !gateNoHook.length ? h("div", { style: { fontSize: 11.5, opacity: 0.65, lineHeight: 1.7 } }, "\u95F8\u95E8\u660E\u7EC6\u4E3A\u7A7A\uFF1A\u53EF\u4EE5\u76F4\u63A5\u91CD\u8BD5\u653E\u884C\u3002") : null
+      ),
+      h(
+        "div",
+        { style: { fontSize: 11.5, opacity: 0.7, marginBottom: 6, lineHeight: 1.7 } },
+        "\u6B63\u5E38\u8DEF\u5F84\uFF1A\u8865\u9F50\u540E\u76F4\u63A5\u653E\u884C\uFF0C\u4E0D\u9700\u8981\u5F3A\u5236\u3002\u82E5\u786E\u9700\u8DF3\u8FC7\uFF08\u4F8B\u5982\u94A9\u5B50\u7531\u4EBA\u5DE5\u786E\u8BA4\u8FC7\uFF09\uFF0C\u53EF\u586B\u5199\u7406\u7531\u5F3A\u5236\u653E\u884C\uFF1B\u7406\u7531\u4F1A\u5199\u5165\u5BA1\u8BA1\u4E8B\u4EF6\u3002"
       ),
       h("textarea", {
         value: forceReason,
@@ -2793,7 +3218,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
         "div",
         { style: { fontSize: 12.5, lineHeight: 1.8 } },
         h("div", null, `\u683C\u5F0F ${String(exportDone.format || "docx").toUpperCase()} \xB7 ${Math.round((exportDone.bytes || 0) / 1024)} KB \xB7 ${exportDone.sections || 0} \u8282`),
-        exportDone.fallback ? h("div", { style: { color: "#b45309" } }, `\u964D\u7EA7\u8BF4\u660E\uFF1A${exportDone.fallback.reason || "docx \u4E0D\u53EF\u7528"}`) : null,
+        exportDone.fallback ? h("div", { style: { color: TOKENS.warn } }, `\u964D\u7EA7\u8BF4\u660E\uFF1A${exportDone.fallback.reason || "docx \u4E0D\u53EF\u7528"}`) : null,
         h("div", { style: { marginTop: 8, fontSize: 11.5, opacity: 0.7, fontFamily: TOKENS.mono, wordBreak: "break-all" } }, exportDone.path || "")
       ),
       h(
@@ -2835,7 +3260,7 @@ function CanvasView({ project, canvas, rev, onBack, onChanged, toast, confirm })
         setDrawerJob(null);
         refreshActiveJobs();
       },
-      onJobChanged: refreshActiveJobs,
+      onJobChanged: onDrawerJobChanged,
       toast,
       confirm
     }) : null
@@ -2850,6 +3275,8 @@ function App() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [allJobs, setAllJobs] = useState([]);
   const showToast = useCallback((t) => {
     setToast(t);
     window.clearTimeout(showToast._timer);
@@ -2879,6 +3306,23 @@ function App() {
   useEffect(() => {
     reloadProjects();
   }, [reloadProjects]);
+  const overviewKeyRef = useRef("");
+  const reloadOverview = useCallback(async (force = false) => {
+    if (!projects.length) return;
+    const key = projects.map((p) => `${p.id}:${p.updatedAt || ""}`).join("|");
+    if (!force && key === overviewKeyRef.current) return;
+    try {
+      const [s, rows] = await Promise.all([api.stats(), api.listJobs()]);
+      setStats(s || null);
+      setAllJobs(Array.isArray(rows) ? rows : []);
+      overviewKeyRef.current = key;
+    } catch {
+    }
+  }, [projects]);
+  const overviewSignature = projects.map((p) => `${p.id}:${p.updatedAt || ""}`).join("|");
+  useEffect(() => {
+    if (!current) reloadOverview();
+  }, [current && current.project.id, overviewSignature, reloadOverview]);
   const restoreLastRef = useRef(false);
   const restoreLastProject = useCallback(async () => {
     let last = null;
@@ -2991,6 +3435,8 @@ function App() {
       projects,
       loading,
       error,
+      stats,
+      jobs: allJobs,
       onCreate: () => setNewOpen(true),
       onOpen: openProject,
       onDelete: deleteProject,

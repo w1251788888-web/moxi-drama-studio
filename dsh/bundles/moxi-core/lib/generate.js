@@ -386,6 +386,16 @@ export class JobManager {
 
   publicJob(job) {
     const { abort, running, ...plain } = job
+    // 任务集范围：from/to 是「首末集号」，实际集数按 episodes 明细算，
+    // 避免 UI 把「1—10 集 / 4/4」误读成漏了 6 集；补集类任务（ensure）from/to 为 0，scope 给 null。
+    // 只加在对外视图上，不改持久化结构，历史 job 文件同样适用。
+    const from = Number(job.from) || 0
+    const to = Number(job.to) || 0
+    const list = Array.isArray(job.episodes) ? job.episodes : []
+    const eps = list.map((e) => Number(e && e.ep)).filter((n) => Number.isInteger(n) && n > 0)
+    plain.scope = from > 0 && to > 0
+      ? { from, to, count: list.length, episodes: eps, dense: list.length === (to - from + 1) }
+      : null
     return plain
   }
 
@@ -417,7 +427,7 @@ export class JobManager {
         try {
           const j = await readJson(path.join(dir, f))
           j.projectId = j.projectId || p.id
-          mem.push(j)
+          mem.push(this.publicJob(j))
           seen.add(id)
         } catch { /* 跳过坏文件 */ }
       }
